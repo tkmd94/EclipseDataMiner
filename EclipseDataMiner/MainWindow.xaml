@@ -1,0 +1,143 @@
+﻿<Window x:Class="EclipseDataMiner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:EclipseDataMiner"
+        Title="EclipseDataMiner" Height="907.5" Width="800" ResizeMode="CanResizeWithGrip
+        " Closing="Window_Closing">
+    <StackPanel>
+        <Grid Margin="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="0">
+                <Button x:Name="runButton" Content="Run"  Margin="5" Click="runButton_Click" FontWeight="Bold" Padding="10,1"/>
+                <Button x:Name="cancelButton" Content="Cancel" IsEnabled="false" Margin="5" Click="cancelButton_Click" Padding="10,1"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="0">
+                <Button x:Name="setFolderButton" Content="Set folder" Margin="5" Click="SetFolderButton_Click" Padding="5,1" />
+                <Button x:Name="openFolderButton" Content="Open folder"  Margin="5" Click="openFolderButton_Click" Padding="5,1"/>
+                <TextBox x:Name="pathTextBlock" Text="path" VerticalAlignment="Center" Width="400" IsReadOnly="true"/>
+            </StackPanel>
+            <Label Content="Patient ID:" Grid.Column="0" Grid.Row="1" Margin="5" HorizontalAlignment="Right"/>
+            <TextBox x:Name="patientIdTextBox" TextWrapping="Wrap"  Width="300" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Margin="5" HorizontalAlignment="Left"/>
+            <Label Content="Course ID:" Grid.Column="0" Grid.Row="2" Margin="5" HorizontalAlignment="Right"/>
+            <TextBox x:Name="courseIdTextBox" TextWrapping="Wrap"  Width="200" Grid.Column="1" Grid.Row="2" Margin="5" HorizontalAlignment="Left"/>
+            <Label Content="Approval status:" Grid.Column="2" Grid.Row="3" Margin="5" HorizontalAlignment="Right"/>
+            <StackPanel Grid.Column="3" Grid.Row="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
+                <CheckBox x:Name="unApprovedCheckBox" Content="Unapproved"  Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+                <CheckBox x:Name="planApprovedCheckBox" Content="Plan approved" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+                <CheckBox x:Name="treatAprovedCheckBox" Content="TRT approved" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+
+            </StackPanel>
+            <Label Content="Plan ID:" Grid.Column="0" Grid.Row="3" Margin="5" HorizontalAlignment="Right"/>
+            <TextBox x:Name="planIdTextBox" TextWrapping="Wrap"  Width="200" Grid.Column="1" Grid.Row="3" Margin="5" HorizontalAlignment="Left"/>
+            <Label Content="Target Voume ID:" Grid.Column="0" Grid.Row="4" Margin="5" HorizontalAlignment="Right"/>
+            <TextBox x:Name="TargetIdTextBox" TextWrapping="Wrap"  Width="200" Grid.Column="1" Grid.Row="4" Margin="5" HorizontalAlignment="Left"/>
+            <Label Content="Total Dose[Gy]:" Grid.Column="2" Grid.Row="4" Margin="5" HorizontalAlignment="Right"/>
+            <TextBox x:Name="totalDoseTextBox" TextWrapping="Wrap"  Width="200" Grid.Column="3" Grid.Row="4" Margin="5" HorizontalAlignment="Left"/>
+            <Label Content="DosePerFraction[Gy]:" Grid.Column="0" Grid.Row="5" Margin="5" HorizontalAlignment="Right"/>
+            <TextBox x:Name="dosePerFractionTextBox" TextWrapping="Wrap"  Width="200" Grid.Column="1" Grid.Row="5" Margin="5" HorizontalAlignment="Left"/>
+            <Label Content="No. of Fraction" Grid.Column="2" Grid.Row="5" Margin="5" HorizontalAlignment="Right"/>
+            <TextBox x:Name="noOfFractionTextBox" TextWrapping="Wrap"  Width="200" Grid.Column="3" Grid.Row="5" Margin="5" HorizontalAlignment="Left"/>
+        </Grid>
+        <Expander Header="Plan information" IsExpanded="True" Margin="5">
+            <WrapPanel Margin="5">
+                <CheckBox x:Name="planApproverCheckBox" Content="Planning Approver" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+                <CheckBox x:Name="planApprovevalDateCheckBox" Content="Planning Approval Date" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+                <CheckBox x:Name="planMuCheckBox" Content="MU" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+                <CheckBox x:Name="planEnergyCheckBox" Content="Machine/Energy/Tech./PlanType" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+                <CheckBox x:Name="CMCheckBox" Content="Calculation Model" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+                <CheckBox x:Name="calculationLogCheckBox" Content="Calculation log" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+                <CheckBox x:Name="nModeCheckBox" Content="Normalization Mode" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+                <CheckBox x:Name="cProtocolCheckBox" Content="Clinical Protocol" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+                <CheckBox x:Name="dvhDataCheckBox" Content="DVHdata(Only the structures in the DQP list)" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+
+            </WrapPanel>
+        </Expander>
+        <Expander Header="Analysis" IsExpanded="True" Margin="5">
+            <WrapPanel Margin="5">
+                <CheckBox x:Name="planComplexityCheckBox" Content="Plan Complexity(Modulation Complexity Score, Edge Metric,Leaf Travel Length, Arc Length)" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+             </WrapPanel>
+        </Expander>
+        <Expander Header="Dose Quality Parameters" IsExpanded="True" Margin="5">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="loadParaButton" Content="Load parameters" Margin="0,5,5,5" Padding="5,1" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Click="loadParaButton_Click"/>
+                    <Button x:Name="saveParaButton" Content="Save parameters" Margin="0,5,5,5" Padding="5,1" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Click="saveParaButton_Click"/>
+                </StackPanel>
+                <DataGrid Name="dataGrid" AutoGenerateColumns="False" Height="260"  >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Structure name" Binding="{Binding structureName}" />
+
+                        <DataGridComboBoxColumn Header="DQP type"  
+                        SelectedValueBinding="{Binding DQPtype}"
+                        DisplayMemberPath="Label" 
+                        SelectedValuePath="Value">
+                            <DataGridComboBoxColumn.ItemsSource>
+                                <x:Array Type="{x:Type local:DQPComboBoxItem}">
+                                    <local:DQPComboBoxItem Label=" D" Value="Dose" />
+                                    <local:DQPComboBoxItem Label=" V" Value="Volume" />
+                                    <local:DQPComboBoxItem Label=" DC" Value="DoseComplement" />
+                                    <local:DQPComboBoxItem Label=" CV" Value="ComplementVolume" />
+                                </x:Array>
+                            </DataGridComboBoxColumn.ItemsSource>
+                        </DataGridComboBoxColumn>
+
+                        <DataGridTextColumn Header="Value" Binding="{Binding DQPvalue}" />
+
+                        <DataGridComboBoxColumn Header="Input Unit" 
+                        SelectedValueBinding="{Binding InputUnit}"
+                        DisplayMemberPath="Label" 
+                        SelectedValuePath="Value">
+                            <DataGridComboBoxColumn.ItemsSource>
+                                <x:Array Type="{x:Type local:InputUnitComboBoxItem}">
+                                    <local:InputUnitComboBoxItem Label="Relative[%]" Value="Relative" />
+                                    <local:InputUnitComboBoxItem Label="Absolute[Gy or cc]" Value="Absolute" />
+                                </x:Array>
+                            </DataGridComboBoxColumn.ItemsSource>
+                        </DataGridComboBoxColumn>
+
+                        <DataGridTextColumn Header="" IsReadOnly="True" Width="20" />
+
+                        <DataGridComboBoxColumn Header="Output Unit" 
+                        SelectedValueBinding="{Binding OutputUnit}"
+                        DisplayMemberPath="Label" 
+                        SelectedValuePath="Value">
+                            <DataGridComboBoxColumn.ItemsSource>
+                                <x:Array Type="{x:Type local:OutputUnitComboBoxItem}">
+                                    <local:OutputUnitComboBoxItem Label="Absolute[Gy or cc]" Value="Absolute" />
+                                    <local:OutputUnitComboBoxItem Label="Relative[%]" Value="Relative" />
+                                </x:Array>
+                            </DataGridComboBoxColumn.ItemsSource>
+                        </DataGridComboBoxColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+
+        </Expander>
+        
+        <TextBox x:Name="logTextBox" TextWrapping="Wrap" Text="" IsReadOnly="True" Margin="5" Padding="5"
+                     Height="100"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.CanContentScroll="true"/>
+        <ToolBarPanel VerticalAlignment="Bottom">
+            <Grid>
+                <ProgressBar x:Name="progressBar" Minimum="0" Maximum="100" Value="0" Height="30" Margin="5" IsIndeterminate="false" />
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Name="ProgressTextBlock" Text="" FontSize="18"/>
+            </Grid>
+        </ToolBarPanel>
+
+    </StackPanel>
+
+</Window>

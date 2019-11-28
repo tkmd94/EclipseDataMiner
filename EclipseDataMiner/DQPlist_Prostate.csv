@@ -1,0 +1,13 @@
+strctureName,DQPtype,DQPvalue,InputUnit,OutputUnit
+Prostate,Dose,2,Relative,Absolute
+Prostate,Dose,99,Relative,Absolute
+PTV-PROST,Dose,2,Relative,Absolute
+PTV-PROST,Dose,95,Relative,Absolute
+SV,Dose,98,Relative,Absolute
+PTV-SV,Dose,2,Relative,Absolute
+PTV-SV,Dose,95,Relative,Absolute
+Rectum,Dose,103,Relative,Relative
+Rectum,Volume,100,Relative,Relative
+Rectum,Volume,70,Relative,Relative
+Rectum,Volume,40,Relative,Relative
+Bladder,Volume,60,Relative,Relative
