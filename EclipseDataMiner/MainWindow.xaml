@@ -61,6 +61,7 @@
                 <CheckBox x:Name="calculationLogCheckBox" Content="Calculation log" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
                 <CheckBox x:Name="nModeCheckBox" Content="Normalization Mode" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
                 <CheckBox x:Name="cProtocolCheckBox" Content="Clinical Protocol" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
+                <CheckBox x:Name="optObjectiveCheckBox" Content="Optimization Objectives" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
                 <CheckBox x:Name="dvhDataCheckBox" Content="DVHdata(Only the structures in the DQP list)" Margin="5" Checked="PlanInfo_Checked" Unchecked="PlanInfo_Unchecked"/>
 
             </WrapPanel>

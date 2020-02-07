@@ -107,6 +107,7 @@
     <Compile Include="DQP.cs" />
     <Compile Include="DQPComboBoxItem.cs" />
     <Compile Include="GetClinicalProtocolParameters.cs" />
+    <Compile Include="GetOptimizationSetup.cs" />
     <Compile Include="PlanComplexityAnalysis.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -6,7 +6,7 @@ namespace EclipseDataMiner
 {
     public static class PlanComplexityAnalysis
     {
-        public static string Proccess(Patient patient, PlanSetup planSetup)
+        public static string Proccess(PlanSetup planSetup)
         {
             //Reference
             //Modulation Complexity Score:

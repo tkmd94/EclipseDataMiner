@@ -64,6 +64,8 @@ namespace EclipseDataMiner
             calculationLogCheckBox.IsChecked = false;
             nModeCheckBox.IsChecked = false;
             cProtocolCheckBox.IsChecked = false;
+            optObjectiveCheckBox.IsChecked = false;
+
             dvhDataCheckBox.IsChecked = false;
 
             planComplexityCheckBox.IsChecked = false;
@@ -94,7 +96,7 @@ namespace EclipseDataMiner
                 approvalStatus[2] = PlanSetupApprovalStatus.Unknown;
             }
 
-            checkStatus = new bool[10];
+            checkStatus = new bool[11];
             checkStatus[0] = planApproverCheckBox.IsChecked.Value;
             checkStatus[1] = planApprovevalDateCheckBox.IsChecked.Value;
             checkStatus[2] = planMuCheckBox.IsChecked.Value;
@@ -103,9 +105,11 @@ namespace EclipseDataMiner
             checkStatus[5] = calculationLogCheckBox.IsChecked.Value;
             checkStatus[6] = nModeCheckBox.IsChecked.Value;
             checkStatus[7] = cProtocolCheckBox.IsChecked.Value;
-            checkStatus[8] = dvhDataCheckBox.IsChecked.Value;
+            checkStatus[8] = optObjectiveCheckBox.IsChecked.Value;
 
-            checkStatus[9] = planComplexityCheckBox.IsChecked.Value;
+            checkStatus[9] = dvhDataCheckBox.IsChecked.Value;
+
+            checkStatus[10] = planComplexityCheckBox.IsChecked.Value;
 
             outputFolderPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"\";
             //outputFolderPath = System.Environment.GetEnvironmentVariable("TEMP") + "\\";
@@ -319,7 +323,12 @@ namespace EclipseDataMiner
                 {
                     outputHeaderText += "Clinical Protocol" + "\t";
                 }
-                if (checkStatus[9] == true)
+                if (checkStatus[8] == true)
+                {
+                    outputHeaderText += "Optimization Objectives" + "\t";
+                }
+
+                if (checkStatus[10] == true)
                 {
                     outputHeaderText += "PlanComplexity(Beam ID:MCS,EM[mm-1],LeafTravel[mm],ArcLength[deg])" + "\t";
                 }
@@ -686,12 +695,17 @@ namespace EclipseDataMiner
             {
                 outputText += GetClinicalProtocolParameters.GetParameters(openPat, ps) + "\t";
             }
-            if (checkStatus[9] == true)
+            if (checkStatus[8] == true)
             {
-                outputText += PlanComplexityAnalysis.Proccess(openPat, ps) + "\t";
+                outputText += GetOptimizationSetup.GetObjectivesParameters(ps) + "\t";
             }
 
-            outputText = ReportDVHstatistics(openPat, ps, DQPList, outputText, outputFolderPath, outputFilename, checkStatus[8]);
+            if (checkStatus[10] == true)
+            {
+                outputText += PlanComplexityAnalysis.Proccess(ps) + "\t";
+            }
+
+            outputText = ReportDVHstatistics(openPat, ps, DQPList, outputText, outputFolderPath, outputFilename, checkStatus[9]);
             reportFile.WriteLine(outputText);
         }
 
@@ -977,13 +991,17 @@ namespace EclipseDataMiner
                 {
                     checkStatus[7] = true;
                 }
-                else if (checkBox.Name == dvhDataCheckBox.Name)
+                else if (checkBox.Name == optObjectiveCheckBox.Name)
                 {
                     checkStatus[8] = true;
                 }
-                else if (checkBox.Name == planComplexityCheckBox.Name)
+                else if (checkBox.Name == dvhDataCheckBox.Name)
                 {
                     checkStatus[9] = true;
+                }
+                else if (checkBox.Name == planComplexityCheckBox.Name)
+                {
+                    checkStatus[10] = true;
                 }
                 else if (checkBox.Name == unApprovedCheckBox.Name)
                 {
@@ -1042,13 +1060,17 @@ namespace EclipseDataMiner
                 {
                     checkStatus[7] = false;
                 }
-                else if (checkBox.Name == dvhDataCheckBox.Name)
+                else if (checkBox.Name == optObjectiveCheckBox.Name)
                 {
                     checkStatus[8] = false;
                 }
-                else if (checkBox.Name == planComplexityCheckBox.Name)
+                else if (checkBox.Name == dvhDataCheckBox.Name)
                 {
                     checkStatus[9] = false;
+                }
+                else if (checkBox.Name == planComplexityCheckBox.Name)
+                {
+                    checkStatus[10] = false;
                 }
                 else if (checkBox.Name == unApprovedCheckBox.Name)
                 {
