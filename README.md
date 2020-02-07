@@ -2,6 +2,8 @@
 
 VARIAN社製治療計画装置Eclipse上で利用できるデータマイニング用のスタンドアロン型スクリプトです。  
 
+[![LicenseBadges](https://badges.frapsoft.com/os/mit/mit.svg?v=102)](https://github.com/ellerbrock/open-source-badge/)  
+
 ## 導入方法
 
 本スクリプトはスタンドアロン型となるため、事前にビルドして実行ファイルを生成する必要があります。  
