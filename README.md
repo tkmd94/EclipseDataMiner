@@ -65,6 +65,7 @@ VARIAN社製治療計画装置Eclipse上で利用できるデータマイニン�
 - Calculation Log: 各フィールドの線量計算ログ
 - Normalization Mode: 線量正規化方法
 - Clinical Protocol: クリニカルプロトコルパラメータ
+- Optimization Objectives:　最適化パラメータ
 - DVHdata(Only the structures in the DQP list): DQPリストにあるstructureのDVHデータを個別保存
 
 ### Analysis（解析）
