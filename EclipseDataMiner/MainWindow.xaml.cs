@@ -804,7 +804,7 @@ namespace EclipseDataMiner
                                     DoseValue doseValue = ps.GetDoseAtVolume(targetStructure, row.DQPvalue,
                                         row.InputUnit == IOUnit.Relative ? VolumePresentation.Relative : VolumePresentation.AbsoluteCm3,
                                         row.OutputUnit == IOUnit.Relative ? DoseValuePresentation.Relative : DoseValuePresentation.Absolute);
-                                    msg += doseValue.ToString() + "\t";
+                                    msg += doseValue.Dose.ToString() + "\t";
                                 }
                                 else if (row.DQPtype == DQPtype.Volume)
                                 {
@@ -830,7 +830,7 @@ namespace EclipseDataMiner
                                     DoseValue doseValue = ps.GetDoseAtVolume(targetStructure, subVolume,
                                         row.InputUnit == IOUnit.Relative ? VolumePresentation.Relative : VolumePresentation.AbsoluteCm3,
                                         row.OutputUnit == IOUnit.Relative ? DoseValuePresentation.Relative : DoseValuePresentation.Absolute);
-                                    msg += doseValue.ToString() + "\t";
+                                    msg += doseValue.Dose.ToString() + "\t";
 
                                 }
                                 else if (row.DQPtype == DQPtype.ComplementVolume)
