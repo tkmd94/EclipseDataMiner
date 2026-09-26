@@ -8,11 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **検索結果テーブルに「Dose」列（線量有無）を追加**: Plan Search 結果の DataGrid に線量計算の有無を ✔ / — で表示する「Dose」列を新設。PlanSetup は `TotalDose > 0` で判定、PlanSum は `sum.Dose != null` で判定。
-- **リリースバイナリへのバージョン番号付与**: `release/` フォルダに配備される実行ファイルを `EclipseDataMiner_v3.0.exe` にリネーム。バージョンの識別を容易に。
-- **PDF マニュアルの release/ 自動同期**: `test.bat` の Release Artifacts 同期ステップに PDF マニュアルの自動コピーを追加。
+- **リリースバイナリへのバージョン番号付与**: `release/` フォルダに配備される実行ファイルを `EclipseDataMiner_v3.0.0.exe` にリネーム。バージョンの識別を容易に。
+- **PDF マニュアルの release/ 自動同期**: `test.bat` の Release Artifacts 同期ステップに PDF マニュアル (`EclipseDataMiner_v3.0.0_Manual.pdf` / `EclipseDataMiner_Manual.pdf`) の自動コピーを追加。
 
 ### Changed
-- **バージョン 3.0 へのメジャーアップデート**: AssemblyVersion、UI タイトル、全ドキュメント（README, MANUAL, ARCHITECTURE, DESIGN_SPECIFICATION, COMMISSIONING, TROUBLESHOOTING, CONTRIBUTING）のバージョン表記を v3.0 に統一。
+- **バージョン 3.0.0 へのメジャーアップデート**: AssemblyVersion、ProductVersion (`AssemblyInformationalVersion("3.0.0")`)、UI タイトル、全ドキュメントのバージョン表記を v3.0.0 に統一。
 
 ## [2.4.0] - 2026-09-25
 

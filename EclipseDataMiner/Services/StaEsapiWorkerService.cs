@@ -38,7 +38,8 @@ namespace EclipseDataMiner.Services
             SearchFilterCriteria criteria,
             IList<StructureMappingRule> mappingRules,
             IProgress<ExtractionProgressInfo> progress,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            HashSet<string> targetPlanKeys = null)
         {
             var tcs = new TaskCompletionSource<List<DiscoveredStructureItem>>();
 
@@ -54,11 +55,27 @@ namespace EclipseDataMiner.Services
                     int total = patientSummaries.Count;
                     int count = 0;
 
+                    HashSet<string> targetPatientIds = null;
+                    if (targetPlanKeys != null && targetPlanKeys.Count > 0)
+                    {
+                        targetPatientIds = new HashSet<string>(
+                            targetPlanKeys.Select(k => k.Split('|')[0]),
+                            StringComparer.OrdinalIgnoreCase);
+                    }
+
                     foreach (var patsum in patientSummaries)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        if (!SearchFilterService.ShouldSkipPatient(patsum.Id, criteria))
+                        // 選択されたプラン一覧がある場合、その対象患者でなければ高速スキップ
+                        if (targetPatientIds != null && !targetPatientIds.Contains(patsum.Id))
+                        {
+                            count++;
+                            continue;
+                        }
+
+                        // 選択患者であるか、または検索条件に合致する患者のみオープン
+                        if (targetPatientIds != null || !SearchFilterService.ShouldSkipPatient(patsum.Id, criteria))
                         {
                             Patient pat = null;
                             try
@@ -66,7 +83,7 @@ namespace EclipseDataMiner.Services
                                 pat = app.OpenPatient(patsum);
                                 if (pat != null)
                                 {
-                                    ScanPatientStructures(pat, criteria, structureCountMap, cancellationToken);
+                                    ScanPatientStructures(pat, criteria, structureCountMap, cancellationToken, targetPlanKeys);
                                 }
                             }
                             catch (OperationCanceledException)
@@ -273,11 +290,25 @@ namespace EclipseDataMiner.Services
                     int processedCount = 0;
                     int extractedPlanCount = 0;
 
+                    HashSet<string> targetPatientIds = null;
+                    if (targetPlanKeys != null && targetPlanKeys.Count > 0)
+                    {
+                        targetPatientIds = new HashSet<string>(
+                            targetPlanKeys.Select(k => k.Split('|')[0]),
+                            StringComparer.OrdinalIgnoreCase);
+                    }
+
                     foreach (var patsum in patientSummaries)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        if (!SearchFilterService.ShouldSkipPatient(patsum.Id, criteria))
+                        if (targetPatientIds != null && !targetPatientIds.Contains(patsum.Id))
+                        {
+                            processedCount++;
+                            continue;
+                        }
+
+                        if (targetPatientIds != null || !SearchFilterService.ShouldSkipPatient(patsum.Id, criteria))
                         {
                             Patient pat = null;
                             try
@@ -360,7 +391,8 @@ namespace EclipseDataMiner.Services
             Patient patient,
             SearchFilterCriteria criteria,
             Dictionary<string, int> structureCountMap,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            HashSet<string> targetPlanKeys = null)
         {
             foreach (Course course in patient.Courses)
             {
@@ -372,6 +404,12 @@ namespace EclipseDataMiner.Services
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
+                    string planKey = $"{patient.Id}|{course.Id}|{plan.Id}";
+                    if (targetPlanKeys != null && targetPlanKeys.Count > 0 && !targetPlanKeys.Contains(planKey))
+                    {
+                        continue;
+                    }
+
                     string targetId = plan.TargetVolumeID;
                     double? dosePerFr = GetSafePlanDose(plan.DosePerFraction);
                     int? numFr = plan.NumberOfFractions;
@@ -382,7 +420,11 @@ namespace EclipseDataMiner.Services
                     DateTime? targetDate = ResolvePlanDate(allDates.CreationDate, allDates.PlanningApprovalDate, allDates.TreatmentApprovalDate, criteria.DateTarget);
                     var beamRecords = ExtractBeamRecords(plan);
 
-                    if (SearchFilterService.IsPlanMatch(patient.Id, course.Id, plan.Id, targetId, dosePerFr, numFr, totalDose, status, false, targetDate, beamRecords, criteria))
+                    bool planMatches = (targetPlanKeys != null && targetPlanKeys.Count > 0)
+                        ? targetPlanKeys.Contains(planKey)
+                        : SearchFilterService.IsPlanMatch(patient.Id, course.Id, plan.Id, targetId, dosePerFr, numFr, totalDose, status, false, targetDate, beamRecords, criteria);
+
+                    if (planMatches)
                     {
                         if (plan.StructureSet != null)
                         {
@@ -406,6 +448,13 @@ namespace EclipseDataMiner.Services
                     foreach (PlanSum sum in course.PlanSums)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
+
+                        string sumKey = $"{patient.Id}|{course.Id}|{sum.Id}";
+                        if (targetPlanKeys != null && targetPlanKeys.Count > 0 && !targetPlanKeys.Contains(sumKey))
+                        {
+                            continue;
+                        }
+
                         string status = "PlanSum";
                         DateTime? sumCreation = null;
                         try { sumCreation = sum.CreationDateTime; } catch { }
@@ -413,7 +462,11 @@ namespace EclipseDataMiner.Services
                         try { sumHasDose = sum.Dose != null; } catch { }
                         double? sumDoseMarker = sumHasDose ? 1.0 : (double?)null;
 
-                        if (SearchFilterService.IsPlanMatch(patient.Id, course.Id, sum.Id, null, null, null, sumDoseMarker, status, true, sumCreation, null, criteria))
+                        bool sumMatches = (targetPlanKeys != null && targetPlanKeys.Count > 0)
+                            ? targetPlanKeys.Contains(sumKey)
+                            : SearchFilterService.IsPlanMatch(patient.Id, course.Id, sum.Id, null, null, null, sumDoseMarker, status, true, sumCreation, null, criteria);
+
+                        if (sumMatches)
                         {
                             if (sum.StructureSet != null)
                             {
@@ -582,7 +635,11 @@ namespace EclipseDataMiner.Services
                     DateTime? targetDate = ResolvePlanDate(plan, criteria.DateTarget);
                     var beamRecords = ExtractBeamRecords(plan);
 
-                    if (SearchFilterService.IsPlanMatch(patient.Id, course.Id, plan.Id, targetId, dosePerFr, numFr, totalDose, status, false, targetDate, beamRecords, criteria))
+                    bool planMatches = (targetPlanKeys != null && targetPlanKeys.Count > 0)
+                        ? targetPlanKeys.Contains(planKey)
+                        : SearchFilterService.IsPlanMatch(patient.Id, course.Id, plan.Id, targetId, dosePerFr, numFr, totalDose, status, false, targetDate, beamRecords, criteria);
+
+                    if (planMatches)
                     {
                         var record = BuildPlanSetupRecord(patient, course, plan, options, dqpDefinitions, mappingRules, cancellationToken);
                         pipeline.WritePlanRecord(record);
@@ -610,7 +667,11 @@ namespace EclipseDataMiner.Services
                         try { sumHasDose = sum.Dose != null; } catch { }
                         double? sumDoseMarker = sumHasDose ? 1.0 : (double?)null;
 
-                        if (SearchFilterService.IsPlanMatch(patient.Id, course.Id, sum.Id, null, null, null, sumDoseMarker, status, true, sumCreation, null, criteria))
+                        bool sumMatches = (targetPlanKeys != null && targetPlanKeys.Count > 0)
+                            ? targetPlanKeys.Contains(sumKey)
+                            : SearchFilterService.IsPlanMatch(patient.Id, course.Id, sum.Id, null, null, null, sumDoseMarker, status, true, sumCreation, null, criteria);
+
+                        if (sumMatches)
                         {
                             var record = BuildPlanSumRecord(patient, course, sum, options, dqpDefinitions, mappingRules, cancellationToken);
                             pipeline.WritePlanRecord(record);
@@ -772,14 +833,29 @@ namespace EclipseDataMiner.Services
                     ArcLength = b.ArcLength
                 };
 
-                if (options.ExportCalculationLog && b.CalculationLogs != null)
+                if (options.ExportCalculationLog)
                 {
-                    foreach (var log in b.CalculationLogs)
+                    record.CalculationLogs.Add($"#B{beamCount}#");
+
+                    if (b.CalculationLogs != null)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        foreach (var line in log.MessageLines)
+                        foreach (var log in b.CalculationLogs)
                         {
-                            beamRecord.CalculationLogs.Add(StringSanitizer.EscapeCsv(line));
+                            cancellationToken.ThrowIfCancellationRequested();
+                            if (log.MessageLines == null) continue;
+
+                            int lineIdx = 0;
+                            foreach (var line in log.MessageLines)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                string cleanedLine = line?.Replace("\r\n", " ")
+                                                          .Replace("\n", " ")
+                                                          .Replace("\r", " ") ?? string.Empty;
+                                string logEntry = $"LOG:{lineIdx}{cleanedLine}";
+                                beamRecord.CalculationLogs.Add(logEntry);
+                                record.CalculationLogs.Add(logEntry);
+                                lineIdx++;
+                            }
                         }
                     }
                 }

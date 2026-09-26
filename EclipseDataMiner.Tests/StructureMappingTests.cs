@@ -532,6 +532,31 @@ namespace EclipseDataMiner.Tests
             Assert.IsTrue(res5.IsSelected);
             Assert.AreEqual("Lung_Right_Upper", res5.TargetAlias);
         }
+
+        [TestMethod]
+        [Description("Plan Search から渡される MatchedPlanItem の UniqueKey と患者ID抽出（パイプ区切り）の整合性を検証")]
+        public void TargetPlanKey_PipeDelimiter_ShouldExtractPatientIdAndMatchPlan()
+        {
+            var planItem = new MatchedPlanItem
+            {
+                PatientId = "12345",
+                CourseId = "C1",
+                PlanId = "Prostate_VMAT",
+                IsSelected = true
+            };
+
+            // UniqueKey の書式（パイプ区切り）
+            Assert.AreEqual("12345|C1|Prostate_VMAT", planItem.UniqueKey);
+
+            // パイプ区切りからの患者ID抽出
+            var patientId = planItem.UniqueKey.Split('|')[0];
+            Assert.AreEqual("12345", patientId);
+
+            // ターゲットキーとの一致判定
+            var targetKeys = new HashSet<string> { planItem.UniqueKey };
+            string runtimePlanKey = $"12345|C1|Prostate_VMAT";
+            Assert.IsTrue(targetKeys.Contains(runtimePlanKey));
+        }
     }
 }
 

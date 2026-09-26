@@ -15,6 +15,18 @@ import subprocess
 import time
 from datetime import datetime
 
+# Windows コンソールでの文字化け・UnicodeEncodeError防止
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+if sys.stderr.encoding != 'utf-8':
+    try:
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 try:
     import mistune
 except ImportError:
@@ -88,8 +100,16 @@ DOCUMENTS = [
         "remove_first_h1": True
     },
     {
-        "file": "docs/CHANGELOG.md",
+        "file": "docs/STANDARD_DEVELOPMENT_PLAN.md",
         "chapter_num": 8,
+        "badge": "第8章",
+        "title": "標準開発計画仕様書 (SDLP)",
+        "desc": "7大品質原則（測度空間整合性、エプシロン分離等）、4層 DoD ゲート、およびリリース規約",
+        "remove_first_h1": True
+    },
+    {
+        "file": "docs/CHANGELOG.md",
+        "chapter_num": 9,
         "badge": "付録",
         "title": "更新履歴 (Changelog)",
         "desc": "v3.0.0 / v2.4.0 / v2.3.0 リリースノート、主要マイルストーン、および更新履歴",
@@ -102,6 +122,19 @@ def strip_yaml_frontmatter(content):
     """YAML Frontmatter (--- ... ---) を除去"""
     pattern = r'^---\s*\n.*?\n---\s*\n'
     return re.sub(pattern, '', content, flags=re.DOTALL)
+
+
+def format_inline_markdown(text):
+    """Callout 内部のインラインマークダウン (コード、太字、リンク等) を HTML タグへ変換"""
+    # Inline code: `code` -> <code>code</code>
+    text = re.sub(r'`([^`\n]+)`', r'<code>\1</code>', text)
+    # Bold: **bold** -> <strong>bold</strong>
+    text = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', text)
+    # Italic: *italic* -> <em>italic</em>
+    text = re.sub(r'(?<!\*)\*([^*\n]+)\*(?!\*)', r'<em>\1</em>', text)
+    # Markdown links: [text](url) -> <a href="\2">\1</a>
+    text = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', text)
+    return text
 
 
 def convert_github_callouts(content):
@@ -127,12 +160,12 @@ def convert_github_callouts(content):
 
             body_lines = []
             if first_text:
-                body_lines.append(first_text)
+                body_lines.append(format_inline_markdown(first_text))
 
             i += 1
             while i < len(lines) and lines[i].startswith('>'):
                 sub_line = re.sub(r'^>\s?', '', lines[i])
-                body_lines.append(sub_line)
+                body_lines.append(format_inline_markdown(sub_line))
                 i += 1
 
             body_text = "<br>".join(body_lines)
@@ -224,7 +257,7 @@ def preprocess_markdown(file_path, chapter_info, repo_root):
 
 '''
     # PDF 印刷時の絵文字フォールバック対策（特定絵文字の正規化）
-    content = content.replace("📋", "📄").replace("📏", "📐").replace("📕", "📖")
+    content = content.replace("📋", "📄").replace("📏", "📐").replace("📕", "📖").replace("🩺", "🏥")
 
     return banner_html + content
 
@@ -241,7 +274,7 @@ def generate_css():
         content: 'EclipseDataMiner v3.0.0 臨床技術マニュアル';
         font-size: 8.5pt;
         color: #64748B;
-        font-family: 'Noto Sans JP', 'Segoe UI', Meiryo, sans-serif;
+        font-family: 'Noto Sans JP', 'BIZ UDPGothic', 'Yu Gothic UI', Meiryo, sans-serif;
         border-bottom: 1px solid #CBD5E1;
         padding-bottom: 4px;
         vertical-align: bottom;
@@ -250,7 +283,7 @@ def generate_css():
         content: 'Varian Eclipse ESAPI Standalone Tool';
         font-size: 8.5pt;
         color: #64748B;
-        font-family: 'Noto Sans JP', 'Segoe UI', Meiryo, sans-serif;
+        font-family: 'Noto Sans JP', 'BIZ UDPGothic', 'Yu Gothic UI', Meiryo, sans-serif;
         border-bottom: 1px solid #CBD5E1;
         padding-bottom: 4px;
         vertical-align: bottom;
@@ -259,7 +292,7 @@ def generate_css():
         content: 'Confidential - Radiation Oncology & Medical Physics';
         font-size: 8.5pt;
         color: #94A3B8;
-        font-family: 'Noto Sans JP', 'Segoe UI', Meiryo, sans-serif;
+        font-family: 'Noto Sans JP', 'BIZ UDPGothic', 'Yu Gothic UI', Meiryo, sans-serif;
         vertical-align: top;
         padding-top: 6px;
     }
@@ -267,7 +300,7 @@ def generate_css():
         content: 'Page ' counter(page);
         font-size: 8.5pt;
         color: #94A3B8;
-        font-family: 'Noto Sans JP', 'Segoe UI', Meiryo, sans-serif;
+        font-family: 'Noto Sans JP', 'BIZ UDPGothic', 'Yu Gothic UI', Meiryo, sans-serif;
         vertical-align: top;
         padding-top: 6px;
     }
@@ -278,7 +311,7 @@ def generate_css():
 }
 
 body {
-    font-family: 'Noto Sans JP', 'Segoe UI Emoji', 'Segoe UI', Meiryo, 'Hiragino Sans', sans-serif;
+    font-family: 'Noto Sans JP', 'BIZ UDPGothic', 'Yu Gothic UI', 'Meiryo', 'Hiragino Sans', sans-serif;
     font-size: 9.5pt;
     line-height: 1.68;
     color: #334155;
@@ -606,13 +639,14 @@ tr:nth-child(odd) td {
    コードブロック & インラインコード
    ======================================================== */
 code {
-    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-family: 'JetBrains Mono', 'Consolas', 'BIZ UDGothic', monospace;
     font-size: 8.5pt;
     background-color: #F1F5F9;
     color: #0F172A;
     padding: 2px 5px;
     border-radius: 4px;
     border: 1px solid #E2E8F0;
+    word-break: break-word;
 }
 
 pre {
@@ -621,9 +655,12 @@ pre {
     border: 1px solid #CBD5E1;
     padding: 12px 16px;
     border-radius: 6px;
-    overflow-x: auto;
-    font-family: 'JetBrains Mono', 'Consolas', monospace;
-    font-size: 8.3pt;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow: visible;
+    font-family: 'JetBrains Mono', 'Consolas', 'BIZ UDGothic', monospace;
+    font-size: 8.2pt;
     line-height: 1.5;
     margin: 12px 0 16px 0;
     page-break-inside: avoid;
@@ -786,12 +823,12 @@ def generate_cover_html():
     </div>
     <div class="meta-card">
       <div class="meta-card-label">Validation Status</div>
-      <div class="meta-card-value">107/107 Tests Passed (100% PASS)</div>
+      <div class="meta-card-value">111/111 Tests Passed (100% PASS)</div>
     </div>
   </div>
   <div class="cover-footer-meta">
     <div>Department of Radiation Oncology &amp; Medical Physics</div>
-    <div>Document ID: EDM-MAN-2026-V240 • September 26, 2026</div>
+    <div>Document ID: EDM-MAN-2026-V300 • September 26, 2026</div>
   </div>
 </div>
 """
@@ -951,7 +988,7 @@ mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
         sys.exit(1)
 
     print(f"[*] Printing PDF via headless browser: {browser_exe}...")
-    output_pdf_name = "EclipseDataMiner_Manual.pdf"
+    output_pdf_name = "EclipseDataMiner_v3.0.0_Manual.pdf"
     temp_pdf_path = os.path.join(script_dir, "_temp_print_manual.pdf")
 
     cmd = [
@@ -985,24 +1022,38 @@ mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
         page = doc[i]
         text = page.get_text()
 
-        # HTMLタグ漏れチェック
+        # 1. HTMLタグ漏れチェック
         if "&lt;div" in text or "&lt;br" in text or "<div class=" in text or "</div>" in text:
             lint_issues.append(f"Page {i+1}: Unrendered HTML tag detected.")
 
-        # 豆腐文字・不正エンコーディング記号チェック
+        # 2. 豆腐文字・不正エンコーディング記号チェック
         if "\ufffd" in text:
             lint_issues.append(f"Page {i+1}: Replacement character (\\ufffd) detected.")
+
+        # 3. 横スクロールバー起因の Fluent Icon チェック
+        d = page.get_text("dict")
+        for b in d.get("blocks", []):
+            for l in b.get("lines", []):
+                for s in l.get("spans", []):
+                    stext = s.get("text", "")
+                    if any(c in stext for c in ['\uedd9', '\uedda']):
+                        lint_issues.append(f"Page {i+1}: Scrollbar Fluent icon detected (overflow).")
+
+        # 4. Callout 内未レンダリング Markdown チェック
+        for line in text.splitlines():
+            if "**" in line and not line.strip().startswith("```"):
+                lint_issues.append(f"Page {i+1}: Unrendered markdown bold (**) in line: {line.strip()[:60]}")
 
     if lint_issues:
         print(f"[WARN] {len(lint_issues)} potential issues detected:")
         for issue in lint_issues:
             print(f"  - {issue}")
     else:
-        print(f"[+] Quality Validation PASSED: All {total_pages} pages clean without raw HTML or encoding artifacts.")
+        print(f"[+] Quality Validation PASSED: All {total_pages} pages clean without raw HTML, scrollbar artifacts, or encoding errors.")
 
     doc.close()
 
-    # 5. 成果物の配備同期 (Root, docs/, release/)
+    # 5. 成果物の配備同期 (Root, docs/, release/) - 単一の公式名称に統一整理
     print("[*] Synchronizing PDF artifacts...")
     deploy_targets = [
         os.path.join(repo_root, output_pdf_name),
@@ -1016,6 +1067,18 @@ mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
             os.makedirs(target_dir, exist_ok=True)
         shutil.copyfile(temp_pdf_path, target)
         print(f"  -> Deployed: {os.path.relpath(target, repo_root)}")
+
+    # 旧名称・重複PDFのクリーンアップ（名称統一・整理）
+    legacy_names = ["EclipseDataMiner_Manual.pdf", "EclipseDataMiner_Manual_v3.0.0.pdf"]
+    for d in [repo_root, os.path.join(repo_root, "docs"), os.path.join(repo_root, "release")]:
+        for leg in legacy_names:
+            p = os.path.join(d, leg)
+            if os.path.exists(p):
+                try:
+                    os.remove(p)
+                    print(f"  -> Removed redundant PDF: {os.path.relpath(p, repo_root)}")
+                except Exception:
+                    pass
 
     # 中間ファイルのクリーンアップ
     for temp_f in [temp_html_path, temp_pdf_path]:

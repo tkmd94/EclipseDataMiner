@@ -294,5 +294,59 @@ namespace EclipseDataMiner.Tests
             Assert.AreSame(d1, vm.SelectedDqp);
             Assert.IsTrue(vm.DeleteDqpCommand.CanExecute(null));
         }
+
+        [TestMethod]
+        [Description("MainWindow のハードコード排除: WindowTitle がアセンブリの ProductVersion (InformationalVersion) から動的に取得されることを検証")]
+        public void WindowTitle_ShouldDeriveDynamicallyFromProductVersion()
+        {
+            // Arrange
+            var vm = new MainViewModel();
+
+            // Act
+            string productVer = MainViewModel.GetProductVersion();
+            string title = vm.WindowTitle;
+
+            // Assert: ProductVersion が 3.0.0 であり、タイトルに含まれていること
+            Assert.AreEqual("3.0.0", productVer);
+            Assert.IsTrue(title.Contains("v3.0.0"), $"Title '{title}' does not contain 'v3.0.0'");
+            Assert.IsTrue(title.StartsWith("EclipseDataMiner"));
+            Assert.IsTrue(title.Contains("High-Throughput Clinical ESAPI Data Mining Platform"));
+        }
+
+        [TestMethod]
+        [Description("Plan Search で選択された計画数に応じて Tab 2 の事前スキャンスコープバッジ (PreScanScopeBadgeText) がリアルタイムに更新されることを検証")]
+        public void PreScanScopeBadgeText_ShouldReflectMatchedPlansSelection()
+        {
+            // Arrange
+            var vm = new MainViewModel();
+
+            // 初期状態: 検索前
+            Assert.AreEqual("🌐 Target: All Criteria Matching Plans", vm.PreScanScopeBadgeText);
+
+            // Act 1: 検索結果が3件追加（初期状態はすべて IsSelected = true）
+            var p1 = new EclipseDataMiner.Models.MatchedPlanItem { PatientId = "PT1", CourseId = "C1", PlanId = "Plan1", IsSelected = true };
+            var p2 = new EclipseDataMiner.Models.MatchedPlanItem { PatientId = "PT1", CourseId = "C1", PlanId = "Plan2", IsSelected = true };
+            var p3 = new EclipseDataMiner.Models.MatchedPlanItem { PatientId = "PT2", CourseId = "C1", PlanId = "Plan1", IsSelected = true };
+            vm.MatchedPlans.Add(p1);
+            vm.MatchedPlans.Add(p2);
+            vm.MatchedPlans.Add(p3);
+            vm.UpdateMatchedPlansSummary();
+
+            // Assert 1: 3/3 選択表示
+            Assert.AreEqual("🎯 Target: 3 / 3 Selected Plans", vm.PreScanScopeBadgeText);
+
+            // Act 2: 1件チェック解除
+            p2.IsSelected = false;
+            vm.UpdateMatchedPlansSummary();
+
+            // Assert 2: 2/3 選択表示
+            Assert.AreEqual("🎯 Target: 2 / 3 Selected Plans", vm.PreScanScopeBadgeText);
+
+            // Act 3: 全解除
+            vm.ExecuteSelectAllPlans(false);
+
+            // Assert 3: 0/3 選択表示
+            Assert.AreEqual("🎯 Target: 0 / 3 Selected Plans", vm.PreScanScopeBadgeText);
+        }
     }
 }

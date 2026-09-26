@@ -1,10 +1,10 @@
-# EclipseDataMiner (v3.0)
+# EclipseDataMiner (v3.0.0)
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![Platform](https://img.shields.io/badge/.NET%20Framework-4.6.1-blue.svg)]()
 [![Target](https://img.shields.io/badge/Architecture-x64-orange.svg)]()
 [![Eclipse](https://img.shields.io/badge/Eclipse-v15.6%20%7C%20v16.1-purple.svg)]()
-[![Tests](https://img.shields.io/badge/MSTest-108%2F108%20PASS-success.svg)]()
+[![Tests](https://img.shields.io/badge/MSTest-111%2F111%20PASS-success.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**10,000 件規模の治療計画データマイニング・スタンドアロンアプリケーション** です。  
@@ -12,7 +12,7 @@ Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**
 
 ---
 
-## 🌟 主な特徴と新機能 (v3.0)
+## 🌟 主な特徴と新機能 (v3.0.0)
 
 - 🚀 **10,000 件規模のストリーミング出力パイプライン**:
   - 全データをメモリに溜め込まず、1 患者・1 プランごとにディスクへ即時フラッシュ。長時間実行時もメモリ消費を数十 MB 程度で平坦に維持。
@@ -52,11 +52,11 @@ Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**
 本ツールはスタンドアロン型実行ファイルです。
 
 1. **ビルドまたは配布パッケージの取得**:
-   - `release\EclipseDataMiner_v3.0.exe` を取得します（または `EclipseDataMiner\bin\x64\Release\EclipseDataMiner.exe`）。
+   - `release\EclipseDataMiner_v3.0.0.exe` を取得します（または `EclipseDataMiner\bin\x64\Release\EclipseDataMiner.exe`）。
 2. **Eclipse 端末への配置**:
-   - 取得した `EclipseDataMiner_v3.0.exe` を Eclipse 端末上の任意のフォルダに配置します。
+   - 取得した `EclipseDataMiner_v3.0.0.exe` を Eclipse 端末上の任意のフォルダに配置します。
 3. **起動**:
-   - `EclipseDataMiner_v3.0.exe` をダブルクリックして起動します。
+   - `EclipseDataMiner_v3.0.0.exe` をダブルクリックして起動します。
 
 ---
 
@@ -71,9 +71,13 @@ Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**
 メイン画面は番号付きの 4 つのタブで構成され、左から右へ直感的に設定を進めることができます：
 
 ```
-[1- Plan Search]    -->  [2- Structure Mapping]  -->  [3- DQP 設定]  -->  [4- Options & 出力先]  -->  [最下部: Run]
- 検索条件指定・プリセット  輪郭事前スキャン           線量指標 (D95%等)      出力先 CSV パス指定       ワンクリック抽出
- プラン検索・一覧で選択    エイリアスマッピング                             匿名化・JSONL オプション  進捗バー・中断対応
+[1- Plan Search]       ->  [2- Structure Mapping]  ->  [3- DQP 設定]
+ 検索条件指定・プリセット   輪郭事前スキャン            線量評価指標 (D95%等)
+ プラン検索・一覧で選択     エイリアスマッピング
+       ↓
+[4- Options & 出力先]  ->  [最下部: 実行コントロール]
+ 出力先 CSV/JSONL 指定     [▶ Run Extraction] ワンクリック抽出
+ 複雑度・匿名化設定        リアルタイム進捗監視・中断対応
 ```
 
 1. **Tab 1: 1- 📋 Plan Search**:
@@ -133,14 +137,14 @@ Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**
 | ドキュメント | 概要・対象読者 |
 | :--- | :--- |
 | 📐 **[アーキテクチャ設計書 (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md)** | レイヤー構造、STAスレッドモデル、メモリ安全管理、シーケンス図 |
-| 🩺 **[臨床コミッショニング手順書 (docs/COMMISSIONING.md)](docs/COMMISSIONING.md)** | TG-275 準拠の受入試験手順書、検証チェックリスト、臨床承認記録票 |
+| 🏥 **[臨床コミッショニング手順書 (docs/COMMISSIONING.md)](docs/COMMISSIONING.md)** | TG-275 準拠の受入試験手順書、検証チェックリスト、臨床承認記録票 |
 | 🔧 **[トラブルシューティング & FAQ (docs/TROUBLESHOOTING.md)](docs/TROUBLESHOOTING.md)** | ESAPI 接続、メモリ不足、ファイルロック等のエラー対処法と FAQ |
 | 🤝 **[開発・コントリビューション規約 (docs/CONTRIBUTING.md)](docs/CONTRIBUTING.md)** | 開発環境構築、ビルド・テスト手順、コーディング規約、コミット規約 |
 | 📖 **[詳細操作マニュアル (docs/MANUAL.md)](docs/MANUAL.md)** | 画面構成、操作手順、事前マッピング、DQP 設定、Python (Pandas/PyTorch) 連携例 |
-| 📋 **[詳細設計仕様書 (docs/DESIGN_SPECIFICATION.md)](docs/DESIGN_SPECIFICATION.md)** | 要件定義、データ抽出仕様、ESAPI 制御詳細仕様 (v2.4) |
+| 📋 **[詳細設計仕様書 (docs/DESIGN_SPECIFICATION.md)](docs/DESIGN_SPECIFICATION.md)** | 要件定義、データ抽出仕様、ESAPI 制御詳細仕様 (v3.0.0) |
 | 🛡️ **[標準開発計画仕様書 (docs/STANDARD_DEVELOPMENT_PLAN.md)](docs/STANDARD_DEVELOPMENT_PLAN.md)** | 7大品質原則、4層 DoD ゲート、自己完結再現性規約 |
 | 📝 **[更新履歴 (docs/CHANGELOG.md)](docs/CHANGELOG.md)** | バージョン別変更履歴 (Keep a Changelog 準拠) |
-| 📖 **[総合技術マニュアル PDF (EclipseDataMiner_Manual.pdf)](EclipseDataMiner_Manual.pdf)** | 全ドキュメントを結合・出版品質でレイアウトした A4 印刷対応 PDF |
+| 📖 **[総合技術マニュアル PDF (release/EclipseDataMiner_v3.0.0_Manual.pdf)](release/EclipseDataMiner_v3.0.0_Manual.pdf)** | 全ドキュメントを結合・出版品質でレイアウトした A4 印刷対応 PDF |
 
 ---
 
@@ -148,7 +152,7 @@ Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**
 
 本プロジェクトは `EclipseDataMiner.Tests` (MSTest) による多層自動テストを配備しており、ESAPI データベース非接続環境でもコアロジックを 100% 検証可能です。
 
-- **テスト件数**: 107 件 (100% PASS)
+- **テスト件数**: 111 件 (100% PASS)
 - **テストカバレッジ**: 線量正規化 (`ToGy()`)、文字列サニタイズ・エスケープ、患者匿名化、CSV/JSONL ストリーミング出力、階層的 AND/OR 検索フィルタ＆UIトグル連動、線量有無判定フィルタ (HasDose/NoDose)、不等号・範囲数値フィルタ、日付・照射野パラメータフィルタ、プリセット管理＆説明文永続化、2ペイン輪郭マッピング＆リアルタイムプレビュー、特異度優先 (Exact > Contains > Regex) ＆ 上下順序制御、JSON 永続化、照射野複雑度解析アルゴリズム（MCS, Edge Metric, Leaf Travel Length, Arc Length 文献値完全一致検証）、XAMLリソース整合性検証
 
 ---

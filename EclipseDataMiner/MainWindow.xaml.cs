@@ -16,7 +16,9 @@ namespace EclipseDataMiner
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel();
+            var vm = new MainViewModel();
+            DataContext = vm;
+            Title = vm.WindowTitle;
         }
 
         /// <summary>

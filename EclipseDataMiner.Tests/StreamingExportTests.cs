@@ -349,5 +349,90 @@ namespace EclipseDataMiner.Tests
                 Assert.AreEqual(1, root.GetProperty("Beams").GetArrayLength());
             }
         }
+
+        [TestMethod]
+        [Description("CalculationLogオプション有効時にビームごとのログ集約(#B1#;LOG:0...;#B2#;LOG:0...)が正しくCSV出力されることを検証")]
+        public void CsvStreamExporter_WhenCalculationLogExportEnabled_ShouldExportAggregatedBeamLogsWithCorrectFormat()
+        {
+            // Arrange
+            string csvPath = Path.Combine(_tempDir, "calclog_export.csv");
+            var options = new ExtractionOptions
+            {
+                ExportCalculationLog = true
+            };
+
+            var record = new ExtractionPlanRecord
+            {
+                PatientId = "PT_CALC_01",
+                CourseId = "C1",
+                PlanId = "Prostate_VMAT",
+                TotalDoseGy = 60.0,
+                DosePerFractionGy = 3.0,
+                NumberOfFractions = 20,
+                NumberOfBeams = 2,
+                CalculationLogs = new List<string>
+                {
+                    "#B1#",
+                    "LOG:0Information: Imaging Device: ID=Def_CTScanner",
+                    "LOG:1Information: Service: AcurosXB",
+                    "#B2#",
+                    "LOG:0Information: Imaging Device: ID=Def_CTScanner",
+                    "LOG:1Information: Service: Photon_Optimizer"
+                }
+            };
+
+            // Act
+            using (var stream = new FileStream(csvPath, FileMode.Create, FileAccess.Write))
+            using (var writer = new StreamWriter(stream, Encoding.UTF8))
+            using (var exporter = new CsvStreamExporter(writer, options, new List<DqpColumnDefinition>()))
+            {
+                exporter.WriteRecord(record);
+            }
+
+            // Assert
+            string[] lines = File.ReadAllLines(csvPath, Encoding.UTF8);
+            Assert.AreEqual(2, lines.Length);
+
+            string header = lines[0];
+            StringAssert.Contains(header, "CalculationLog");
+
+            string row = lines[1];
+            // ビームごとのタグとログインデックスがセミコロンで連結され正しく出力されていること
+            StringAssert.Contains(row, "#B1#;LOG:0Information: Imaging Device: ID=Def_CTScanner;LOG:1Information: Service: AcurosXB;#B2#;LOG:0Information: Imaging Device: ID=Def_CTScanner;LOG:1Information: Service: Photon_Optimizer");
+        }
+
+        [TestMethod]
+        [Description("CalculationLogオプション有効時にログが空の場合はN/Aが出力されることを検証")]
+        public void CsvStreamExporter_WhenCalculationLogEmpty_ShouldExportNA()
+        {
+            // Arrange
+            string csvPath = Path.Combine(_tempDir, "calclog_empty.csv");
+            var options = new ExtractionOptions
+            {
+                ExportCalculationLog = true
+            };
+
+            var record = new ExtractionPlanRecord
+            {
+                PatientId = "PT_EMPTY_LOG",
+                CourseId = "C1",
+                PlanId = "EmptyPlan",
+                CalculationLogs = new List<string>()
+            };
+
+            // Act
+            using (var stream = new FileStream(csvPath, FileMode.Create, FileAccess.Write))
+            using (var writer = new StreamWriter(stream, Encoding.UTF8))
+            using (var exporter = new CsvStreamExporter(writer, options, new List<DqpColumnDefinition>()))
+            {
+                exporter.WriteRecord(record);
+            }
+
+            // Assert
+            string[] lines = File.ReadAllLines(csvPath, Encoding.UTF8);
+            Assert.AreEqual(2, lines.Length);
+            string row = lines[1];
+            StringAssert.Contains(row, "N/A");
+        }
     }
 }

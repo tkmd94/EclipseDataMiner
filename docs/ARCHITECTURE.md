@@ -64,7 +64,7 @@ graph TD
     end
 
     subgraph Test_Layer [品質保証 (EclipseDataMiner.Tests)]
-        Tests[MSTest Unit Tests<br/>107 Tests 100% PASS]
+        Tests[MSTest Unit Tests<br/>111 Tests 100% PASS]
         Tests -.-> DTO_Layer
         Tests -.-> Service_Layer
         Tests -.-> Output_Layer

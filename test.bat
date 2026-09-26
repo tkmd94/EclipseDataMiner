@@ -48,7 +48,9 @@ if %ERRORLEVEL% neq 0 (
 
 echo [4/5] Synchronizing Release Artifacts (release/)...
 if not exist "release" mkdir release
-copy /y "EclipseDataMiner\bin\x64\Release\EclipseDataMiner.exe" "release\EclipseDataMiner_v3.0.exe" >nul
+copy /y "EclipseDataMiner\bin\x64\Release\EclipseDataMiner.exe" "release\EclipseDataMiner_v3.0.0.exe" >nul
+if exist "release\EclipseDataMiner.exe" del /f /q "release\EclipseDataMiner.exe"
+if exist "release\EclipseDataMiner_v3.0.exe" del /f /q "release\EclipseDataMiner_v3.0.exe"
 if exist "EclipseDataMiner\Templates" (
     if not exist "release\Templates" mkdir "release\Templates"
     xcopy /y /e /i "EclipseDataMiner\Templates" "release\Templates" >nul
@@ -57,12 +59,14 @@ if not exist "release\Presets" mkdir "release\Presets"
 if exist "EclipseDataMiner\Presets" (
     copy /y "EclipseDataMiner\Presets\*.json" "release\Presets\" >nul
 )
-if exist "EclipseDataMiner_Manual.pdf" (
-    copy /y "EclipseDataMiner_Manual.pdf" "release\" >nul
+if exist "EclipseDataMiner_v3.0.0_Manual.pdf" (
+    copy /y "EclipseDataMiner_v3.0.0_Manual.pdf" "release\EclipseDataMiner_v3.0.0_Manual.pdf" >nul
 )
+if exist "release\EclipseDataMiner_Manual.pdf" del /f /q "release\EclipseDataMiner_Manual.pdf"
+if exist "release\EclipseDataMiner_Manual_v3.0.0.pdf" del /f /q "release\EclipseDataMiner_Manual_v3.0.0.pdf"
 
 echo [5/5] Smoke Testing Release Binary Startup and UI Load...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase; try { [System.Reflection.Assembly]::LoadFrom((Resolve-Path 'release\EclipseDataMiner_v3.0.exe')) | Out-Null; $app = New-Object EclipseDataMiner.App; $app.InitializeComponent(); $win = New-Object EclipseDataMiner.MainWindow; Write-Host '  [OK] MainWindow and all XAML styles loaded without exception.' } catch { Write-Error ('XAML/Style resolution failed: ' + $_.Exception.ToString()); exit 1 }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase; try { [System.Reflection.Assembly]::LoadFrom((Resolve-Path 'release\EclipseDataMiner_v3.0.0.exe')) | Out-Null; $app = New-Object EclipseDataMiner.App; $app.InitializeComponent(); $win = New-Object EclipseDataMiner.MainWindow; Write-Host '  [OK] MainWindow and all XAML styles loaded without exception.' } catch { Write-Error ('XAML/Style resolution failed: ' + $_.Exception.ToString()); exit 1 }"
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] Release binary UI failed to load!
     exit /b 1

@@ -24,6 +24,61 @@ namespace EclipseDataMiner.ViewModels
         // 抽出オプション
         public ExtractionOptions Options { get; } = new ExtractionOptions();
 
+        // ウィンドウタイトル（アセンブリの ProductVersion から動的取得しハードコードを排除）
+        private string _windowTitle;
+        public string WindowTitle
+        {
+            get
+            {
+                if (_windowTitle != null) return _windowTitle;
+                string productVersion = GetProductVersion();
+                string verStr = !string.IsNullOrEmpty(productVersion)
+                    ? (productVersion.StartsWith("v", StringComparison.OrdinalIgnoreCase) ? productVersion : $"v{productVersion}")
+                    : "v3.0.0";
+                return $"EclipseDataMiner {verStr} - High-Throughput Clinical ESAPI Data Mining Platform";
+            }
+            set => SetProperty(ref _windowTitle, value);
+        }
+
+        /// <summary>
+        /// アセンブリの ProductVersion (AssemblyInformationalVersion) を取得
+        /// </summary>
+        public static string GetProductVersion()
+        {
+            try
+            {
+                var asm = typeof(MainViewModel).Assembly;
+
+                // 1. AssemblyInformationalVersionAttribute の取得（最優先: ProductVersion）
+                var infoAttr = (System.Reflection.AssemblyInformationalVersionAttribute)
+                    System.Attribute.GetCustomAttribute(asm, typeof(System.Reflection.AssemblyInformationalVersionAttribute));
+                if (!string.IsNullOrWhiteSpace(infoAttr?.InformationalVersion))
+                {
+                    return infoAttr.InformationalVersion.Trim();
+                }
+
+                // 2. FileVersionInfo.ProductVersion の取得
+                if (!string.IsNullOrEmpty(asm.Location) && System.IO.File.Exists(asm.Location))
+                {
+                    var vi = System.Diagnostics.FileVersionInfo.GetVersionInfo(asm.Location);
+                    if (!string.IsNullOrWhiteSpace(vi.ProductVersion))
+                    {
+                        return vi.ProductVersion.Trim();
+                    }
+                }
+
+                // 3. Assembly.GetName().Version の取得（フォールバック）
+                var v = asm.GetName().Version;
+                if (v != null)
+                {
+                    return $"{v.Major}.{v.Minor}.{v.Build}";
+                }
+            }
+            catch { }
+
+            return "3.0.0";
+        }
+
         // 検索条件
         private string _patientIdText = string.Empty;
         public string PatientIdText
@@ -445,6 +500,20 @@ namespace EclipseDataMiner.ViewModels
         }
 
         public int MatchedPlansCount => MatchedPlans.Count;
+
+        // Tab 2 (Structure Mapping) の事前スキャン対象スコープバッジ表示
+        public string PreScanScopeBadgeText
+        {
+            get
+            {
+                if (MatchedPlans.Count > 0)
+                {
+                    int selected = MatchedPlans.Count(p => p.IsSelected);
+                    return $"🎯 Target: {selected} / {MatchedPlans.Count} Selected Plans";
+                }
+                return "🌐 Target: All Criteria Matching Plans";
+            }
+        }
 
         // コマンド
         public IRelayCommand SearchPlansCommand { get; }
@@ -873,6 +942,7 @@ namespace EclipseDataMiner.ViewModels
             MatchedPlansSummaryText = $"Selected: {selected} / {total} Plans";
             HasMatchedPlans = total > 0;
             OnPropertyChanged(nameof(MatchedPlansCount));
+            OnPropertyChanged(nameof(PreScanScopeBadgeText));
         }
 
         public void ExecuteSelectAllPlans(bool select)
@@ -910,9 +980,30 @@ namespace EclipseDataMiner.ViewModels
                 if (!string.IsNullOrEmpty(p.Message)) AppendLog(p.Message);
             });
 
+            HashSet<string> targetPlanKeys = null;
+            if (MatchedPlans.Count > 0)
+            {
+                targetPlanKeys = new HashSet<string>(MatchedPlans.Where(p => p.IsSelected).Select(p => p.UniqueKey));
+                if (targetPlanKeys.Count == 0)
+                {
+                    MessageBox.Show(
+                        "Plan Search の検索結果テーブルで抽出対象 (Extract) として選択されている計画がありません。\n少なくとも1つの計画にチェックを入れるか、プラン一覧をクリアして全体スキャンを実行してください。",
+                        "計画が選択されていません", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    IsRunning = false;
+                    _cts?.Dispose();
+                    _cts = null;
+                    return;
+                }
+                AppendLog($"Pre-scanning structures for {targetPlanKeys.Count} selected plans (from Plan Search table)...");
+            }
+            else
+            {
+                AppendLog("Pre-scanning structures for all plans matching search criteria...");
+            }
+
             try
             {
-                var discovered = await _workerService.RunPreScanAsync(criteria, MappingRules, progress, _cts.Token);
+                var discovered = await _workerService.RunPreScanAsync(criteria, MappingRules, progress, _cts.Token, targetPlanKeys);
                 DiscoveredStructures.Clear();
                 foreach (var d in discovered)
                 {
@@ -920,8 +1011,9 @@ namespace EclipseDataMiner.ViewModels
                 }
                 DiscoveredStructuresView?.Refresh();
                 OnPropertyChanged(nameof(FilteredDiscoveredCount));
-                ProgressText = $"Pre-scan completed. {DiscoveredStructures.Count} structures found.";
-                AppendLog($"Pre-scan completed. {DiscoveredStructures.Count} unique structures mapped.");
+                string scopeSuffix = targetPlanKeys != null ? $" from {targetPlanKeys.Count} selected plans" : "";
+                ProgressText = $"Pre-scan completed. {DiscoveredStructures.Count} structures found{scopeSuffix}.";
+                AppendLog($"Pre-scan completed. {DiscoveredStructures.Count} unique structures mapped{scopeSuffix}.");
             }
             catch (OperationCanceledException)
             {

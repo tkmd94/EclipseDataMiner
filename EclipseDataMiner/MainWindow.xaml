@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:EclipseDataMiner"
         xmlns:models="clr-namespace:EclipseDataMiner.Models"
-        Title="EclipseDataMiner v3.0 - High-Throughput Clinical ESAPI Data Mining Platform" 
+        Title="{Binding WindowTitle, FallbackValue='EclipseDataMiner v3.0.0 - High-Throughput Clinical ESAPI Data Mining Platform'}" 
         Height="880" Width="1180" MinHeight="700" MinWidth="980"
         WindowStartupLocation="CenterScreen"
         PreviewKeyDown="Window_PreviewKeyDown"
@@ -596,6 +596,9 @@
                                             Style="{StaticResource ModernButton}" Margin="2,0" 
                                             ToolTip="最新のルール定義をプレビューに再適用します"/>
                                 </StackPanel>
+                                <Border DockPanel.Dock="Right" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="12" Padding="8,2" VerticalAlignment="Center" Margin="4,0,0,0">
+                                    <TextBlock Text="{Binding PreScanScopeBadgeText}" FontWeight="SemiBold" FontSize="11" Foreground="#1E40AF" VerticalAlignment="Center" ToolTip="Plan Search で選択された計画が事前スキャンの走査対象となります"/>
+                                </Border>
                             </DockPanel>
 
                             <!-- クイックフィルタバー -->

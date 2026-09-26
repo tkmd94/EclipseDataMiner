@@ -41,7 +41,8 @@
 
 ```powershell
 # NuGet パッケージの復元
-& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" EclipseDataMiner.sln /t:Restore /verbosity:minimal
+& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" `
+    EclipseDataMiner.sln /t:Restore /verbosity:minimal
 ```
 
 ### ソリューションのビルド
@@ -49,7 +50,8 @@ ESAPI は 64-bit ネイティブライブラリであるため、ビルドプラ
 
 ```powershell
 # x64 Release ビルド
-& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" EclipseDataMiner.sln /p:Configuration=Release /p:Platform=x64 /t:Build /verbosity:minimal
+& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" `
+    EclipseDataMiner.sln /p:Configuration=Release /p:Platform=x64 /t:Build /verbosity:minimal
 ```
 
 ビルドが完了すると、`EclipseDataMiner\bin\x64\Release\EclipseDataMiner.exe` に単一自己完結バイナリ（約 589 KB）が生成されます。
@@ -66,7 +68,7 @@ ESAPI は 64-bit ネイティブライブラリであるため、ビルドプラ
 ```
 
 > [!IMPORTANT]
-> コードの変更やプルリクエストの作成前には、必ず `test.bat` を実行し、**100% (24/24 PASS)** することを確認してください。
+> コードの変更やプルリクエストの作成前には、必ず `test.bat` を実行し、**100% (111/111 PASS)** することを確認してください。
 
 ---
 
@@ -141,7 +143,7 @@ ESAPI は 64-bit ネイティブライブラリであるため、ビルドプラ
 
 変更をマージまたはプッシュする前に、以下の項目をセルフチェックしてください：
 
-- [ ] `test.bat` を実行し、全自動テスト（24/24）が 100% PASS していること。
+- [ ] `test.bat` を実行し、全自動テスト（111/111）が 100% PASS していること。
 - [ ] x64 Release ビルドで警告（0 Warnings）およびエラー（0 Errors）がないこと。
 - [ ] 機密情報（院内 IP アドレス、ローカル PC のユーザー名、個人プロファイルパス、患者個人情報等）が一切コードやドキュメントに含まれていないこと（`privacy-and-secret-scrubber` 原則の遵守）。
 - [ ] `FodyWeavers.xml` で ESAPI DLL が除外されていること。
