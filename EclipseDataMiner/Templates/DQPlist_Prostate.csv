@@ -1,4 +1,4 @@
-strctureName,DQPtype,DQPvalue,InputUnit,OutputUnit
+structureName,DQPtype,DQPvalue,InputUnit,OutputUnit
 Prostate,Dose,2,Relative,Absolute
 Prostate,Dose,99,Relative,Absolute
 PTV-PROST,Dose,2,Relative,Absolute

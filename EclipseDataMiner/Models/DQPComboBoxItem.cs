@@ -1,5 +1,5 @@
-﻿
-namespace EclipseDataMiner
+
+namespace EclipseDataMiner.Models
 {
    
     public class DQPComboBoxItem

@@ -1,0 +1,72 @@
+[
+  {
+    "IsSelected": true,
+    "Pattern": "PTV.*|ptv.*|PTV-PROST.*",
+    "MatchMode": "Regex",
+    "TargetAlias": "PTV",
+    "MatchedCount": 0
+  },
+  {
+    "IsSelected": true,
+    "Pattern": "Rectum.*|rectum.*",
+    "MatchMode": "Regex",
+    "TargetAlias": "Rectum",
+    "MatchedCount": 0
+  },
+  {
+    "IsSelected": true,
+    "Pattern": "Bladder.*|bladder.*",
+    "MatchMode": "Regex",
+    "TargetAlias": "Bladder",
+    "MatchedCount": 0
+  },
+  {
+    "IsSelected": true,
+    "Pattern": "SV.*|Seminal.*|CTV_SV.*",
+    "MatchMode": "Regex",
+    "TargetAlias": "SV",
+    "MatchedCount": 0
+  },
+  {
+    "IsSelected": true,
+    "Pattern": "Femur_R.*|FemoralHead_R.*|FemurHead_R.*",
+    "MatchMode": "Regex",
+    "TargetAlias": "Femur_R",
+    "MatchedCount": 0
+  },
+  {
+    "IsSelected": true,
+    "Pattern": "Femur_L.*|FemoralHead_L.*|FemurHead_L.*",
+    "MatchMode": "Regex",
+    "TargetAlias": "Femur_L",
+    "MatchedCount": 0
+  },
+  {
+    "IsSelected": true,
+    "Pattern": "Bowel.*|SmallBowel.*",
+    "MatchMode": "Regex",
+    "TargetAlias": "Bowel",
+    "MatchedCount": 0
+  },
+  {
+    "IsSelected": false,
+    "Pattern": "BODY|EXTERNAL",
+    "MatchMode": "Regex",
+    "TargetAlias": "",
+    "MatchedCount": 0
+  },
+  {
+    "IsSelected": false,
+    "Pattern": "Couch.*|Table.*|Rail.*",
+    "MatchMode": "Regex",
+    "TargetAlias": "",
+    "MatchedCount": 0
+  },
+  {
+    "IsSelected": false,
+    "Pattern": "Marker.*|Clip.*",
+    "MatchMode": "Regex",
+    "TargetAlias": "",
+    "MatchedCount": 0
+  }
+]
