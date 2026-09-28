@@ -1,4 +1,4 @@
-﻿namespace EclipseDataMiner
+namespace EclipseDataMiner.Models
 {
     public enum DQPtype
     {

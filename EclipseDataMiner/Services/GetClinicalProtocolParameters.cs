@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VMS.TPS.Common.Model.API;
 
-namespace EclipseDataMiner
+namespace EclipseDataMiner.Services
 {
-    class GetClinicalProtocolParameters
+    public static class GetClinicalProtocolParameters
     {
         public static string GetParameters(Patient patient, PlanSetup plan)
         {
