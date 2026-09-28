@@ -6,13 +6,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.0.1] - 2026-09-28
+
+### Fixed
+- **臨床環境（FIPS 有効環境）での暗号化例外 (`InvalidOperationException`) の解消**:
+  - `App.config` に `<enforceFIPSPolicy enabled="false"/>` を追加し、Windows の FIPS 暗号化ポリシーが有効化された病院端末でも Varian ESAPI 内部（Gateway 通信等）が例外なく動作するよう設定。
+  - `StringSanitizer.AnonymizePatientId` のハッシュ生成を、Windows OS 認証済みの FIPS 準拠プロバイダ（`SHA256CryptoServiceProvider` / `SHA256Cng`）へ移行。
+- **リリースフォルダ（`release/`）への構成ファイル自動配備**:
+  - `release/` フォルダに実行ファイル（`EclipseDataMiner_v3.0.1.exe`）とともに構成ファイル（`EclipseDataMiner_v3.0.1.exe.config`）が常にセットで出力されるようビルドパイプライン（`test.bat` および `EclipseDataMiner.csproj` の `PostBuild`）を強化。
 
 ### Added
 - **日英バイリンガル公式ドキュメント**:
   - 英語フルドキュメント `README.en.md` および英語操作マニュアル `docs/MANUAL.en.md` を新設。
   - `README.md` および `docs/MANUAL.md` に言語切り替えリンクを追加。
   - `THIRD-PARTY-NOTICES.md` の英語サマリー・日英バイリンガル解説を追記。
+- **FIPS 暗号化トラブルシューティング項目の追加**:
+  - `docs/TROUBLESHOOTING.md` および `docs/TROUBLESHOOTING.en.md` に「1.4 FIPS 暗号化ポリシー例外」のトラブルシューティングおよび回避策を新設。
 
 ### Changed
 - **標準英語 UI への完全統一**:

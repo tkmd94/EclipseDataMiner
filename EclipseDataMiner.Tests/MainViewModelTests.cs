@@ -306,9 +306,9 @@ namespace EclipseDataMiner.Tests
             string productVer = MainViewModel.GetProductVersion();
             string title = vm.WindowTitle;
 
-            // Assert: ProductVersion is 3.0.0 and contained in the title
-            Assert.AreEqual("3.0.0", productVer);
-            Assert.IsTrue(title.Contains("v3.0.0"), $"Title '{title}' does not contain 'v3.0.0'");
+            // Assert: ProductVersion is 3.0.1 and contained in the title
+            Assert.AreEqual("3.0.1", productVer);
+            Assert.IsTrue(title.Contains("v3.0.1"), $"Title '{title}' does not contain 'v3.0.1'");
             Assert.IsTrue(title.StartsWith("EclipseDataMiner"));
             Assert.IsTrue(title.Contains("High-Throughput Clinical ESAPI Data Mining Platform"));
         }

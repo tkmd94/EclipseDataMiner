@@ -54,7 +54,7 @@ namespace EclipseDataMiner.Helpers
                 return string.Empty;
             }
 
-            using (var sha256 = SHA256.Create())
+            using (var sha256 = CreateSha256())
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(patientId + salt);
                 byte[] hash = sha256.ComputeHash(bytes);
@@ -64,6 +64,31 @@ namespace EclipseDataMiner.Helpers
                     sb.Append(hash[i].ToString("x2"));
                 }
                 return sb.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Creates a FIPS-compliant SHA-256 instance (SHA256CryptoServiceProvider / SHA256Cng)
+        /// with graceful fallback to standard SHA256.Create().
+        /// In .NET Framework, SHA256.Create() defaults to SHA256Managed which throws
+        /// InvalidOperationException on Windows systems with FIPS enforcement enabled.
+        /// </summary>
+        public static SHA256 CreateSha256()
+        {
+            try
+            {
+                return new SHA256CryptoServiceProvider();
+            }
+            catch
+            {
+                try
+                {
+                    return new SHA256Cng();
+                }
+                catch
+                {
+                    return SHA256.Create();
+                }
             }
         }
 

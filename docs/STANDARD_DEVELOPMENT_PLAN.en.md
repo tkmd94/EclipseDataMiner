@@ -56,7 +56,7 @@ flowchart TD
   - Costura.Fody single EXE verification (ESAPI excluded)
   ↓
 [Layer 2: Automated Unit Testing Gate]
-  - MSTest 100% (116/116) PASS
+  - MSTest 100% (117/117) PASS
   - Complex geometry & DVH benchmark validation
   ↓
 [Layer 3: Delivery Packaging Gate]

@@ -12,6 +12,7 @@ This document provides solutions and diagnostics for common startup, configurati
    - 1.1 [ESAPI DLL Missing (`FileNotFoundException`)](#11-esapi-dll-missing-filenotfoundexception)
    - 1.2 [.NET Framework Version Mismatch](#12-net-framework-version-mismatch)
    - 1.3 [Scripting Permissions / Standalone Access Denied](#13-scripting-permissions--standalone-access-denied)
+   - 1.4 [FIPS Cryptographic Algorithm Policy Exception (`InvalidOperationException`)](#14-fips-cryptographic-algorithm-policy-exception-invalidoperationexception)
 2. [Search & Extraction Issues](#2-search--extraction-issues)
    - 2.1 [UI Freezing or Becoming Unresponsive](#21-ui-freezing-or-becoming-unresponsive)
    - 2.2 [Out of Memory (`OutOfMemoryException`) on Large Datasets](#22-out-of-memory-outofmemoryexception-on-large-datasets)
@@ -46,6 +47,27 @@ This document provides solutions and diagnostics for common startup, configurati
 - **Symptom**: Application fails with `Access Denied` or `User has insufficient rights`.
 - **Cause**: The current Windows user account does not have ESAPI standalone read access.
 - **Resolution**: Request your Eclipse System Administrator to grant ESAPI read rights to the account.
+
+### 1.4 FIPS Cryptographic Algorithm Policy Exception (`InvalidOperationException`)
+- **Symptom**: 
+  - Works normally on research/testing workstations, but fails in clinical production environments with the following error:
+  ```text
+  Error occured while processing request
+  System.InvalidOperationException: This implementation is not part of the Windows Platform FIPS validated cryptographic algorithms.
+  ```
+- **Cause**: 
+  - Hospital clinical workstations enforce the Group Policy or Local Security Policy: **"System cryptography: Use FIPS compliant algorithms for encryption, hashing, and signing"** (`FipsAlgorithmPolicy = 1`).
+  - When this policy is enabled, .NET Framework blocks instantiation of standard managed cryptographic classes (such as `SHA256Managed`), impacting Varian ESAPI internal communications (WCF / Gateway token authentication) and patient de-identification hashing.
+- **Resolution**:
+  1. **Deploy Configuration File (`EclipseDataMiner.exe.config`) Together (Recommended)**:
+     - Always deploy `EclipseDataMiner.exe.config` in the **exact same folder** as `EclipseDataMiner.exe`.
+     - The `<enforceFIPSPolicy enabled="false"/>` directive in the config file allows .NET runtime to safely bypass the OS-level FIPS enforcement for ESAPI internal operations.
+     - *(Note: Starting in v3.0, the application code also uses FIPS-certified providers `SHA256CryptoServiceProvider` / `SHA256Cng` for de-identification hashing).*
+  2. **Disable FIPS Policy on the Workstation (If Administrator Rights are Available)**:
+     - Open `secpol.msc` (Local Security Policy).
+     - Navigate to [Security Settings] → [Local Policies] → [Security Options].
+     - Double-click **"System cryptography: Use FIPS compliant algorithms for encryption, hashing, and signing"** and set it to **Disabled**. Reboot or run `gpupdate /force`.
+     - *(Consult your hospital IT department before modifying domain policies).*
 
 ---
 

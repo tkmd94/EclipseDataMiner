@@ -112,7 +112,7 @@ DOCUMENTS_JA = [
         "chapter_num": 9,
         "badge": "付録",
         "title": "更新履歴 (Changelog)",
-        "desc": "v3.0.0 / v2.4.0 / v2.3.0 リリースノート、主要マイルストーン、および更新履歴",
+        "desc": "v3.0.1 / v3.0.0 / v2.4.0 リリースノート、主要マイルストーン、および更新履歴",
         "remove_first_h1": True
     }
 ]
@@ -188,7 +188,7 @@ DOCUMENTS_EN = [
         "chapter_num": 9,
         "badge": "Appendix",
         "title": "Release History (Changelog)",
-        "desc": "v3.0.0 / v2.4.0 / v2.3.0 release notes, key milestones, and historical changelog",
+        "desc": "v3.0.1 / v3.0.0 / v2.4.0 release notes, key milestones, and historical changelog",
         "remove_first_h1": True
     }
 ]
@@ -346,7 +346,7 @@ def preprocess_markdown(file_path, chapter_info, repo_root):
 
 def generate_css(lang="ja"):
     """洗練された臨床マニュアル PDF 印刷用 CSS (ContourQA / AutoStructureMaker 書式完全準拠)"""
-    header_title = 'EclipseDataMiner v3.0.0 Technical Manual' if lang == 'en' else 'EclipseDataMiner v3.0.0 臨床技術マニュアル'
+    header_title = 'EclipseDataMiner v3.0.1 Technical Manual' if lang == 'en' else 'EclipseDataMiner v3.0.1 臨床技術マニュアル'
     css = """
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
@@ -882,10 +882,10 @@ def generate_cover_html(lang="ja"):
   <div class="cover-badges">
     <div class="pill-badge blue">Varian Medical Systems Eclipse</div>
     <div class="pill-badge purple">ESAPI v15.6 / v16.1</div>
-    <div class="pill-badge green">Production Ready (v3.0.0)</div>
+    <div class="pill-badge green">Production Ready (v3.0.1)</div>
   </div>
   <div class="cover-title">EclipseDataMiner</div>
-  <div class="cover-version">Version 3.0.0 (Released: September 26, 2026)</div>
+  <div class="cover-version">Version 3.0.1 (Released: September 28, 2026)</div>
   <div class="cover-subtitle">Radiation Therapy Plan Data Mining & Quality Assurance Technical Manual</div>
   <div class="cover-lead">
     This manual provides comprehensive technical documentation for <strong>EclipseDataMiner</strong>, a high-throughput, memory-safe data mining and quality management system querying 10,000+ radiation therapy plans across Varian Eclipse (ESAPI). It covers system installation, operational workflows, structure nomenclature mapping (Pre-Scan &amp; Alias Mapping), Dose-Quality Parameter (DQP) extraction, delivery modulation complexity modeling (MCS, Edge Metric, Leaf Travel Length, Arc Length), STA worker streaming architecture, and clinical commissioning procedures.
@@ -905,12 +905,12 @@ def generate_cover_html(lang="ja"):
     </div>
     <div class="meta-card">
       <div class="meta-card-label">Validation Status</div>
-      <div class="meta-card-value">116/116 Tests Passed (100% PASS)</div>
+      <div class="meta-card-value">117/117 Tests Passed (100% PASS)</div>
     </div>
   </div>
   <div class="cover-footer-meta">
     <div>Department of Radiation Oncology &amp; Medical Physics</div>
-    <div>Document ID: EDM-MAN-2026-V300-EN • September 26, 2026</div>
+    <div>Document ID: EDM-MAN-2026-V301-EN • September 28, 2026</div>
   </div>
 </div>
 """
@@ -920,10 +920,10 @@ def generate_cover_html(lang="ja"):
   <div class="cover-badges">
     <div class="pill-badge blue">Varian Medical Systems Eclipse</div>
     <div class="pill-badge purple">ESAPI v15.6 / v16.1</div>
-    <div class="pill-badge green">Production Ready (v3.0.0)</div>
+    <div class="pill-badge green">Production Ready (v3.0.1)</div>
   </div>
   <div class="cover-title">EclipseDataMiner</div>
-  <div class="cover-version">Version 3.0.0 (Released: September 26, 2026)</div>
+  <div class="cover-version">Version 3.0.1 (Released: September 28, 2026)</div>
   <div class="cover-subtitle">放射線治療計画データマイニング・品質保証 総合技術マニュアル</div>
   <div class="cover-lead">
     本マニュアルは、放射線治療計画装置 Varian Eclipse における10,000件規模の治療計画データマイニング・品質管理システム
@@ -946,12 +946,12 @@ def generate_cover_html(lang="ja"):
     </div>
     <div class="meta-card">
       <div class="meta-card-label">Validation Status</div>
-      <div class="meta-card-value">116/116 Tests Passed (100% PASS)</div>
+      <div class="meta-card-value">117/117 Tests Passed (100% PASS)</div>
     </div>
   </div>
   <div class="cover-footer-meta">
     <div>Department of Radiation Oncology &amp; Medical Physics</div>
-    <div>Document ID: EDM-MAN-2026-V300 • September 26, 2026</div>
+    <div>Document ID: EDM-MAN-2026-V301 • September 28, 2026</div>
   </div>
 </div>
 """
@@ -1040,7 +1040,7 @@ def compile_single_manual(lang="ja", repo_root=None, script_dir=None):
         repo_root = os.path.abspath(os.path.join(script_dir, ".."))
 
     lang_label = "English" if lang == "en" else "Japanese"
-    output_pdf_name = "EclipseDataMiner_v3.0.0_Manual.en.pdf" if lang == "en" else "EclipseDataMiner_v3.0.0_Manual.pdf"
+    output_pdf_name = "EclipseDataMiner_v3.0.1_Manual.en.pdf" if lang == "en" else "EclipseDataMiner_v3.0.1_Manual.pdf"
     documents = DOCUMENTS_EN if lang == "en" else DOCUMENTS_JA
 
     print(f"\n[*] Starting {lang_label} Technical Manual compilation ({output_pdf_name})...")
@@ -1230,7 +1230,12 @@ def main():
         compile_single_manual(lang=lang, repo_root=repo_root, script_dir=script_dir)
 
     # Legacy redundant PDF cleanup
-    legacy_names = ["EclipseDataMiner_Manual.pdf", "EclipseDataMiner_Manual_v3.0.0.pdf"]
+    legacy_names = [
+        "EclipseDataMiner_Manual.pdf",
+        "EclipseDataMiner_Manual_v3.0.0.pdf",
+        "EclipseDataMiner_v3.0.0_Manual.pdf",
+        "EclipseDataMiner_v3.0.0_Manual.en.pdf"
+    ]
     for d in [repo_root, os.path.join(repo_root, "docs"), os.path.join(repo_root, "release")]:
         for leg in legacy_names:
             p = os.path.join(d, leg)

@@ -1,8 +1,8 @@
-# EclipseDataMiner User Manual (v3.0.0)
+# EclipseDataMiner User Manual (v3.0.1)
 
 **English** | [日本語](MANUAL.md)
 
-This document is the official operational guide and comprehensive technical reference for **EclipseDataMiner v3.0.0**.  
+This document is the official operational guide and comprehensive technical reference for **EclipseDataMiner v3.0.1**.  
 *Note: The user interface (UI) of this application is displayed in English by default. This manual references all UI components using their exact English labels.*
 
 ---

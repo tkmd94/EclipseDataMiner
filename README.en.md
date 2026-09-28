@@ -1,4 +1,4 @@
-# EclipseDataMiner (v3.0.0)
+# EclipseDataMiner (v3.0.1)
 
 **English** | [日本語](README.md)
 
@@ -6,7 +6,7 @@
 [![Platform](https://img.shields.io/badge/.NET%20Framework-4.6.1-blue.svg)]()
 [![Target](https://img.shields.io/badge/Architecture-x64-orange.svg)]()
 [![Eclipse](https://img.shields.io/badge/Eclipse-v15.6%20%7C%20v16.1-purple.svg)]()
-[![Tests](https://img.shields.io/badge/MSTest-116%2F116%20PASS-success.svg)]()
+[![Tests](https://img.shields.io/badge/MSTest-117%2F117%20PASS-success.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A standalone **10,000-plan-scale clinical data mining application** running on Varian Eclipse (ESAPI).  
@@ -14,7 +14,7 @@ It cross-searches patient databases for treatment plans (PlanSetup / PlanSum) ma
 
 ---
 
-## 🌟 Key Features (v3.0.0)
+## 🌟 Key Features (v3.0.1)
 
 - 🌐 **Standard English UI & Bilingual Documentation**:
   - Clean, international-standard English UI designed for radiation oncology clinical workflows.
@@ -57,12 +57,13 @@ It cross-searches patient databases for treatment plans (PlanSetup / PlanSum) ma
 
 This tool is distributed as a single standalone executable.
 
-1. **Obtain the Executable**:
-   - Download `release\EclipseDataMiner_v3.0.0.exe` (or build `EclipseDataMiner\bin\x64\Release\EclipseDataMiner.exe`).
+1. **Obtain the Release Package**:
+   - Download the contents of the `release\` folder (or `release\EclipseDataMiner_v3.0.1.exe` and `EclipseDataMiner_v3.0.1.exe.config`).
 2. **Deploy to Eclipse Workstation**:
-   - Copy `EclipseDataMiner_v3.0.0.exe` to any folder on your Eclipse workstation.
+   - Copy the executable and configuration file (`EclipseDataMiner_v3.0.1.exe` and `EclipseDataMiner_v3.0.1.exe.config`), along with `Presets\` and `Templates\` folders, to any directory on your Eclipse workstation.
+   - *Note: In clinical hospital networks with FIPS enforcement enabled, the `.config` file is strictly required alongside the `.exe` to bypass FIPS restrictions.*
 3. **Launch**:
-   - Double-click `EclipseDataMiner_v3.0.0.exe` to launch.
+   - Double-click `EclipseDataMiner_v3.0.1.exe` to launch.
 
 ---
 
@@ -151,7 +152,7 @@ The application UI consists of 4 sequential tabs, guiding users intuitively from
 | 🛡️ **Standard Development Plan** | [English (docs/STANDARD_DEVELOPMENT_PLAN.en.md)](docs/STANDARD_DEVELOPMENT_PLAN.en.md) \| [日本語 (docs/STANDARD_DEVELOPMENT_PLAN.md)](docs/STANDARD_DEVELOPMENT_PLAN.md) — 7 Core Quality Principles, 4-tier DoD gates, and reproducibility protocols |
 | 📝 **Changelog** | [English (docs/CHANGELOG.en.md)](docs/CHANGELOG.en.md) \| [日本語 (docs/CHANGELOG.md)](docs/CHANGELOG.md) — Version-by-version release history (Keep a Changelog standard) |
 | 📄 **Third-Party Notices** | [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) — Open-source software licenses and copyright acknowledgments |
-| 📖 **Consolidated Technical Manual PDF** | [English (release/EclipseDataMiner_v3.0.0_Manual.en.pdf)](release/EclipseDataMiner_v3.0.0_Manual.en.pdf) \| [日本語 (release/EclipseDataMiner_v3.0.0_Manual.pdf)](release/EclipseDataMiner_v3.0.0_Manual.pdf) — Unified publication-quality manual formatted for A4 printing |
+| 📖 **Consolidated Technical Manual PDF** | [English (release/EclipseDataMiner_v3.0.1_Manual.en.pdf)](release/EclipseDataMiner_v3.0.1_Manual.en.pdf) \| [日本語 (release/EclipseDataMiner_v3.0.1_Manual.pdf)](release/EclipseDataMiner_v3.0.1_Manual.pdf) — Unified publication-quality manual formatted for A4 printing |
 
 ---
 
@@ -159,7 +160,7 @@ The application UI consists of 4 sequential tabs, guiding users intuitively from
 
 This repository includes a multi-layered automated test suite using `EclipseDataMiner.Tests` (MSTest), verifying all business and numerical logic without requiring an active ESAPI database connection.
 
-- **Total Unit Tests**: 116 tests (100% PASS)
+- **Total Unit Tests**: 117 tests (100% PASS)
 - **Coverage**: Dose normalization (`ToGy()`), string sanitization, patient de-identification, streaming CSV/JSONL pipelines, hierarchical AND/OR search logic with UI synchronization, dose presence filter (`HasDose`/`NoDose`), inequality/range parsing, beam/date filters, preset persistence, 2-pane structure mapping with real-time preview, rule priority resolution (Exact > Contains > Regex), complexity algorithms benchmarked against published literature (MCS, Edge Metric, Leaf Travel Length, Arc Length), XAML resource integrity, and UI screenshot generation.
 
 ---

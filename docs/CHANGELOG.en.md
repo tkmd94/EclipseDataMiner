@@ -6,13 +6,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.0.1] - 2026-09-28
+
+### Fixed
+- **FIPS Policy Compatibility in Clinical Environments (`InvalidOperationException`)**:
+  - Added `<enforceFIPSPolicy enabled="false"/>` to `App.config`, allowing Varian ESAPI internal communications (WCF / Gateway) to operate safely on clinical hospital workstations with FIPS policy enabled.
+  - Migrated cryptographic hashing in `StringSanitizer.AnonymizePatientId` to Windows FIPS-certified providers (`SHA256CryptoServiceProvider` / `SHA256Cng`).
+- **Release Artifacts Synchronization with Configuration File**:
+  - Enhanced build pipeline (`test.bat` and `EclipseDataMiner.csproj` `PostBuild`) to automatically package `EclipseDataMiner_v3.0.1.exe.config` alongside `EclipseDataMiner_v3.0.1.exe` in `release/`.
 
 ### Added
 - **Bilingual Documentation Across All Technical Documents**:
   - Full English translations for all technical documentation under `docs/` (`MANUAL.en.md`, `ARCHITECTURE.en.md`, `COMMISSIONING.en.md`, `CONTRIBUTING.en.md`, `DESIGN_SPECIFICATION.en.md`, `STANDARD_DEVELOPMENT_PLAN.en.md`, `TROUBLESHOOTING.en.md`, `CHANGELOG.en.md`).
   - Seamless language toggle links (`English | 日本語`) at the top of every document.
   - Comprehensive English code comments, XML docstrings, and test descriptions across all C# source files.
+- **FIPS Troubleshooting Guide**:
+  - Added Section 1.4 to `docs/TROUBLESHOOTING.md` and `docs/TROUBLESHOOTING.en.md` covering causes and solutions for FIPS algorithm exceptions.
 
 ### Changed
 - **100% English Standardized UI**:

@@ -34,7 +34,7 @@ namespace EclipseDataMiner.ViewModels
                 string productVersion = GetProductVersion();
                 string verStr = !string.IsNullOrEmpty(productVersion)
                     ? (productVersion.StartsWith("v", StringComparison.OrdinalIgnoreCase) ? productVersion : $"v{productVersion}")
-                    : "v3.0.0";
+                    : "v3.0.1";
                 return $"EclipseDataMiner {verStr} - High-Throughput Clinical ESAPI Data Mining Platform";
             }
             set => SetProperty(ref _windowTitle, value);
@@ -76,7 +76,7 @@ namespace EclipseDataMiner.ViewModels
             }
             catch { }
 
-            return "3.0.0";
+            return "3.0.1";
         }
 
         // Search criteria

@@ -77,8 +77,11 @@ flowchart TD
 
 1. **成果物の一元集約**:
    - `test.bat` を実行し、`release/` ディレクトリに以下のファイルが集約されていることを確認します：
-     - `EclipseDataMiner_v3.0.0.exe` (単一実行バイナリ)
-     - `EclipseDataMiner_v3.0.0_Manual.pdf` (公式技術マニュアル PDF)
+     - `EclipseDataMiner_v3.0.1.exe` (単一実行バイナリ)
+     - `EclipseDataMiner_v3.0.1.exe.config` (FIPS 回避・アセンブリバインディング構成ファイル)
+     - `EclipseDataMiner_v3.0.1_Manual.pdf` (公式技術マニュアル PDF)
+     - `EclipseDataMiner_v3.0.1_Manual.en.pdf` (公式技術マニュアル英語版 PDF)
      - `Templates/` (DQP および輪郭マッピングのサンプルファイル一式)
+     - `Presets/` (検索プリセット一式)
 2. **コミッショニング承認の取得**:
    - `COMMISSIONING.md` の記録票に医学物理責任者の承認印を受領した上で、臨床ネットワーク端末への配備を実施します。

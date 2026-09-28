@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:EclipseDataMiner"
         xmlns:models="clr-namespace:EclipseDataMiner.Models"
-        Title="{Binding WindowTitle, FallbackValue='EclipseDataMiner v3.0.0 - High-Throughput Clinical ESAPI Data Mining Platform'}" 
+        Title="{Binding WindowTitle, FallbackValue='EclipseDataMiner v3.0.1 - High-Throughput Clinical ESAPI Data Mining Platform'}" 
         Height="880" Width="1180" MinHeight="700" MinWidth="980"
         WindowStartupLocation="CenterScreen"
         PreviewKeyDown="Window_PreviewKeyDown"

@@ -7,11 +7,11 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("EclipseDataMiner v3.0.0")]
-[assembly: AssemblyDescription("EclipseDataMiner v3.0.0 - High-Throughput Clinical ESAPI Data Mining Platform")]
+[assembly: AssemblyTitle("EclipseDataMiner v3.0.1")]
+[assembly: AssemblyDescription("EclipseDataMiner v3.0.1 - High-Throughput Clinical ESAPI Data Mining Platform")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Takashi Kodama")]
-[assembly: AssemblyProduct("EclipseDataMiner v3.0.0")]
+[assembly: AssemblyProduct("EclipseDataMiner v3.0.1")]
 [assembly: AssemblyCopyright("Copyright © 2019-2026 Takashi Kodama")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -51,6 +51,6 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("3.0.0.0")]
-[assembly: AssemblyFileVersion("3.0.0.0")]
-[assembly: AssemblyInformationalVersion("3.0.0")]
+[assembly: AssemblyVersion("3.0.1.0")]
+[assembly: AssemblyFileVersion("3.0.1.0")]
+[assembly: AssemblyInformationalVersion("3.0.1")]

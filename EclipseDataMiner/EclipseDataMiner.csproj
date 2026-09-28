@@ -182,6 +182,7 @@
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)EclipseDataMiner_v3.0.0.exe" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)EclipseDataMiner_v3.0.1.exe" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetDir)$(TargetFileName).config" DestinationFiles="$(TargetDir)EclipseDataMiner_v3.0.1.exe.config" SkipUnchangedFiles="true" />
   </Target>
 </Project>

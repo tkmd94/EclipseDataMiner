@@ -12,6 +12,7 @@
    - 1.1 [ESAPI DLL が見つからない (`FileNotFoundException`)](#11-esapi-dll-が見つからない-filenotfoundexception)
    - 1.2 [.NET Framework バージョン不一致で起動しない](#12-net-framework-バージョン不一致で起動しない)
    - 1.3 [スクリプト実行権限エラー / スタンドアロン実行権限](#13-スクリプト実行権限エラー--スタンドアロン実行権限)
+   - 1.4 [FIPS 暗号化ポリシー例外 (`InvalidOperationException: This implementation is not part of the Windows Platform FIPS validated cryptographic algorithms`)](#14-fips-暗号化ポリシー例外-invalidoperationexception-this-implementation-is-not-part-of-the-windows-platform-fips-validated-cryptographic-algorithms)
 2. [検索・抽出処理中のトラブル](#2-検索抽出処理中のトラブル)
    - 2.1 [処理中に UI がフリーズする / 応答なしになる](#21-処理中に-ui-がフリーズする--応答なしになる)
    - 2.2 [大量計画抽出時にメモリ不足 (`OutOfMemoryException`) で落ちる](#22-大量計画抽出時にメモリ不足-outofmemoryexception-で落ちる)
@@ -48,6 +49,27 @@
 - **原因**: ログイン中の Windows アカウントに、ESAPI スタンドアロン実行権限（臨床データベースまたは研究データベースへの読み取り権限）が付与されていません。
 - **対処方法**:
   - Eclipse のユーザー管理者（System Administrator）に依頼し、該当アカウントの ESAPI 権限（Scripting / Read Rights）を有効化してください。
+
+### 1.4 FIPS 暗号化ポリシー例外 (`InvalidOperationException: This implementation is not part of the Windows Platform FIPS validated cryptographic algorithms`)
+- **現象**: 
+  - 研究用・検証用端末では正常に動作するが、実環境（臨床用 Eclipse / ARIA 端末）で実行した際に以下のエラーが発生して起動または処理が停止する。
+  ```text
+  Error occured while processing request
+  System.InvalidOperationException: This implementation is not part of the Windows Platform FIPS validated cryptographic algorithms.
+  ```
+- **原因**: 
+  - 病院の臨床環境や医療情報システム端末では、セキュリティ強化のため Windows のグループポリシー（GPO）またはローカルセキュリティポリシーにおいて、**「システム暗号化: 暗号化、ハッシュ、および署名のための FIPS 準拠アルゴリズムを使用する」 (FipsAlgorithmPolicy)** が「有効」に設定されています。
+  - .NET Framework ではこのポリシーが有効な場合、標準の暗号化プロバイダ（`SHA256Managed` 等）のインスタンス生成が OS レベルでブロックされ、上記の例外がスローされます。これは Varian ESAPI 内部（WCF/Gateway 接続・認証トークン処理）や患者匿名化ハッシュ生成時にも影響します。
+- **対処方法**:
+  1. **構成ファイル（`EclipseDataMiner.exe.config`）の同封確認（推奨）**:
+     - `EclipseDataMiner.exe` を実環境のフォルダに配置する際は、**必ず同一フォルダに `EclipseDataMiner.exe.config` もセットで配置** してください。
+     - 本構成ファイル内の `<enforceFIPSPolicy enabled="false"/>` ディレクティブにより、OS の FIPS 制限下でもアプリケーションおよび ESAPI 内部の暗号通信が安全に動作するようバイパス制御されます。
+     - ※ v3.0 以降では、アプリケーション内部のハッシュ処理（`StringSanitizer.AnonymizePatientId`）も Windows プラットフォーム認定済みの FIPS 準拠クラス（`SHA256CryptoServiceProvider` / `SHA256Cng`）に最適化されています。
+  2. **端末側での FIPS ポリシー変更（管理者権限がある場合）**:
+     - 「ファイル名を指定して実行」（`Win + R`）で `secpol.msc` を起動します。
+     - [セキュリティの設定] → [ローカル ポリシー] → [セキュリティ オプション] を開きます。
+     - **「システム暗号化: 暗号化、ハッシュ、および署名のための FIPS 準拠アルゴリズムを使用する」** をダブルクリックし、「**無効**」に変更して適用後、PC を再起動（または `gpupdate /force`）します。
+     - *※ 病院のドメインポリシー（GPO）で一括管理されている場合は、情報システム部またはセキュリティ管理者の指示に従ってください。*
 
 ---
 

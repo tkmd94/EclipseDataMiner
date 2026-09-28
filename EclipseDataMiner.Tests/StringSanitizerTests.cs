@@ -94,5 +94,19 @@ namespace EclipseDataMiner.Tests
             Assert.AreEqual("N/A", StringSanitizer.ValueOrNA(nullDouble));
             Assert.AreEqual("60.50", StringSanitizer.ValueOrNA(validDouble, "F2"));
         }
+
+        [TestMethod]
+        [Description("Verifies that CreateSha256 creates a functional FIPS-compatible SHA256 instance")]
+        public void CreateSha256_ShouldReturnValidFunctionalInstance()
+        {
+            using (var sha = StringSanitizer.CreateSha256())
+            {
+                Assert.IsNotNull(sha);
+                byte[] data = System.Text.Encoding.UTF8.GetBytes("TestPatient123");
+                byte[] hash = sha.ComputeHash(data);
+                Assert.IsNotNull(hash);
+                Assert.AreEqual(32, hash.Length); // 256 bits = 32 bytes
+            }
+        }
     }
 }
