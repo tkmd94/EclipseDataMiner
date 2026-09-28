@@ -6,12 +6,12 @@ using EclipseDataMiner.Models;
 namespace EclipseDataMiner.Services
 {
     /// <summary>
-    /// 検索フィルタ条件の評価サービス（フィールド内OR、グローバルAND/OR、除外判定、数値範囲判定、PlanSum判定）
+    /// Search filter criteria evaluation service (in-field OR, global AND/OR, exclusion logic, numeric ranges, PlanSum logic).
     /// </summary>
     public static class SearchFilterService
     {
         /// <summary>
-        /// テキスト値が指定されたフィルタリストおよびマッチモード（部分一致/完全一致/正規表現）に適合するか判定（包含＋除外）
+        /// Evaluates whether a text value matches the specified filter lists and match mode (Contains, Exact, Regex) with inclusions and exclusions.
         /// </summary>
         public static bool IsTextMatch(string targetValue, IList<string> includeList, IList<string> excludeList, TextMatchMode mode)
         {
@@ -28,7 +28,7 @@ namespace EclipseDataMiner.Services
                 return false;
             }
 
-            // 1. 除外リストの判定: いずれかに一致した場合は即座に除外（false）
+            // 1. Exclusion list check: if matched by any exclusion rule, immediately exclude (false)
             if (hasExcludes)
             {
                 bool matchesExclude = EvaluateTokenList(targetValue, excludeList, mode);
@@ -38,19 +38,19 @@ namespace EclipseDataMiner.Services
                 }
             }
 
-            // 2. 包含リストの判定:
-            // 包含リストが指定されていない場合（除外のみ指定）、除外をパスしたので一致（true）
+            // 2. Inclusion list check:
+            // If no inclusions specified (only exclusions), having passed exclusions means match (true)
             if (!hasIncludes)
             {
                 return true;
             }
 
-            // 包含リストのいずれかに一致するか判定
+            // Check if matches any token in the inclusion list
             return EvaluateTokenList(targetValue, includeList, mode);
         }
 
         /// <summary>
-        /// テキスト値が指定されたフィルタリストおよびマッチモードに適合するか判定（後方互換用）
+        /// Evaluates whether a text value matches the specified filter list and match mode (for backward compatibility).
         /// </summary>
         public static bool IsTextMatch(string targetValue, IList<string> filterList, TextMatchMode mode)
         {
@@ -86,7 +86,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// 患者IDがフィルタに合致するか判定
+        /// Determines whether patient ID matches the criteria.
         /// </summary>
         public static bool IsPatientMatch(string patientId, SearchFilterCriteria criteria)
         {
@@ -95,7 +95,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// コースIDがフィルタに合致するか判定
+        /// Determines whether course ID matches the criteria.
         /// </summary>
         public static bool IsCourseMatch(string courseId, SearchFilterCriteria criteria)
         {
@@ -104,7 +104,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// 承認ステータスが有効な選択肢に含まれるか判定
+        /// Determines whether approval status is included in the enabled selection.
         /// </summary>
         public static bool IsApprovalStatusMatch(string approvalStatus, SearchFilterCriteria criteria)
         {
@@ -120,12 +120,12 @@ namespace EclipseDataMiner.Services
             if (isPlanApproved && criteria.FilterPlanApproved) return true;
             if (isTrtApproved && criteria.FilterTreatmentApproved) return true;
 
-            // いずれの定義済みステータスにも当てはまらない、またはチェックが外れている場合
+            // If none of the defined statuses match or status is unchecked
             return false;
         }
 
         /// <summary>
-        /// 患者を開く前にスキップ可能か判定（ESAPI パフォーマンス最適化）
+        /// Determines whether a patient can be skipped prior to opening (ESAPI performance optimization).
         /// </summary>
         public static bool ShouldSkipPatient(string patientId, SearchFilterCriteria criteria)
         {
@@ -139,21 +139,21 @@ namespace EclipseDataMiner.Services
 
             bool patientMatches = IsPatientMatch(patientId, criteria);
 
-            // AND の場合: 患者IDが一致しなければ、プランが何であれ全体として不一致確定
+            // In AND mode: if patient ID does not match, overall match is impossible regardless of plan details
             if (criteria.GlobalLogicIsAnd)
             {
                 return !patientMatches;
             }
 
-            // OR の場合:
-            // 患者IDが一致していればスキップしない（この患者自体が条件を満たす）
+            // In OR mode:
+            // If patient ID matches, do not skip (the patient criteria is satisfied)
             if (patientMatches)
             {
                 return false;
             }
 
-            // 患者ID不一致の場合でも、他の条件（Course, Plan, Target, Dose等）が指定されていれば、
-            // その患者のプランが合致する可能性があるためスキップしてはならない
+            // In OR mode when patient ID does not match, if other criteria (Course, Plan, Target, Dose, etc.) are present,
+            // plans under this patient may still match, so do not skip
             bool hasOtherCriteria = (criteria.CourseIdFilter?.Count > 0) ||
                                     (criteria.CourseIdExcludeFilter?.Count > 0) ||
                                     (criteria.PlanIdFilter?.Count > 0) ||
@@ -176,7 +176,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// コース単位でスキップ可能かを判定
+        /// Determines whether an entire course can be skipped.
         /// </summary>
         public static bool ShouldSkipCourse(string courseId, SearchFilterCriteria criteria)
         {
@@ -184,19 +184,19 @@ namespace EclipseDataMiner.Services
 
             bool courseMatches = IsCourseMatch(courseId, criteria);
 
-            // AND の場合: コースIDが一致しなければスキップ
+            // In AND mode: skip if course ID does not match
             if (criteria.GlobalLogicIsAnd)
             {
                 return !courseMatches;
             }
 
-            // OR の場合:
+            // In OR mode:
             if (courseMatches)
             {
                 return false;
             }
 
-            // コースID不一致でも、PlanやTargetやDose等の下位条件が指定されていればスキップしてはならない
+            // In OR mode: if course ID does not match, but plan-level criteria exist, do not skip
             bool hasPlanLevelCriteria = (criteria.PlanIdFilter?.Count > 0) ||
                                         (criteria.PlanIdExcludeFilter?.Count > 0) ||
                                         (criteria.TargetVolumeIdFilter?.Count > 0) ||
@@ -217,7 +217,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// 日付が指定範囲に適合するか判定
+        /// Determines whether date falls within the specified range.
         /// </summary>
         public static bool IsDateMatch(DateTime? targetDate, DateTime? dateFrom, DateTime? dateTo)
         {
@@ -245,7 +245,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// ビーム一覧が Machine, Energy, Technique の包含・除外条件に適合するか判定
+        /// Determines whether beam list satisfies Machine, Energy, Technique inclusion and exclusion criteria.
         /// </summary>
         public static bool IsBeamMatch(
             IList<BeamRecord> beams,
@@ -271,7 +271,7 @@ namespace EclipseDataMiner.Services
                 return false;
             }
 
-            // 1. 除外チェック (!): いずれかのビームが除外条件に合致した場合は即座に除外 (false)
+            // 1. Exclusion check (!): if any beam matches an exclusion criterion, immediately exclude (false)
             if (machineExcludes?.Count > 0 && txBeams.Any(b => EvaluateTokenList(b.TreatmentUnit, machineExcludes, TextMatchMode.Contains)))
             {
                 return false;
@@ -286,7 +286,7 @@ namespace EclipseDataMiner.Services
                 return false;
             }
 
-            // 2. 包含チェック: 指定されている場合、条件を満たすビームが1門以上存在しなければならない
+            // 2. Inclusion check: if specified, at least one beam must satisfy each inclusion criterion
             if (machineIncludes?.Count > 0 && !txBeams.Any(b => EvaluateTokenList(b.TreatmentUnit, machineIncludes, TextMatchMode.Contains)))
             {
                 return false;
@@ -305,7 +305,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// プランの詳細条件（Patient ID, Course ID, Plan ID, Target Volume, 線量, 分割数, 日付, ビームメタデータ）に対する総合判定
+        /// Evaluates comprehensive plan match against Patient ID, Course ID, Plan ID, Target Volume, Dose, Fractions, Date, and Beam metadata.
         /// </summary>
         public static bool IsPlanMatch(
             string patientId,
@@ -323,19 +323,19 @@ namespace EclipseDataMiner.Services
         {
             if (criteria == null) return true;
 
-            // PlanSum を含めるかどうかのチェック
+            // Check whether to include PlanSums
             if (isPlanSum && !criteria.IncludePlanSums)
             {
                 return false;
             }
 
-            // 承認状態チェック（PlanSum は承認ステータスを持たないためパス、PlanSetup のみ適用）
+            // Check approval status (PlanSum has no approval status, so it passes; applied only to PlanSetup)
             if (!isPlanSum && !IsApprovalStatusMatch(approvalStatus, criteria))
             {
                 return false;
             }
 
-            // 線量有無（計算済み／未計算）チェック
+            // Check dose presence (calculated or uncalculated)
             if (criteria.DosePresence != DosePresenceFilter.All)
             {
                 bool hasCalculatedDose = (totalDoseGy.HasValue && !double.IsNaN(totalDoseGy.Value) && !double.IsInfinity(totalDoseGy.Value) && totalDoseGy.Value > 0) ||
@@ -351,13 +351,13 @@ namespace EclipseDataMiner.Services
                 }
             }
 
-            // 日付条件チェック
+            // Check date criteria
             bool hasDateFilter = criteria.DateFrom.HasValue || criteria.DateTo.HasValue;
             bool? matchDate = hasDateFilter
                 ? IsDateMatch(targetDate, criteria.DateFrom, criteria.DateTo)
                 : (bool?)null;
 
-            // ビーム条件チェック
+            // Check beam criteria
             bool hasBeamFilter = (criteria.MachineFilter?.Count > 0) || (criteria.MachineExcludeFilter?.Count > 0) ||
                                  (criteria.EnergyFilter?.Count > 0) || (criteria.EnergyExcludeFilter?.Count > 0) ||
                                  (criteria.TechniqueFilter?.Count > 0) || (criteria.TechniqueExcludeFilter?.Count > 0);
@@ -365,7 +365,7 @@ namespace EclipseDataMiner.Services
                 ? IsBeamMatch(beams, criteria.MachineFilter, criteria.MachineExcludeFilter, criteria.EnergyFilter, criteria.EnergyExcludeFilter, criteria.TechniqueFilter, criteria.TechniqueExcludeFilter)
                 : (bool?)null;
 
-            // 各条件の個別判定（フィルタ未指定時は null）
+            // Individual criteria evaluation (null if filter not specified)
             bool hasPatientFilter = (criteria.PatientIdFilter?.Count > 0) || (criteria.PatientIdExcludeFilter?.Count > 0);
             bool? matchPatientId = hasPatientFilter
                 ? IsTextMatch(patientId, criteria.PatientIdFilter, criteria.PatientIdExcludeFilter, criteria.PatientIdMatchMode)
@@ -416,7 +416,7 @@ namespace EclipseDataMiner.Services
                 matchTotalDose = totalDoseGy.HasValue && Math.Abs(totalDoseGy.Value - criteria.TotalDoseGy.Value) < 0.05;
             }
 
-            // 指定されたアクティブな条件リストを収集
+            // Collect active condition results
             var activeConditions = new List<bool>();
             if (matchPatientId.HasValue) activeConditions.Add(matchPatientId.Value);
             if (matchCourseId.HasValue) activeConditions.Add(matchCourseId.Value);
@@ -428,20 +428,20 @@ namespace EclipseDataMiner.Services
             if (matchDate.HasValue) activeConditions.Add(matchDate.Value);
             if (matchBeam.HasValue) activeConditions.Add(matchBeam.Value);
 
-            // 条件が1つも指定されていない場合は全件一致
+            // If no criteria specified, match all
             if (activeConditions.Count == 0)
             {
                 return true;
             }
 
-            // グローバル論理切替（AND: すべて満たす, OR: いずれかを満たす）
+            // Global logic toggle (AND: match all, OR: match any)
             return criteria.GlobalLogicIsAnd 
                 ? activeConditions.All(c => c) 
                 : activeConditions.Any(c => c);
         }
 
         /// <summary>
-        /// 後方互換用オーバーロード（日付, ビーム未指定）
+        /// Backward compatibility overload (without date and beam parameters).
         /// </summary>
         public static bool IsPlanMatch(
             string patientId,
@@ -459,7 +459,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// 後方互換用オーバーロード（Patient ID, Course ID, 日付, ビーム未指定）
+        /// Backward compatibility overload (without patient ID, course ID, date, and beam parameters).
         /// </summary>
         public static bool IsPlanMatch(
             string planId,

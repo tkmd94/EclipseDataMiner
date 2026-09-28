@@ -7,7 +7,7 @@ namespace EclipseDataMiner.Tests
     public class StringSanitizerTests
     {
         [TestMethod]
-        [Description("改行コード(CRLF, LF)が半角スペースに置換されることを検証")]
+        [Description("Verifies that newlines (CRLF, LF) are replaced with spaces in CSV escaping")]
         public void EscapeCsv_ShouldReplaceNewlinesWithSpace()
         {
             // Arrange
@@ -21,7 +21,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("カンマを含む文字列がダブルクォーテーションで囲まれることを検証")]
+        [Description("Verifies that strings containing commas are wrapped in double quotes")]
         public void EscapeCsv_ShouldWrapWithQuotes_WhenCommaPresent()
         {
             // Arrange
@@ -35,7 +35,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("ダブルクォーテーションを含む文字列がエスケープ（2重化）されることを検証")]
+        [Description("Verifies that double quotes inside strings are escaped by doubling them")]
         public void EscapeCsv_ShouldEscapeDoubleQuotes()
         {
             // Arrange
@@ -49,7 +49,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("SHA-256 ハッシュ化による患者ID匿名化が同一入力で決定論的であることを検証")]
+        [Description("Verifies that SHA-256 patient ID anonymization is deterministic for identical inputs")]
         public void AnonymizePatientId_ShouldProduceConsistentHash()
         {
             // Arrange
@@ -67,7 +67,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("個人情報マスキングが REDACTED を返却することを検証")]
+        [Description("Verifies that personal data masking returns REDACTED")]
         public void MaskPersonalData_ShouldReturnRedacted()
         {
             // Arrange
@@ -81,7 +81,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("欠損値（null / 空白）の場合に N/A が返却されることを検証")]
+        [Description("Verifies that missing values (null / whitespace) return N/A")]
         public void ValueOrNA_ShouldReturnNA_WhenNullOrEmpty()
         {
             // Act & Assert

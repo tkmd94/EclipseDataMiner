@@ -12,13 +12,13 @@ namespace EclipseDataMiner.Models
     }
 
     /// <summary>
-    /// 輪郭の事前マッピング・エイリアスルールモデル
+    /// Pre-mapping and alias rule model for structures.
     /// </summary>
     public class StructureMappingRule : ObservableObject
     {
         private bool _isSelected = true;
         /// <summary>
-        /// 抽出対象フラグ（false の場合はオプトアウト・除外）
+        /// Extraction flag (false indicates opt-out / exclusion).
         /// </summary>
         public bool IsSelected
         {
@@ -28,7 +28,7 @@ namespace EclipseDataMiner.Models
 
         private string _pattern = string.Empty;
         /// <summary>
-        /// 一致条件パターン（Structure ID または 正規表現）
+        /// Matching pattern condition (Structure ID or Regular Expression).
         /// </summary>
         public string Pattern
         {
@@ -44,7 +44,7 @@ namespace EclipseDataMiner.Models
 
         private StructureMatchMode _matchMode = StructureMatchMode.Exact;
         /// <summary>
-        /// マッチング方式（完全一致、部分一致、正規表現）
+        /// Matching mode (Exact match, Partial match, Regular Expression).
         /// </summary>
         public StructureMatchMode MatchMode
         {
@@ -60,7 +60,7 @@ namespace EclipseDataMiner.Models
 
         private bool _isRegexError = false;
         /// <summary>
-        /// 正規表現の構文エラーが存在するか
+        /// Indicates whether a regex syntax error exists.
         /// </summary>
         public bool IsRegexError
         {
@@ -70,7 +70,7 @@ namespace EclipseDataMiner.Models
 
         private string _regexErrorMessage = string.Empty;
         /// <summary>
-        /// 正規表現構文エラーの詳細メッセージ
+        /// Detailed syntax error message for regular expression.
         /// </summary>
         public string RegexErrorMessage
         {
@@ -80,7 +80,7 @@ namespace EclipseDataMiner.Models
 
         private string _targetAlias = string.Empty;
         /// <summary>
-        /// 抽出時統合名（Target Alias）。空欄の場合は元のStructure IDを使用
+        /// Target alias name upon extraction. If empty, the original Structure ID is preserved.
         /// </summary>
         public string TargetAlias
         {
@@ -90,7 +90,7 @@ namespace EclipseDataMiner.Models
 
         private int _matchedCount = 0;
         /// <summary>
-        /// 事前スキャンで検出されたヒット件数
+        /// Hit count discovered during pre-scan.
         /// </summary>
         public int MatchedCount
         {
@@ -99,7 +99,7 @@ namespace EclipseDataMiner.Models
         }
 
         /// <summary>
-        /// 正規表現の構文妥当性を検証
+        /// Validates syntax correctness for regular expressions.
         /// </summary>
         public void ValidateRegex()
         {
@@ -124,7 +124,7 @@ namespace EclipseDataMiner.Models
         }
 
         /// <summary>
-        /// 指定された Structure.Id が本ルールに適合するかを判定
+        /// Determines whether the given Structure.Id matches this rule.
         /// </summary>
         public bool IsMatch(string structureId)
         {

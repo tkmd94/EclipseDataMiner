@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace EclipseDataMiner.Models
 {
     /// <summary>
-    /// ビーム（照射野）の抽出DTOレコード
+    /// Extraction DTO record for a beam (field).
     /// </summary>
     public class BeamRecord
     {
@@ -21,7 +21,7 @@ namespace EclipseDataMiner.Models
         public List<string> CalculationLogs { get; set; } = new List<string>();
 
         /// <summary>
-        /// 1セル集約用フォーマット文字列 (Unit:Energy:Tech:MLCType)
+        /// Formatted summary string for single cell aggregation (Unit:Energy:Tech:MLCType).
         /// </summary>
         public string ToMachineEnergySummary()
         {

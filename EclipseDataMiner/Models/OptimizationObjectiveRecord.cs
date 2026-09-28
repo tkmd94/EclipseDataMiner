@@ -1,7 +1,7 @@
 namespace EclipseDataMiner.Models
 {
     /// <summary>
-    /// 最適化パラメータ・目的関数の抽出DTOレコード
+    /// Extraction DTO record for optimization parameters and objective functions.
     /// </summary>
     public class OptimizationObjectiveRecord
     {
@@ -13,7 +13,7 @@ namespace EclipseDataMiner.Models
         public double Priority { get; set; }
         public double? ParameterA { get; set; }
 
-        // Normal Tissue Objective (NTO) 固有パラメータ
+        // Normal Tissue Objective (NTO) specific parameters
         public bool IsNTO { get; set; }
         public double? DistanceFromTargetBorderInMM { get; set; }
         public double? StartDosePercentage { get; set; }
@@ -22,7 +22,7 @@ namespace EclipseDataMiner.Models
         public bool? IsAutomatic { get; set; }
 
         /// <summary>
-        /// CSVセル内の1項目用フォーマット文字列
+        /// Formatted summary string for single CSV cell entry.
         /// </summary>
         public string ToSummaryString()
         {

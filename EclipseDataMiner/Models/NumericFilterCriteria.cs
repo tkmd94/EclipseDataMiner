@@ -3,7 +3,7 @@ using System;
 namespace EclipseDataMiner.Models
 {
     /// <summary>
-    /// 数値フィルタ条件（単一値、範囲指定 70-80 / 70~80、不等号 >=10 / <30）
+    /// Numeric filter criteria (single value, range specifications 70-80 / 70~80, inequalities >=10 / <30).
     /// </summary>
     public class NumericFilterCriteria
     {
@@ -15,12 +15,12 @@ namespace EclipseDataMiner.Models
         public bool MaxInclusive { get; set; } = true;
 
         /// <summary>
-        /// 条件が未指定かどうか
+        /// Indicates whether no criteria are specified.
         /// </summary>
         public bool IsEmpty => !ExactValue.HasValue && !MinValue.HasValue && !MaxValue.HasValue;
 
         /// <summary>
-        /// 文字列から数値フィルタ条件を解析生成
+        /// Parses numeric filter criteria from a string.
         /// </summary>
         public static NumericFilterCriteria Parse(string text)
         {
@@ -29,7 +29,7 @@ namespace EclipseDataMiner.Models
             text = text.Trim();
             var criteria = new NumericFilterCriteria { RawText = text };
 
-            // 1. 不等号の判定 (>=, <=, >, <)
+            // 1. Inequality checks (>=, <=, >, <)
             if (text.StartsWith(">="))
             {
                 if (double.TryParse(text.Substring(2).Trim(), out double min))
@@ -67,11 +67,11 @@ namespace EclipseDataMiner.Models
                 }
             }
 
-            // 2. 範囲指定 ( ~ または - )
+            // 2. Range specification (~ or -)
             int sepIndex = text.IndexOf('~');
             if (sepIndex < 0)
             {
-                // '-' を探す（先頭以外にあるハイフン）
+                // Find '-' occurring after the first character
                 sepIndex = text.IndexOf('-', 1);
             }
 
@@ -89,7 +89,7 @@ namespace EclipseDataMiner.Models
                 }
             }
 
-            // 3. 単一値 (例: "78", "2.0")
+            // 3. Single value (e.g. "78", "2.0")
             if (double.TryParse(text, out double val))
             {
                 criteria.ExactValue = val;
@@ -100,7 +100,7 @@ namespace EclipseDataMiner.Models
         }
 
         /// <summary>
-        /// double 値（線量等）との整合性判定
+        /// Matches against a double value (such as dose).
         /// </summary>
         public bool IsMatch(double? targetValue, double tolerance = 0.05)
         {
@@ -109,7 +109,7 @@ namespace EclipseDataMiner.Models
 
             double val = targetValue.Value;
 
-            // NaN や Infinity （未計算・未定義の線量値）は確実に除外
+            // Exclude NaN or Infinity (uncalculated/undefined dose values)
             if (double.IsNaN(val) || double.IsInfinity(val)) return false;
 
             if (ExactValue.HasValue)
@@ -145,7 +145,7 @@ namespace EclipseDataMiner.Models
         }
 
         /// <summary>
-        /// int 値（分割数等）との整合性判定
+        /// Matches against an integer value (such as fraction count).
         /// </summary>
         public bool IsMatchInt(int? targetValue)
         {

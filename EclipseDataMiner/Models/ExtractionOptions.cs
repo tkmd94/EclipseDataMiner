@@ -3,11 +3,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace EclipseDataMiner.Models
 {
     /// <summary>
-    /// データマイニングの抽出オプション設定モデル
+    /// Configuration options for data mining extraction.
     /// </summary>
     public class ExtractionOptions : ObservableObject
     {
-        // 計画メタデータ
+        // Plan metadata
         private bool _exportPlanningApprover = false;
         public bool ExportPlanningApprover
         {
@@ -50,7 +50,7 @@ namespace EclipseDataMiner.Models
             set => SetProperty(ref _exportOptimizationObjectives, value);
         }
 
-        // 照射パラメータ
+        // Delivery parameters
         private bool _exportBeamMU = false;
         public bool ExportBeamMU
         {
@@ -65,7 +65,7 @@ namespace EclipseDataMiner.Models
             set => SetProperty(ref _exportBeamMachineEnergyTech, value);
         }
 
-        // 計算ログ
+        // Calculation log
         private bool _exportCalculationLog = false;
         public bool ExportCalculationLog
         {
@@ -73,7 +73,7 @@ namespace EclipseDataMiner.Models
             set => SetProperty(ref _exportCalculationLog, value);
         }
 
-        // 複雑度評価
+        // Plan complexity
         private bool _exportPlanComplexity = false;
         public bool ExportPlanComplexity
         {
@@ -81,7 +81,7 @@ namespace EclipseDataMiner.Models
             set => SetProperty(ref _exportPlanComplexity, value);
         }
 
-        // 匿名化
+        // Anonymization
         private bool _anonymizeOutput = false;
         public bool AnonymizeOutput
         {
@@ -89,7 +89,7 @@ namespace EclipseDataMiner.Models
             set => SetProperty(ref _anonymizeOutput, value);
         }
 
-        // JSONL 出力
+        // JSONL export
         private bool _exportJsonl = false;
         public bool ExportJsonl
         {
@@ -97,7 +97,7 @@ namespace EclipseDataMiner.Models
             set => SetProperty(ref _exportJsonl, value);
         }
 
-        // DVH曲線CSV出力
+        // DVH curves export
         private bool _exportDvhCurves = false;
         public bool ExportDvhCurves
         {
@@ -105,7 +105,7 @@ namespace EclipseDataMiner.Models
             set => SetProperty(ref _exportDvhCurves, value);
         }
 
-        // 事前スキャンバイパス
+        // Pre-scan bypass
         private bool _bypassPreScan = false;
         public bool BypassPreScan
         {
@@ -113,7 +113,7 @@ namespace EclipseDataMiner.Models
             set => SetProperty(ref _bypassPreScan, value);
         }
 
-        // PlanSum（合算計画）を含める
+        // Include PlanSums
         private bool _exportPlanSums = false;
         public bool ExportPlanSums
         {

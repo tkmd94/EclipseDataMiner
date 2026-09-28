@@ -1,5 +1,7 @@
 # 高信頼性ソフトウェア標準開発計画仕様書 (Standard Software Development Lifecycle Protocol: SDLP)
 
+[English](STANDARD_DEVELOPMENT_PLAN.en.md) | **日本語**
+
 本ドキュメントは、Varian Eclipse ESAPI による大量治療計画データマイニング、外部連携、GUI/ストリーミング処理、および厳格な品質管理が求められるソフトウェア開発において、**「最高峰の開発効率」** と **「絶対的な計算正確性・堅牢性」** を両立するための標準開発計画・ワークフロー規約を体系化したものです。
 
 ---
@@ -57,7 +59,7 @@ flowchart TD
   ・Costura.Fody による単一 EXE 生成確認 (ESAPI 除外確認)
   ↓
 [Layer 2: 自動単体テストゲート]
-  ・MSTest 全件実行にて 100% (111/111) PASS
+  ・MSTest 全件実行にて 100% (116/116) PASS
   ・線量正規化、サニタイズ、ストリーミング、検索論理、マッピング
   ↓
 [Layer 3: 臨床受入・コミッショニングゲート]

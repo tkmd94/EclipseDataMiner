@@ -1,52 +1,52 @@
 namespace EclipseDataMiner.Models
 {
     /// <summary>
-    /// DVH統計およびDQP算出結果のDTOレコード
+    /// DTO record for DVH metrics and dosimetric quality parameter calculation results.
     /// </summary>
     public class DvhMetricResult
     {
         /// <summary>
-        /// ESAPI上の元の輪郭ID
+        /// Original structure ID in ESAPI.
         /// </summary>
         public string OriginalStructureId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 抽出時統合名（Target Alias）。未指定時は OriginalStructureId
+        /// Target alias name upon extraction. Defaults to OriginalStructureId if unspecified.
         /// </summary>
         public string TargetAlias { get; set; } = string.Empty;
 
         /// <summary>
-        /// 輪郭体積 [cc]
+        /// Structure volume [cc].
         /// </summary>
         public double? StructureVolumeCc { get; set; }
 
         /// <summary>
-        /// 最大線量 [Gy]
+        /// Maximum dose [Gy].
         /// </summary>
         public double? MaxDoseGy { get; set; }
 
         /// <summary>
-        /// 平均線量 [Gy]
+        /// Mean dose [Gy].
         /// </summary>
         public double? MeanDoseGy { get; set; }
 
         /// <summary>
-        /// 最小線量 [Gy]
+        /// Minimum dose [Gy].
         /// </summary>
         public double? MinDoseGy { get; set; }
 
         /// <summary>
-        /// 指標キー（例: D95%, V20Gy, MeanDose 等）
+        /// Metric key (e.g. D95%, V20Gy, MeanDose, etc.).
         /// </summary>
         public string MetricKey { get; set; } = string.Empty;
 
         /// <summary>
-        /// 算出された数値（Gyまたはccまたは%）
+        /// Calculated numeric value (Gy, cc, or %).
         /// </summary>
         public double? Value { get; set; }
 
         /// <summary>
-        /// 単位表示（Gy, cc, % 等）
+        /// Unit label (Gy, cc, %, etc.).
         /// </summary>
         public string Unit { get; set; } = string.Empty;
     }

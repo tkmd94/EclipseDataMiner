@@ -9,7 +9,7 @@ using EclipseDataMiner.ViewModels;
 namespace EclipseDataMiner
 {
     /// <summary>
-    /// MainWindow.xaml の相互作用ロジック
+    /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -22,7 +22,7 @@ namespace EclipseDataMiner
         }
 
         /// <summary>
-        /// プレビュー行のダブルクリックにより該当輪郭をルール定義に追加
+        /// Double-clicking a preview row adds the corresponding structure to mapping rules.
         /// </summary>
         private void DiscoveredRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
@@ -37,7 +37,7 @@ namespace EclipseDataMiner
         }
 
         /// <summary>
-        /// 行選択変更時に選択行を自動スクロール表示
+        /// Automatically scrolls the selected row into view when selection changes.
         /// </summary>
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -48,13 +48,11 @@ namespace EclipseDataMiner
         }
 
         /// <summary>
-        /// ウィンドウ全体での Delete キー押下を検知し、連続削除とフォーカス追従を実現
+        /// Handles window-wide key presses: Delete for row deletion, and Alt+Up/Down (or Ctrl+Up/Down) for row reordering.
         /// </summary>
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key != Key.Delete) return;
-
-            // テキスト入力・編集中の場合は通常の文字削除を優先
+            // Prioritize normal character editing/cursor movement inside textboxes or dropdowns
             var focused = Keyboard.FocusedElement;
             if (focused is TextBoxBase || e.OriginalSource is TextBoxBase) return;
             if (focused is PasswordBox || e.OriginalSource is PasswordBox) return;
@@ -62,31 +60,115 @@ namespace EclipseDataMiner
 
             if (DataContext is MainViewModel vm)
             {
-                // Tab 2: 輪郭事前マッピング (インデックス 1)
+                // Tab 2: Structure Mapping (Index 1)
                 if (MainTabControl != null && MainTabControl.SelectedIndex == 1)
                 {
-                    if (vm.SelectedRule != null && vm.DeleteRuleCommand.CanExecute(null))
+                    if (e.Key == Key.Delete)
                     {
-                        vm.DeleteRuleCommand.Execute(null);
-                        e.Handled = true;
-                        FocusSelectedRow(MappingRulesGrid);
+                        if (vm.SelectedRule != null && vm.DeleteRuleCommand.CanExecute(null))
+                        {
+                            vm.DeleteRuleCommand.Execute(null);
+                            e.Handled = true;
+                            FocusSelectedRow(MappingRulesGrid);
+                        }
+                    }
+                    else if ((e.Key == Key.Up || e.Key == Key.Down) && (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) || Keyboard.Modifiers.HasFlag(ModifierKeys.Control)))
+                    {
+                        if (e.Key == Key.Up && vm.MoveUpRuleCommand.CanExecute(null))
+                        {
+                            MappingRulesGrid?.CommitEdit(DataGridEditingUnit.Row, true);
+                            MappingRulesGrid?.CommitEdit(DataGridEditingUnit.Cell, true);
+                            vm.MoveUpRuleCommand.Execute(null);
+                            e.Handled = true;
+                            FocusSelectedRow(MappingRulesGrid);
+                        }
+                        else if (e.Key == Key.Down && vm.MoveDownRuleCommand.CanExecute(null))
+                        {
+                            MappingRulesGrid?.CommitEdit(DataGridEditingUnit.Row, true);
+                            MappingRulesGrid?.CommitEdit(DataGridEditingUnit.Cell, true);
+                            vm.MoveDownRuleCommand.Execute(null);
+                            e.Handled = true;
+                            FocusSelectedRow(MappingRulesGrid);
+                        }
                     }
                 }
-                // Tab 3: DQP 設定 (インデックス 2)
+                // Tab 3: DQP Configuration (Index 2)
                 else if (MainTabControl != null && MainTabControl.SelectedIndex == 2)
                 {
-                    if (vm.SelectedDqp != null && vm.DeleteDqpCommand.CanExecute(null))
+                    if (e.Key == Key.Delete)
                     {
-                        vm.DeleteDqpCommand.Execute(null);
-                        e.Handled = true;
-                        FocusSelectedRow(DqpGrid);
+                        if (vm.SelectedDqp != null && vm.DeleteDqpCommand.CanExecute(null))
+                        {
+                            vm.DeleteDqpCommand.Execute(null);
+                            e.Handled = true;
+                            FocusSelectedRow(DqpGrid);
+                        }
+                    }
+                    else if ((e.Key == Key.Up || e.Key == Key.Down) && (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) || Keyboard.Modifiers.HasFlag(ModifierKeys.Control)))
+                    {
+                        if (e.Key == Key.Up && vm.MoveUpDqpCommand.CanExecute(null))
+                        {
+                            DqpGrid?.CommitEdit(DataGridEditingUnit.Row, true);
+                            DqpGrid?.CommitEdit(DataGridEditingUnit.Cell, true);
+                            vm.MoveUpDqpCommand.Execute(null);
+                            e.Handled = true;
+                            FocusSelectedRow(DqpGrid);
+                        }
+                        else if (e.Key == Key.Down && vm.MoveDownDqpCommand.CanExecute(null))
+                        {
+                            DqpGrid?.CommitEdit(DataGridEditingUnit.Row, true);
+                            DqpGrid?.CommitEdit(DataGridEditingUnit.Cell, true);
+                            vm.MoveDownDqpCommand.Execute(null);
+                            e.Handled = true;
+                            FocusSelectedRow(DqpGrid);
+                        }
                     }
                 }
             }
         }
 
         /// <summary>
-        /// ルール削除ボタン押下後に DataGrid の新選択行へフォーカスを復帰
+        /// Commits any active edits in the mapping rules grid before moving to prevent transaction exceptions.
+        /// </summary>
+        private void MoveRuleButton_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (MappingRulesGrid != null)
+            {
+                MappingRulesGrid.CommitEdit(DataGridEditingUnit.Row, true);
+                MappingRulesGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+            }
+        }
+
+        /// <summary>
+        /// Restores focus to the selected row in MappingRulesGrid after moving up or down.
+        /// </summary>
+        private void MoveRuleButton_Click(object sender, RoutedEventArgs e)
+        {
+            FocusSelectedRow(MappingRulesGrid);
+        }
+
+        /// <summary>
+        /// Commits any active edits in the DQP grid before moving to prevent transaction exceptions.
+        /// </summary>
+        private void MoveDqpButton_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (DqpGrid != null)
+            {
+                DqpGrid.CommitEdit(DataGridEditingUnit.Row, true);
+                DqpGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+            }
+        }
+
+        /// <summary>
+        /// Restores focus to the selected row in DqpGrid after moving up or down.
+        /// </summary>
+        private void MoveDqpButton_Click(object sender, RoutedEventArgs e)
+        {
+            FocusSelectedRow(DqpGrid);
+        }
+
+        /// <summary>
+        /// Restores focus to the newly selected row in DataGrid after clicking Delete Rule button.
         /// </summary>
         private void DeleteRuleButton_Click(object sender, RoutedEventArgs e)
         {
@@ -94,7 +176,7 @@ namespace EclipseDataMiner
         }
 
         /// <summary>
-        /// DQP削除ボタン押下後に DataGrid の新選択行へフォーカスを復帰
+        /// Restores focus to the newly selected row in DataGrid after clicking Delete DQP button.
         /// </summary>
         private void DeleteDqpButton_Click(object sender, RoutedEventArgs e)
         {
@@ -102,7 +184,7 @@ namespace EclipseDataMiner
         }
 
         /// <summary>
-        /// 正規表現ヒントポップアップを閉じる
+        /// Closes the regular expression hints popup.
         /// </summary>
         private void CloseRegexHintsPopup_Click(object sender, RoutedEventArgs e)
         {
@@ -113,7 +195,7 @@ namespace EclipseDataMiner
         }
 
         /// <summary>
-        /// スニペット挿入時にポップアップを閉じ、DataGrid にフォーカスを戻す
+        /// Closes popup and returns focus to DataGrid upon inserting a snippet.
         /// </summary>
         private void InsertSnippetButton_Click(object sender, RoutedEventArgs e)
         {
@@ -125,7 +207,7 @@ namespace EclipseDataMiner
         }
 
         /// <summary>
-        /// 計画検索正規表現スニペット挿入後にヒントポップアップを閉じる
+        /// Closes search regex hints popup upon inserting a search snippet.
         /// </summary>
         private void InsertSearchSnippetButton_Click(object sender, RoutedEventArgs e)
         {
@@ -136,7 +218,7 @@ namespace EclipseDataMiner
         }
 
         /// <summary>
-        /// DataGrid の現在選択行にキーボードフォーカスを確実に設定
+        /// Sets keyboard focus to the currently selected row in DataGrid.
         /// </summary>
         private void FocusSelectedRow(DataGrid grid)
         {
@@ -168,7 +250,7 @@ namespace EclipseDataMiner
         }
 
         /// <summary>
-        /// ログテキスト更新時に常に最下行へ自動スクロール
+        /// Automatically scrolls to the bottom of the console textbox when log text is updated.
         /// </summary>
         private void ConsoleTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {

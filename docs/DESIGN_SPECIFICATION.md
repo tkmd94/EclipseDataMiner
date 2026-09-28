@@ -1,5 +1,7 @@
 # ESAPI データマイニング・プログラム 詳細設計仕様書 (v3.0)
 
+[English](DESIGN_SPECIFICATION.en.md) | **日本語**
+
 ## 1. システム概要
 本システムは、Varian Eclipse Scripting API (ESAPI) を活用し、10,000件規模の放射線治療計画（PlanSetup / PlanSum）からDVH指標およびメタデータを高速かつ安全に抽出するスタンドアロン・アプリケーションである。抽出データはデータクレンジングの負荷を最小化するため、正規化されたCSVおよび機械学習用途に最適なJSON Lines (JSONL) 形式でストリーミング出力される。
 
@@ -65,12 +67,19 @@
 ## 4. 出力データ仕様
 * **線量単位の正規化 (Gy統一)**: 
   * 取得した `DoseValue.Unit` を判定し、`cGy` は `Gy` に自動換算して出力する。CSVヘッダーには `[Gy]` 等の単位を明記する。
-* **CSV出力仕様**:
-  * 1行 = 1プラン (フラット形式)。
-  * 列の配置順序: 基本計画情報 → オプション情報 → 各輪郭の自動基本統計量 (`<Structure>-Volume[cc]`, `<Structure>-Max dose[Gy]`, `<Structure>-Mean dose[Gy]`, `<Structure>-Min dose[Gy]`) → DQP 指定指標 (`<Structure>-D95%[Gy]`, `<Structure>-V70%[%]` 等)。
-  * 1対Nのデータ(Beam情報, Optimization Objectives等)は `;` で連結して1つのセルに格納。
-  * 改行やカンマを含む文字列(Calculation Log等)は、改行をスペースに置換し `""` でエスケープした上でダブルクォーテーションで囲む。
-  * 欠損データや該当しない項目には `N/A` を出力する。
+* **CSV出力仕様 (1計画 = 1行の正規化フラット形式)**:
+  * **1. 基本計画情報カラム (Core: 11列, 常時出力)**:
+    * `Patient ID`, `Course ID`, `Date of birth`, `Plan ID`, `Target volume`, `DosePerFraction[Gy]`, `NumberOfFractions`, `TotalDose[Gy]`, `NumberOfBeams`, `ApprovalStatus`, `IsPlanSum`
+  * **2. オプション計画メタデータ・照射パラメータカラム (Optional: 最大10列, Tab 4 設定連動)**:
+    * `PlanningApprover`, `PlanningApprovalDate`, `MU`, `Machine/Energy/Tech/PlanType`, `CalculationModel`, `CalculationLog`, `PlanNormalizationMethod`, `ClinicalProtocol`, `OptimizationObjectives`, `PlanComplexity` (MCS, EdgeMetric, LeafTravel, ArcLength, AAV, LSV)
+  * **3. 輪郭基本統計量カラム (Baseline Structure Stats: 1輪郭あたり4列, 自動出力)**:
+    * `<Alias>-Volume[cc]`, `<Alias>-Max dose[Gy]`, `<Alias>-Mean dose[Gy]`, `<Alias>-Min dose[Gy]`
+  * **4. 動的線量評価指標 (DQP) カラム (Dynamic DQP Columns: Tab 3 登録指標)**:
+    * `<Alias>-D<Val>%[Gy]`, `<Alias>-D<Val>cc[Gy]`, `<Alias>-V<Val>Gy[%]`, `<Alias>-DC<Val>%[Gy]`, `<Alias>-CV<Val>Gy[%]` 等
+  * 1対Nのデータ (Beam情報, Optimization Objectives等) は `;` で連結して1つのセルに格納。
+  * 改行やカンマを含む文字列 (Calculation Log等) は、改行をスペースに置換し `""` でエスケープした上でダブルクォーテーションで囲む。
+  * 欠損データや該当しない項目には明示的に `N/A` を出力する。
+  * エンコーディング: Microsoft Excel での直接表示を保証する UTF-8 with BOM。
 * **JSONL (JSON Lines) 出力仕様**:
   * 機械学習・AI解析向けに、オプションで `.jsonl` 形式を同時出力。
   * ESAPIの階層構造 (Plan > Beams, Objectives) をリストや辞書型として保持したまま、1プラン = 1行のJSONオブジェクトとしてシリアライズする。
@@ -128,27 +137,34 @@
 
 ## 7. テスト・品質保証 (QA) 仕様
 
-自動検証パイプライン（`test.bat`）により、MSBuild x64 Release ビルドおよび MSTest（計 50 件）を 100% 自動実行し、コードの健全性と計算正確性を担保。
+自動検証パイプライン（`test.bat`）により、MSBuild x64 Release ビルドおよび MSTest（計 116 件）を 100% 自動実行し、コードの健全性と計算正確性を担保。
 
-### 7.1. テストスイート構成（計 50 件）
+### 7.1. テストスイート構成（計 116 件）
 1. **単位正規化テスト ([DoseNormalizationTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/DoseNormalizationTests.cs) - 4件)**:
    - `cGy` / `Gy` 相互変換、文字列オーバーロード、厳密な数値保持。
 2. **文字列サニタイズ・機密保護テスト ([StringSanitizerTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/StringSanitizerTests.cs) - 6件)**:
    - CSV 改行・カンマ・ダブルクォートエスケープ、SHA-256 匿名化ハッシュ、個人情報 `REDACTED` マスク、欠損値 `N/A` 変換。
-3. **ストリーミングエクスポートテスト ([StreamingExportTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/StreamingExportTests.cs) - 6件)**:
-   - 1プラン1行のフラット CSV 出力、基本統計量＋動的 DQP 列生成、線量 0 Gy / 特殊文字 / 欠損値を含むフォールトトレランス出力、階層構造を保持した JSONL 出力および `System.Text.Json` パース検証。
-4. **検索フィルタ・パーステスト ([SearchFilterTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/SearchFilterTests.cs) - 9件)**:
+3. **ストリーミングエクスポートテスト ([StreamingExportTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/StreamingExportTests.cs) - 8件)**:
+   - 1プラン1行のフラット CSV 出力、基本統計量＋動的 DQP 列生成、線量 0 Gy / 特殊文字 / 欠損値を含むフォールトトレランス出力、PlanSum 線量計算ログ出力、階層構造を保持した JSONL 出力および `System.Text.Json` パース検証。
+4. **検索フィルタ・パーステスト ([SearchFilterTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/SearchFilterTests.cs) - 47件)**:
    - 患者 ID の OR 検索、グローバル AND / OR 論理判定、PlanSum 包含・除外判定、承認状態判定、AND/OR トグル連動、カンマ区切りパーサーの連続カンマ・全角半角スペース・null サニタイズ。
-5. **輪郭マッピング・ルール解決テスト ([StructureMappingTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/StructureMappingTests.cs) - 14件)**:
+   - 不等号（`>=`, `<=`, `>`, `<`）および範囲指定（`70-80`）数値パーサー、テキスト除外フィルタ（`!QA`）、照射パラメータ（Machine, Energy, Technique）フィルタ、日付範囲フィルタ（治療承認日・計画承認日・作成日）。
+   - 検索プリセットの保存・適用・削除・説明文永続化、正規表現チートシート挿入、線量有無フィルタ（`HasDose` / `NoDose`）。
+   - XAML 静的リソース整合性（`XamlResourceIntegrity_ShouldHaveNoMissingStaticResources`）、STA スレッド上での MainWindow XAML 初期化・スタイル解決（`MainWindow_XamlLoadingAndStyleResolution_ShouldNotThrowException`）。
+5. **輪郭マッピング・ルール解決テスト ([StructureMappingTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/StructureMappingTests.cs) - 24件)**:
    - `Exact` / `Contains` / `Regex` マッピング、特異度優先探索（`Exact` > `Contains` > `Regex`）、重複集約時の自動注記（`[統合: N件]`）、構文エラー正規表現の安全な無視（例外非スロー）、日本語・特殊記号対応、順序入替（▲/▼）、JSON 保存読込、DQP/ログコマンド。
-6. **幾何アルゴリズム・複雑性テスト ([PlanComplexityTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/PlanComplexityTests.cs) - 4件)**:
+   - 検出輪郭のヒット件数（MatchedCount）集計、ルール変更時のリアルタイムプレビュー自動更新、正規表現エラー状態通知、複合臨床名解決。
+6. **幾何アルゴリズム・複雑性テスト ([PlanComplexityTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/PlanComplexityTests.cs) - 13件)**:
    - Varian HD120 (中央 32 枚 2.5 mm, 外側 28 枚 5.0 mm) 幾何座標計算。
    - Millennium 120 (中央 40 枚 5.0 mm, 外側 20 枚 10.0 mm) 幾何座標計算および非対称性防止。
    - 未知 MLC モデルに対するフェイルセーフ。
-   - コントロールポイント間リーフトラベル移動距離（絶対値和）計算。
-7. **ViewModel・状態遷移テスト ([MainViewModelTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/MainViewModelTests.cs) - 7件)**:
+   - コントロールポイント間リーフトラベル移動距離（LT）計算、Aperture Area Variability (AAV)、Leaf Sequence Variability (LSV)、Modulation Complexity Score (MCS)、Edge Metric、Arc Length の文献ベンチマーク完全一致検証。
+   - 固定多門 IMRT および回転 VMAT 照射野の複雑度解析検証。
+7. **ViewModel・状態遷移テスト ([MainViewModelTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/MainViewModelTests.cs) - 13件)**:
    - `IsRunning` に連動した Run / PreScan / Cancel コマンドの多重実行防止（排他制御 `CanExecute`）。
-   - 初期出力先 CSV パス生成。
-   - 進捗パーセンテージおよびステータステキスト更新。
-   - プレビュー項目のダブルクリック追加および重複防止。
+   - 初期出力先 CSV パス生成、進捗パーセンテージおよびステータステキスト更新。
+   - プレビュー項目のダブルクリック追加および既存ルール選択（重複防止）。
    - プレビューのリアルタイム・テキストフィルタおよびステータス別絞り込み（`Unmapped Only` 等）。
+   - ルールおよび DQP の連続削除（次行自動選択）、タイトルバーバージョン動的反映、Pre-Scan スコープバッジテキスト連動。
+8. **UI レンダリング自動テスト ([UiScreenshotTests.cs](file:///g:/Source/Repos/tkmd94/EclipseDataMiner/EclipseDataMiner.Tests/UiScreenshotTests.cs) - 1件)**:
+   - STA スレッド上での実 MainWindow レンダリング、コントロール配置・スタイル検証、およびドキュメント用スクリーンショット自動出力。

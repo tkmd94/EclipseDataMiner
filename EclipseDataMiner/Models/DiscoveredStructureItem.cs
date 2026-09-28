@@ -3,13 +3,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace EclipseDataMiner.Models
 {
     /// <summary>
-    /// 事前スキャンで検出された生輪郭とルール適用結果プレビューモデル
+    /// Preview model for raw structures discovered during pre-scan and mapping rule application results.
     /// </summary>
     public class DiscoveredStructureItem : ObservableObject
     {
         private string _rawStructureId = string.Empty;
         /// <summary>
-        /// データベースから検出された生輪郭ID
+        /// Raw structure ID discovered from the database.
         /// </summary>
         public string RawStructureId
         {
@@ -19,7 +19,7 @@ namespace EclipseDataMiner.Models
 
         private int _hitCount = 0;
         /// <summary>
-        /// 該当輪郭を保持するプランの検出件数
+        /// Number of matched plans containing this structure.
         /// </summary>
         public int HitCount
         {
@@ -29,7 +29,7 @@ namespace EclipseDataMiner.Models
 
         private string _resolvedAlias = string.Empty;
         /// <summary>
-        /// マッピングルール適用後の解決先 Alias（未マッピング時は元の ID）
+        /// Resolved target alias after mapping rules are applied (original ID if unmapped).
         /// </summary>
         public string ResolvedAlias
         {
@@ -39,7 +39,7 @@ namespace EclipseDataMiner.Models
 
         private bool _isExtracted = true;
         /// <summary>
-        /// 抽出対象フラグ（ルールにより除外されている場合は false）
+        /// Extraction flag (false if excluded by a rule).
         /// </summary>
         public bool IsExtracted
         {
@@ -49,7 +49,7 @@ namespace EclipseDataMiner.Models
 
         private string _matchStatus = "Unmapped (Raw)";
         /// <summary>
-        /// ルール適合ステータス表記（例: Mapped (Regex -> PTV), Excluded, Unmapped (Raw)）
+        /// Match status description (e.g. Mapped (Regex -> PTV), Excluded, Unmapped (Raw)).
         /// </summary>
         public string MatchStatus
         {

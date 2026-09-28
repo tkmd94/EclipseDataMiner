@@ -5,7 +5,7 @@ using System.Text;
 namespace EclipseDataMiner.Helpers
 {
     /// <summary>
-    /// 文字列サニタイズ・CSVエスケープ・匿名化ヘルパー
+    /// Helper for string sanitization, CSV escaping, and de-identification.
     /// </summary>
     public static class StringSanitizer
     {
@@ -13,7 +13,7 @@ namespace EclipseDataMiner.Helpers
         public const string Redacted = "REDACTED";
 
         /// <summary>
-        /// CSVセル用にサニタイズ（改行をスペース置換、引用符エスケープ、カンマ含有時の囲み）
+        /// Sanitizes text for CSV cells (replaces newlines with spaces, escapes quotes, wraps in quotes if needed).
         /// </summary>
         public static string EscapeCsv(string input)
         {
@@ -22,7 +22,7 @@ namespace EclipseDataMiner.Helpers
                 return string.Empty;
             }
 
-            // 改行を半角スペースに置換
+            // Replace newlines with spaces
             string sanitized = input.Replace("\r\n", " ")
                                     .Replace("\n", " ")
                                     .Replace("\r", " ");
@@ -45,7 +45,7 @@ namespace EclipseDataMiner.Helpers
         }
 
         /// <summary>
-        /// 患者IDを SHA-256 でハッシュ化して匿名化文字列を生成
+        /// Generates a SHA-256 hashed de-identified string from a Patient ID.
         /// </summary>
         public static string AnonymizePatientId(string patientId, string salt = "EclipseDataMiner_Anonymizer")
         {
@@ -68,7 +68,7 @@ namespace EclipseDataMiner.Helpers
         }
 
         /// <summary>
-        /// 個人情報（氏名、生年月日、承認者名等）のマスキング
+        /// Masks personal identifiable information (name, birth date, approver, etc.).
         /// </summary>
         public static string MaskPersonalData(string input, bool mask = true)
         {
@@ -78,7 +78,7 @@ namespace EclipseDataMiner.Helpers
         }
 
         /// <summary>
-        /// 欠損値（null / 空白）の場合に "N/A" を返却
+        /// Returns "N/A" if the string value is null or whitespace.
         /// </summary>
         public static string ValueOrNA(string value)
         {
@@ -86,7 +86,7 @@ namespace EclipseDataMiner.Helpers
         }
 
         /// <summary>
-        /// Nullable数値のフォーマット（null の場合は "N/A"）
+        /// Formats nullable value types (returns "N/A" if null).
         /// </summary>
         public static string ValueOrNA<T>(T? value, string format = null) where T : struct, IFormattable
         {

@@ -16,7 +16,7 @@ namespace EclipseDataMiner.Tests
     public class UiScreenshotTests
     {
         [TestMethod]
-        [Description("実際のWPF MainWindowおよびViewModelを初期化し、4つのタブすべてについて臨床サンプルデータを投入した実機UI画面キャプチャを生成")]
+        [Description("Initializes actual WPF MainWindow and ViewModel, populates clinical sample data across all 4 tabs, and captures screenshots")]
         public void RenderActualMainWindow_ShouldGenerateValidScreenshot()
         {
             string repoRoot = null;
@@ -74,7 +74,7 @@ namespace EclipseDataMiner.Tests
                     var vm = window.DataContext as MainViewModel;
                     if (vm != null)
                     {
-                        // 1. プリセットおよび検索条件
+                        // 1. Presets and search criteria
                         var preset = new SearchPreset
                         {
                             Name = "Prostate VMAT 78Gy (Standard)",
@@ -92,7 +92,7 @@ namespace EclipseDataMiner.Tests
                         vm.DosePresence = DosePresenceFilter.HasDose;
                         vm.PresetDescriptionInput = "Prostate VMAT 78Gy (Standard)";
 
-                        // 2. 検索結果一覧 (MatchedPlans) にリアルな臨床データを注入
+                        // 2. Inject realistic clinical data into matched plans list (MatchedPlans)
                         vm.MatchedPlans.Clear();
                         vm.MatchedPlans.Add(new MatchedPlanItem {
                             IsSelected = true,
@@ -179,13 +179,13 @@ namespace EclipseDataMiner.Tests
                             HasDose = false
                         });
 
-                        // 3. ログとステータス
+                        // 3. Log and status
                         vm.LogText = "Ready to extract.\r\n[INFO] Loaded preset: Prostate VMAT 78Gy (Standard)\r\n[INFO] Matched 6 plans matching clinical criteria across 5 patients.\r\n[INFO] Structure Mapping verified (PTV, Rectum, Bladder, FemoralHeads).\r\n[INFO] Ready for execution.";
                         vm.ProgressPercentage = 100;
                         vm.ProgressText = "Idle / Ready (6 plans selected for extraction)";
                         vm.MatchedPlansSummaryText = "6 / 6 plans selected";
 
-                        // 4. Tab 2: Structure Mapping サンプルデータ
+                        // 4. Tab 2: Structure Mapping sample data
                         vm.DiscoveredStructures.Clear();
                         vm.DiscoveredStructures.Add(new DiscoveredStructureItem { RawStructureId = "PTV_78Gy", HitCount = 6, ResolvedAlias = "PTV", MatchStatus = "Mapped (Exact -> PTV)", IsExtracted = true });
                         vm.DiscoveredStructures.Add(new DiscoveredStructureItem { RawStructureId = "ptv78", HitCount = 4, ResolvedAlias = "PTV", MatchStatus = "Mapped (Contains -> PTV)", IsExtracted = true });
@@ -204,7 +204,7 @@ namespace EclipseDataMiner.Tests
                         vm.MappingRules.Add(new StructureMappingRule { IsSelected = true, MatchMode = StructureMatchMode.Contains, Pattern = "Femur_R", TargetAlias = "FemoralHead_R" });
                         vm.MappingRules.Add(new StructureMappingRule { IsSelected = true, MatchMode = StructureMatchMode.Contains, Pattern = "Femur_L", TargetAlias = "FemoralHead_L" });
 
-                        // 5. Tab 3: DQP サンプルデータ
+                        // 5. Tab 3: DQP sample data
                         vm.DQPList.Clear();
                         vm.DQPList.Add(new DQP { structureName = "PTV", DQPtype = DQPtype.Dose, DQPvalue = 95.0, InputUnit = IOUnit.Relative, OutputUnit = IOUnit.Relative });
                         vm.DQPList.Add(new DQP { structureName = "PTV", DQPtype = DQPtype.Dose, DQPvalue = 98.0, InputUnit = IOUnit.Relative, OutputUnit = IOUnit.Relative });
@@ -217,7 +217,7 @@ namespace EclipseDataMiner.Tests
                         vm.DQPList.Add(new DQP { structureName = "FemoralHead_R", DQPtype = DQPtype.Volume, DQPvalue = 50.0, InputUnit = IOUnit.Absolute, OutputUnit = IOUnit.Relative });
                         vm.DQPList.Add(new DQP { structureName = "FemoralHead_L", DQPtype = DQPtype.Volume, DQPvalue = 50.0, InputUnit = IOUnit.Absolute, OutputUnit = IOUnit.Relative });
 
-                        // 6. Tab 4: Options サンプル設定
+                        // 6. Tab 4: Options sample configuration
                         vm.OutputFilePath = @"C:\EclipseDataMiner\Exports\Prostate_VMAT_Cohort_2026.csv";
                         if (vm.Options != null)
                         {
@@ -236,7 +236,7 @@ namespace EclipseDataMiner.Tests
                         }
                     }
 
-                    // ウィンドウを表示してレイアウト・テンプレートを展開
+                    // Show window and expand layouts / templates
                     window.Show();
 
                     Action<string> captureTab = (fileName) =>

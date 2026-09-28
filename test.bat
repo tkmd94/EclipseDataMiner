@@ -62,6 +62,9 @@ if exist "EclipseDataMiner\Presets" (
 if exist "EclipseDataMiner_v3.0.0_Manual.pdf" (
     copy /y "EclipseDataMiner_v3.0.0_Manual.pdf" "release\EclipseDataMiner_v3.0.0_Manual.pdf" >nul
 )
+if exist "EclipseDataMiner_v3.0.0_Manual.en.pdf" (
+    copy /y "EclipseDataMiner_v3.0.0_Manual.en.pdf" "release\EclipseDataMiner_v3.0.0_Manual.en.pdf" >nul
+)
 if exist "release\EclipseDataMiner_Manual.pdf" del /f /q "release\EclipseDataMiner_Manual.pdf"
 if exist "release\EclipseDataMiner_Manual_v3.0.0.pdf" del /f /q "release\EclipseDataMiner_Manual_v3.0.0.pdf"
 

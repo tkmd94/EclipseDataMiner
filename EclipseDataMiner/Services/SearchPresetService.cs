@@ -11,7 +11,7 @@ using EclipseDataMiner.Models;
 namespace EclipseDataMiner.Services
 {
     /// <summary>
-    /// 検索・フィルタリングプリセットの管理・JSON保存読込サービス（Presetsフォルダ管理）
+    /// Service for managing, saving, and loading search/filtering presets to/from JSON files (in Presets directory).
     /// </summary>
     public class SearchPresetService
     {
@@ -25,12 +25,12 @@ namespace EclipseDataMiner.Services
         private readonly string _presetsDirectory;
 
         /// <summary>
-        /// プリセット保存先フォルダのフルパス
+        /// Full path to the directory where presets are saved.
         /// </summary>
         public string PresetsDirectory => _presetsDirectory;
 
         /// <summary>
-        /// アプリ本体と同じフォルダにある Presets フォルダパスを取得
+        /// Gets the Presets folder path located in the same directory as the application.
         /// </summary>
         public static string GetDefaultPresetsDirectory()
         {
@@ -76,7 +76,7 @@ namespace EclipseDataMiner.Services
                     Directory.CreateDirectory(_presetsDirectory);
                 }
 
-                // デフォルトの Presets ディレクトリ（アプリ直下）が空の場合、Templates/Presets から初期プリセットを自動シード
+                // If default Presets directory (under application folder) is empty, auto-seed default presets
                 if (string.Equals(_presetsDirectory, GetDefaultPresetsDirectory(), StringComparison.OrdinalIgnoreCase))
                 {
                     SeedDefaultPresetsIfEmpty();
@@ -113,7 +113,7 @@ namespace EclipseDataMiner.Services
                 new SearchPreset
                 {
                     Name = "All Treatment Approved (Exclude QA)",
-                    Description = "治療承認済み（TreatmentApproved）全計画（QA・検証計画を除外）",
+                    Description = "All TreatmentApproved plans (excluding QA and verification plans)",
                     PlanIdText = "!QA, !Verify, !Test",
                     PlanIdMatchMode = TextMatchMode.Contains,
                     FilterTreatmentApproved = true,
@@ -126,7 +126,7 @@ namespace EclipseDataMiner.Services
                 new SearchPreset
                 {
                     Name = "Prostate VMAT 78Gy (Standard)",
-                    Description = "前立腺VMAT標準処方（2Gy×39回=78Gy、QA/テスト計画除外）",
+                    Description = "Prostate standard VMAT prescription (2Gy x 39fx = 78Gy, excluding QA/test plans)",
                     PlanIdText = "VMAT, !QA, !Test",
                     PlanIdMatchMode = TextMatchMode.Contains,
                     TargetVolumeIdText = "PTV",
@@ -144,7 +144,7 @@ namespace EclipseDataMiner.Services
                 new SearchPreset
                 {
                     Name = "Lung SBRT 4-5Fr (>=10Gy/Fr)",
-                    Description = "肺SBRT大線量分割処方（1回10Gy以上、4〜5分割、総線量48〜60Gy）",
+                    Description = "Lung SBRT hypofractionation (>=10Gy/fx, 4-5 fx, total 48-60Gy)",
                     PlanIdText = "!QA, !Test",
                     PlanIdMatchMode = TextMatchMode.Contains,
                     DosePerFractionText = ">= 10",
@@ -160,7 +160,7 @@ namespace EclipseDataMiner.Services
                 new SearchPreset
                 {
                     Name = "Head & Neck 70Gy (33-35Fr)",
-                    Description = "頭頸部根治照射（33〜35分割、総線量70Gy、QA除外）",
+                    Description = "Head & Neck definitive (33-35 fx, total 70Gy, excluding QA)",
                     PlanIdText = "!QA, !Test",
                     PlanIdMatchMode = TextMatchMode.Contains,
                     NumberOfFractionsText = "33 - 35",
@@ -181,7 +181,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// プリセット名から安全なファイル名を生成
+        /// Generates a sanitized file name from preset name.
         /// </summary>
         public static string GetSafeFileName(string name)
         {
@@ -193,7 +193,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// Presets フォルダ内の全 JSON ファイルからプリセット一覧をロード（組み込みプリセットは非表示・非強制）
+        /// Loads presets from all JSON files in the Presets folder.
         /// </summary>
         public List<SearchPreset> LoadPresets()
         {
@@ -210,7 +210,7 @@ namespace EclipseDataMiner.Services
                         try
                         {
                             string json = File.ReadAllText(file);
-                            // 1ファイルに1つのプリセット
+                            // Single preset per file
                             var preset = JsonSerializer.Deserialize<SearchPreset>(json, JsonOptions);
                             if (preset != null && !string.IsNullOrWhiteSpace(preset.Name))
                             {
@@ -220,7 +220,7 @@ namespace EclipseDataMiner.Services
                             }
                             else
                             {
-                                // 配列形式 (List<SearchPreset>) もフォールバックで対応
+                                // Fallback for list array format (List<SearchPreset>)
                                 var list = JsonSerializer.Deserialize<List<SearchPreset>>(json, JsonOptions);
                                 if (list != null)
                                 {
@@ -252,7 +252,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// 単一プリセットを個別 JSON ファイルとして保存
+        /// Saves a single preset as an individual JSON file.
         /// </summary>
         public void SavePreset(SearchPreset preset)
         {
@@ -294,7 +294,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// プリセットの物理 JSON ファイルを削除
+        /// Deletes the physical JSON file for a preset.
         /// </summary>
         public void DeletePreset(SearchPreset preset)
         {
@@ -321,7 +321,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// プリセット一覧を一括保存（後方互換用）
+        /// Batch saves a list of presets (for backward compatibility).
         /// </summary>
         public void SavePresets(IEnumerable<SearchPreset> presets)
         {

@@ -1,6 +1,6 @@
 {
   "Name": "Lung SBRT 4-5Fr (>=10Gy/Fr)",
-  "Description": "肺SBRT大線量分割処方（1回10Gy以上、4〜5分割、総線量48〜60Gy）",
+  "Description": "Lung SBRT hypofractionation (>=10Gy/fx, 4-5 fx, total 48-60Gy)",
   "IsBuiltIn": false,
   "PatientIdText": "",
   "PatientIdMatchMode": "Contains",

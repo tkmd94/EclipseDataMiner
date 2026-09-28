@@ -7,7 +7,7 @@ using EclipseDataMiner.Models;
 namespace EclipseDataMiner.Services
 {
     /// <summary>
-    /// CSVおよびJSONLへのストリーミング出力を一括制御するパイプライン
+    /// Pipeline orchestrating streaming export to both CSV and JSONL formats.
     /// </summary>
     public class StreamingExportPipeline : IDisposable
     {
@@ -19,7 +19,7 @@ namespace EclipseDataMiner.Services
         public string JsonlFilePath { get; private set; } = string.Empty;
 
         /// <summary>
-        /// パイプラインを初期化してファイルを開く
+        /// Initializes the pipeline and opens export files.
         /// </summary>
         public void Initialize(string csvPath, ExtractionOptions options, List<DqpColumnDefinition> dqpColumns = null, string jsonlPath = null)
         {
@@ -53,7 +53,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// 1プラン分のレコードをストリーミング書き出し
+        /// Streams a single plan record to exporters.
         /// </summary>
         public void WritePlanRecord(ExtractionPlanRecord record)
         {

@@ -4,12 +4,12 @@ using VMS.TPS.Common.Model.Types;
 namespace EclipseDataMiner.Helpers
 {
     /// <summary>
-    /// 線量値の単位正規化（Gy統一）ヘルパー
+    /// Helper for dose unit normalization (standardizing to Gy).
     /// </summary>
     public static class DoseNormalizationHelper
     {
         /// <summary>
-        /// ESAPI DoseValue から安全に Gy 値を取得する拡張メソッド
+        /// Extension method to safely retrieve dose value in Gy from an ESAPI DoseValue object.
         /// </summary>
         public static double ToGy(this DoseValue doseValue)
         {
@@ -21,12 +21,12 @@ namespace EclipseDataMiner.Helpers
             {
                 return doseValue.Dose;
             }
-            // 未定義または特殊単位の場合
+            // Fallback for undefined or custom units
             return doseValue.Dose;
         }
 
         /// <summary>
-        /// 数値と単位文字列（"cGy", "Gy"）から安全に Gy 値を取得
+        /// Safely converts numeric dose and unit string ("cGy", "Gy") to Gy.
         /// </summary>
         public static double ToGy(double dose, string unit)
         {
@@ -38,7 +38,7 @@ namespace EclipseDataMiner.Helpers
         }
 
         /// <summary>
-        /// Gy 値を指定した表示単位（Gy または cGy）に換算
+        /// Converts a Gy value to the specified target display unit (Gy or cGy).
         /// </summary>
         public static double FromGy(double doseGy, string targetUnit)
         {

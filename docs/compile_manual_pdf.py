@@ -41,7 +41,7 @@ except ImportError:
 
 
 # 対象ドキュメント定義（結合順序と章メタデータ）
-DOCUMENTS = [
+DOCUMENTS_JA = [
     {
         "file": "README.md",
         "chapter_num": 1,
@@ -116,6 +116,85 @@ DOCUMENTS = [
         "remove_first_h1": True
     }
 ]
+
+DOCUMENTS_EN = [
+    {
+        "file": "README.en.md",
+        "chapter_num": 1,
+        "badge": "Chapter 1",
+        "title": "System Overview & Quick Start",
+        "desc": "Objective of EclipseDataMiner, core features, UI layout, and deployment procedures",
+        "remove_first_h1": True
+    },
+    {
+        "file": "docs/MANUAL.en.md",
+        "chapter_num": 2,
+        "badge": "Chapter 2",
+        "title": "Clinical Operational Manual & Features",
+        "desc": "Four main tabs workflow, plan search & filters, structure mapping, DQP metrics, and extraction execution",
+        "remove_first_h1": True,
+        "clean_manual_toc": True
+    },
+    {
+        "file": "docs/ARCHITECTURE.en.md",
+        "chapter_num": 3,
+        "badge": "Chapter 3",
+        "title": "System Architecture Specification",
+        "desc": "Layered architecture, STA worker thread model, streaming export pipeline, and memory management",
+        "remove_first_h1": True
+    },
+    {
+        "file": "docs/DESIGN_SPECIFICATION.en.md",
+        "chapter_num": 4,
+        "badge": "Chapter 4",
+        "title": "Detailed Design Specification",
+        "desc": "Input/output data specifications (CSV/JSONL), plan complexity metrics (MCS, Edge Metric, LT, AL), and de-identification",
+        "remove_first_h1": True
+    },
+    {
+        "file": "docs/COMMISSIONING.en.md",
+        "chapter_num": 5,
+        "badge": "Chapter 5",
+        "title": "Clinical Commissioning Guide",
+        "desc": "Acceptance testing protocols, geometric & dosimetric concordance verification, and clinical sign-off form",
+        "remove_first_h1": True
+    },
+    {
+        "file": "docs/TROUBLESHOOTING.en.md",
+        "chapter_num": 6,
+        "badge": "Chapter 6",
+        "title": "Troubleshooting & FAQ Guide",
+        "desc": "ESAPI permission errors, memory optimization, nomenclature mapping resolutions, and frequently asked questions",
+        "remove_first_h1": True
+    },
+    {
+        "file": "docs/CONTRIBUTING.en.md",
+        "chapter_num": 7,
+        "badge": "Chapter 7",
+        "title": "Developer Guide & Coding Standards",
+        "desc": "MSBuild x64 build instructions, unit testing guidelines, threading rules, and pull request workflow",
+        "remove_first_h1": True
+    },
+    {
+        "file": "docs/STANDARD_DEVELOPMENT_PLAN.en.md",
+        "chapter_num": 8,
+        "badge": "Chapter 8",
+        "title": "Standard Development Lifecycle Protocol (SDLP)",
+        "desc": "7 Core Quality Principles (measure space consistency, epsilon clustering, etc.), 4-layer DoD gates, and release policies",
+        "remove_first_h1": True
+    },
+    {
+        "file": "docs/CHANGELOG.en.md",
+        "chapter_num": 9,
+        "badge": "Appendix",
+        "title": "Release History (Changelog)",
+        "desc": "v3.0.0 / v2.4.0 / v2.3.0 release notes, key milestones, and historical changelog",
+        "remove_first_h1": True
+    }
+]
+
+# 後方互換エイリアス
+DOCUMENTS = DOCUMENTS_JA
 
 
 def strip_yaml_frontmatter(content):
@@ -217,8 +296,11 @@ def preprocess_markdown(file_path, chapter_info, repo_root):
     content = re.sub(r'\[!\[.*?\]\(https://img\.shields\.io/.*?\)\]\(.*?\)', '', content)
     content = re.sub(r'!\[.*?\]\(https://img\.shields\.io/.*?\)', '', content)
 
-    # 各マークダウン内のインライン目次ブロック (## 目次 ... 次の見出しまで) を除去
-    content = re.sub(r'(?m)^## 目次[\s\S]*?(?=^## |\Z)', '', content)
+    # 各マークダウン内のインライン言語切り替えリンクを除去
+    content = re.sub(r'(?m)^(\[\s*(?:English|日本語)\s*\]\([^)]+\)\s*\|\s*.*|\*\*(?:English|日本語)\*\*\s*\|\s*.*)\n+', '', content)
+
+    # 各マークダウン内のインライン目次ブロック (## 目次 または ## Table of Contents ... 次の見出しまで) を除去
+    content = re.sub(r'(?m)^## (?:目次|Table of Contents)[\s\S]*?(?=^## |\Z)', '', content)
 
     content = convert_github_callouts(content)
     content = resolve_image_paths(content, repo_root)
@@ -262,16 +344,17 @@ def preprocess_markdown(file_path, chapter_info, repo_root):
     return banner_html + content
 
 
-def generate_css():
+def generate_css(lang="ja"):
     """洗練された臨床マニュアル PDF 印刷用 CSS (ContourQA / AutoStructureMaker 書式完全準拠)"""
-    return """
+    header_title = 'EclipseDataMiner v3.0.0 Technical Manual' if lang == 'en' else 'EclipseDataMiner v3.0.0 臨床技術マニュアル'
+    css = """
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @page {
     size: A4 portrait;
     margin: 22mm 18mm 20mm 18mm;
     @top-left {
-        content: 'EclipseDataMiner v3.0.0 臨床技術マニュアル';
+        content: 'HEADER_TITLE_PLACEHOLDER';
         font-size: 8.5pt;
         color: #64748B;
         font-family: 'Noto Sans JP', 'BIZ UDPGothic', 'Yu Gothic UI', Meiryo, sans-serif;
@@ -787,10 +870,50 @@ mjx-container[jax="SVG"][display="true"] {
     overflow-y: hidden !important;
 }
 """
+    return css.replace("HEADER_TITLE_PLACEHOLDER", header_title)
 
 
-def generate_cover_html():
+def generate_cover_html(lang="ja"):
     """洗練された表紙 HTML (Slate & Ocean Cyan エグゼクティブ・メディカルスタイル)"""
+    if lang == "en":
+        return """
+<div class="cover-page">
+  <div class="cover-accent-bar"></div>
+  <div class="cover-badges">
+    <div class="pill-badge blue">Varian Medical Systems Eclipse</div>
+    <div class="pill-badge purple">ESAPI v15.6 / v16.1</div>
+    <div class="pill-badge green">Production Ready (v3.0.0)</div>
+  </div>
+  <div class="cover-title">EclipseDataMiner</div>
+  <div class="cover-version">Version 3.0.0 (Released: September 26, 2026)</div>
+  <div class="cover-subtitle">Radiation Therapy Plan Data Mining & Quality Assurance Technical Manual</div>
+  <div class="cover-lead">
+    This manual provides comprehensive technical documentation for <strong>EclipseDataMiner</strong>, a high-throughput, memory-safe data mining and quality management system querying 10,000+ radiation therapy plans across Varian Eclipse (ESAPI). It covers system installation, operational workflows, structure nomenclature mapping (Pre-Scan &amp; Alias Mapping), Dose-Quality Parameter (DQP) extraction, delivery modulation complexity modeling (MCS, Edge Metric, Leaf Travel Length, Arc Length), STA worker streaming architecture, and clinical commissioning procedures.
+  </div>
+  <div class="cover-meta-grid">
+    <div class="meta-card">
+      <div class="meta-card-label">Target Environment</div>
+      <div class="meta-card-value">Varian Eclipse v15.6 / v16.1 (ESAPI)</div>
+    </div>
+    <div class="meta-card">
+      <div class="meta-card-label">Execution Framework</div>
+      <div class="meta-card-value">Microsoft .NET Framework 4.6.1 (x64)</div>
+    </div>
+    <div class="meta-card">
+      <div class="meta-card-label">Deployment Architecture</div>
+      <div class="meta-card-value">Single Standalone Executable (Costura.Fody)</div>
+    </div>
+    <div class="meta-card">
+      <div class="meta-card-label">Validation Status</div>
+      <div class="meta-card-value">116/116 Tests Passed (100% PASS)</div>
+    </div>
+  </div>
+  <div class="cover-footer-meta">
+    <div>Department of Radiation Oncology &amp; Medical Physics</div>
+    <div>Document ID: EDM-MAN-2026-V300-EN • September 26, 2026</div>
+  </div>
+</div>
+"""
     return """
 <div class="cover-page">
   <div class="cover-accent-bar"></div>
@@ -823,7 +946,7 @@ def generate_cover_html():
     </div>
     <div class="meta-card">
       <div class="meta-card-label">Validation Status</div>
-      <div class="meta-card-value">111/111 Tests Passed (100% PASS)</div>
+      <div class="meta-card-value">116/116 Tests Passed (100% PASS)</div>
     </div>
   </div>
   <div class="cover-footer-meta">
@@ -834,11 +957,12 @@ def generate_cover_html():
 """
 
 
-def generate_toc_html():
+def generate_toc_html(documents, lang="ja"):
     """目次 HTML (各章バッジ＋カード風リスト)"""
+    header_text = "Table of Contents" if lang == "en" else "目次 (Table of Contents)"
     html = '<div class="toc-page">\n'
-    html += '  <div class="toc-header">目次 (Table of Contents)</div>\n'
-    for doc in DOCUMENTS:
+    html += f'  <div class="toc-header">{header_text}</div>\n'
+    for doc in documents:
         badge = doc["badge"]
         title = doc["title"]
         desc = doc["desc"]
@@ -868,84 +992,84 @@ def find_browser_path():
     return None
 
 
-def main():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    repo_root = os.path.abspath(os.path.join(script_dir, ".."))
+def convert_markdown_with_math(markdown_text):
+    """数式保護機能付き HTML 変換 (escape=False を厳守)"""
+    code_tokens = []
+    def _save_code(m):
+        idx = len(code_tokens)
+        code_tokens.append(m.group(0))
+        return f"@@CODE_TOKEN_{idx}@@"
 
-    print("===================================================")
-    print("  EclipseDataMiner - Technical Manual PDF Compiler")
-    print("===================================================")
-    print(f"[*] Workspace Root: {repo_root}")
+    text = re.sub(r'```[\s\S]*?```', _save_code, markdown_text)
+    text = re.sub(r'`[^`\n]+`', _save_code, text)
+
+    math_blocks = []
+    def _save_block(m):
+        idx = len(math_blocks)
+        math_blocks.append(m.group(0))
+        return f"@@MATH_BLOCK_{idx}@@"
+
+    text = re.sub(r'\$\$([\s\S]*?)\$\$', _save_block, text)
+
+    inline_maths = []
+    def _save_inline(m):
+        idx = len(inline_maths)
+        inline_maths.append(m.group(0))
+        return f"@@INLINE_MATH_{idx}@@"
+
+    text = re.sub(r'(?<!\$)\$(?!\$)([^\$\n]+?)(?<!\$)\$(?!\$)', _save_inline, text)
+
+    for i, token in enumerate(code_tokens):
+        text = text.replace(f"@@CODE_TOKEN_{i}@@", token)
+
+    renderer = mistune.Renderer(escape=False)
+    markdown_parser = mistune.Markdown(renderer=renderer, escape=False)
+    html = markdown_parser(text)
+
+    for i, block in enumerate(math_blocks):
+        html = html.replace(f"@@MATH_BLOCK_{i}@@", block)
+    for i, inline in enumerate(inline_maths):
+        html = html.replace(f"@@INLINE_MATH_{i}@@", inline)
+
+    return html
+
+
+def compile_single_manual(lang="ja", repo_root=None, script_dir=None):
+    if repo_root is None:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        repo_root = os.path.abspath(os.path.join(script_dir, ".."))
+
+    lang_label = "English" if lang == "en" else "Japanese"
+    output_pdf_name = "EclipseDataMiner_v3.0.0_Manual.en.pdf" if lang == "en" else "EclipseDataMiner_v3.0.0_Manual.pdf"
+    documents = DOCUMENTS_EN if lang == "en" else DOCUMENTS_JA
+
+    print(f"\n[*] Starting {lang_label} Technical Manual compilation ({output_pdf_name})...")
 
     # 1. 各マークダウンの結合と前処理
     combined_md = ""
-    for doc_info in DOCUMENTS:
+    for doc_info in documents:
         rel_path = doc_info["file"]
         full_path = os.path.join(repo_root, rel_path)
-        print(f"[*] Processing {doc_info['badge']}: {rel_path}...")
+        print(f"  -> Processing {doc_info['badge']}: {rel_path}...")
         processed = preprocess_markdown(full_path, doc_info, repo_root)
         combined_md += processed + "\n\n"
 
     # 2. 数式保護機能付き HTML 変換 (escape=False を厳守)
-    print("[*] mistune による HTML 変換を実行 (数式・記号保護)...")
-
-    def convert_markdown_with_math(markdown_text):
-        # 2a. コードブロック (```...```) とインラインコード (`...`) を一時退避
-        code_tokens = []
-        def _save_code(m):
-            idx = len(code_tokens)
-            code_tokens.append(m.group(0))
-            return f"@@CODE_TOKEN_{idx}@@"
-
-        text = re.sub(r'```[\s\S]*?```', _save_code, markdown_text)
-        text = re.sub(r'`[^`\n]+`', _save_code, text)
-
-        # 2b. ディスプレイ数式 ($$...$$) を一時退避
-        math_blocks = []
-        def _save_block(m):
-            idx = len(math_blocks)
-            math_blocks.append(m.group(0))
-            return f"@@MATH_BLOCK_{idx}@@"
-
-        text = re.sub(r'\$\$([\s\S]*?)\$\$', _save_block, text)
-
-        # 2c. インライン数式 ($...$) を一時退避
-        inline_maths = []
-        def _save_inline(m):
-            idx = len(inline_maths)
-            inline_maths.append(m.group(0))
-            return f"@@INLINE_MATH_{idx}@@"
-
-        text = re.sub(r'(?<!\$)\$(?!\$)([^\$\n]+?)(?<!\$)\$(?!\$)', _save_inline, text)
-
-        # 2d. 退避したコードブロックを復元
-        for i, token in enumerate(code_tokens):
-            text = text.replace(f"@@CODE_TOKEN_{i}@@", token)
-
-        # 2e. mistune で HTML パース
-        renderer = mistune.Renderer(escape=False)
-        markdown_parser = mistune.Markdown(renderer=renderer, escape=False)
-        html = markdown_parser(text)
-
-        # 2f. 数式を復元
-        for i, block in enumerate(math_blocks):
-            html = html.replace(f"@@MATH_BLOCK_{i}@@", block)
-        for i, inline in enumerate(inline_maths):
-            html = html.replace(f"@@INLINE_MATH_{i}@@", inline)
-
-        return html
-
+    print(f"[*] Converting Markdown to HTML ({lang_label})...")
     body_html = convert_markdown_with_math(combined_md)
 
-    cover_html = generate_cover_html()
-    toc_html = generate_toc_html()
-    css_content = generate_css()
+    cover_html = generate_cover_html(lang)
+    toc_html = generate_toc_html(documents, lang)
+    css_content = generate_css(lang)
+
+    html_lang = "en" if lang == "en" else "ja"
+    doc_title = "EclipseDataMiner Technical Manual" if lang == "en" else "EclipseDataMiner 臨床技術マニュアル"
 
     full_html = f"""<!DOCTYPE html>
-<html lang="ja">
+<html lang="{html_lang}">
 <head>
 <meta charset="UTF-8">
-<title>EclipseDataMiner Technical Manual</title>
+<title>{doc_title}</title>
 <style>
 {css_content}
 </style>
@@ -976,7 +1100,7 @@ mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
 </html>
 """
 
-    temp_html_path = os.path.join(script_dir, "temp_compiled_manual.html")
+    temp_html_path = os.path.join(script_dir, f"temp_compiled_manual_{lang}.html")
     with open(temp_html_path, "w", encoding="utf-8") as f:
         f.write(full_html)
     print(f"[*] Generated intermediate HTML: {temp_html_path}")
@@ -987,9 +1111,8 @@ mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
         print("[ERROR] Chrome or Edge executable not found!")
         sys.exit(1)
 
-    print(f"[*] Printing PDF via headless browser: {browser_exe}...")
-    output_pdf_name = "EclipseDataMiner_v3.0.0_Manual.pdf"
-    temp_pdf_path = os.path.join(script_dir, "_temp_print_manual.pdf")
+    print(f"[*] Printing PDF via headless browser ({lang_label})...")
+    temp_pdf_path = os.path.join(script_dir, f"_temp_print_manual_{lang}.pdf")
 
     cmd = [
         browser_exe,
@@ -999,7 +1122,7 @@ mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
         "--run-all-compositor-stages-before-draw",
         "--virtual-time-budget=8000",
         f"--print-to-pdf={temp_pdf_path}",
-        "--lang=ja",
+        f"--lang={'en' if lang == 'en' else 'ja'}",
         temp_html_path
     ]
 
@@ -1012,10 +1135,10 @@ mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
     print(f"[+] PDF generated successfully ({os.path.getsize(temp_pdf_path):,} bytes).")
 
     # 4. PyMuPDF による自動品質検証
-    print("[*] Validating PDF quality via PyMuPDF...")
+    print(f"[*] Validating {lang_label} PDF quality via PyMuPDF...")
     doc = fitz.open(temp_pdf_path)
     total_pages = len(doc)
-    print(f"[*] Total Pages: {total_pages}")
+    print(f"[*] Total Pages ({lang_label}): {total_pages}")
 
     lint_issues = []
     for i in range(total_pages):
@@ -1044,17 +1167,22 @@ mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
             if "**" in line and not line.strip().startswith("```"):
                 lint_issues.append(f"Page {i+1}: Unrendered markdown bold (**) in line: {line.strip()[:60]}")
 
+        # 5. Mermaid ダイアグラム構文エラーチェック
+        if "Syntax error in text" in text or "mermaid version" in text:
+            lint_issues.append(f"Page {i+1}: Mermaid diagram syntax error detected ('Syntax error in text').")
+
     if lint_issues:
-        print(f"[WARN] {len(lint_issues)} potential issues detected:")
+        print(f"[WARN] {len(lint_issues)} potential issues detected in {output_pdf_name}:")
         for issue in lint_issues:
             print(f"  - {issue}")
     else:
         print(f"[+] Quality Validation PASSED: All {total_pages} pages clean without raw HTML, scrollbar artifacts, or encoding errors.")
 
+
     doc.close()
 
-    # 5. 成果物の配備同期 (Root, docs/, release/) - 単一の公式名称に統一整理
-    print("[*] Synchronizing PDF artifacts...")
+    # 5. 成果物の配備同期 (Root, docs/, release/)
+    print(f"[*] Synchronizing {output_pdf_name} artifacts...")
     deploy_targets = [
         os.path.join(repo_root, output_pdf_name),
         os.path.join(repo_root, "docs", output_pdf_name),
@@ -1068,7 +1196,40 @@ mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
         shutil.copyfile(temp_pdf_path, target)
         print(f"  -> Deployed: {os.path.relpath(target, repo_root)}")
 
-    # 旧名称・重複PDFのクリーンアップ（名称統一・整理）
+    # 中間ファイルのクリーンアップ
+    for temp_f in [temp_html_path, temp_pdf_path]:
+        try:
+            if os.path.exists(temp_f):
+                os.remove(temp_f)
+        except Exception:
+            pass
+
+    print(f"  [SUCCESS] {output_pdf_name} ({total_pages} pages) Complete!\n")
+    return True
+
+
+def main():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.abspath(os.path.join(script_dir, ".."))
+
+    print("===================================================")
+    print("  EclipseDataMiner - Technical Manual PDF Compiler")
+    print("===================================================")
+    print(f"[*] Workspace Root: {repo_root}")
+
+    # Determine languages to compile
+    langs = []
+    if "--lang=ja" in sys.argv:
+        langs = ["ja"]
+    elif "--lang=en" in sys.argv:
+        langs = ["en"]
+    else:
+        langs = ["ja", "en"]
+
+    for lang in langs:
+        compile_single_manual(lang=lang, repo_root=repo_root, script_dir=script_dir)
+
+    # Legacy redundant PDF cleanup
     legacy_names = ["EclipseDataMiner_Manual.pdf", "EclipseDataMiner_Manual_v3.0.0.pdf"]
     for d in [repo_root, os.path.join(repo_root, "docs"), os.path.join(repo_root, "release")]:
         for leg in legacy_names:
@@ -1080,17 +1241,8 @@ mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
                 except Exception:
                     pass
 
-    # 中間ファイルのクリーンアップ
-    for temp_f in [temp_html_path, temp_pdf_path]:
-        try:
-            if os.path.exists(temp_f):
-                os.remove(temp_f)
-        except Exception:
-            pass
-
     print("===================================================")
-    print("  [SUCCESS] Technical Manual PDF Compilation Complete!")
-    print(f"  Artifact: {output_pdf_name} ({total_pages} pages)")
+    print("  [ALL COMPLETED] All Technical Manual PDFs Deployed!")
     print("===================================================")
 
 

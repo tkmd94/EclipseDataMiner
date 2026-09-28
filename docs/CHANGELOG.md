@@ -1,8 +1,27 @@
 # Changelog
 
+[English](CHANGELOG.en.md) | **日本語**
+
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- **日英バイリンガル公式ドキュメント**:
+  - 英語フルドキュメント `README.en.md` および英語操作マニュアル `docs/MANUAL.en.md` を新設。
+  - `README.md` および `docs/MANUAL.md` に言語切り替えリンクを追加。
+  - `THIRD-PARTY-NOTICES.md` の英語サマリー・日英バイリンガル解説を追記。
+
+### Changed
+- **標準英語 UI への完全統一**:
+  - ESAPI 臨床スクリプトの国際標準に準拠し、ユーザーインターフェース (UI) 上の全コンポーネント（4つのタブ、検索条件グループボックス、高度フィルタ、輪郭マッピング、線量指標 DQP、抽出オプション、ツールチップ、確認ダイアログ、正規表現チートシート、コンソールタイトル、進捗バー）を完全な英語表記に統一。
+- **ライセンスおよび著作権情報の整備**:
+  - `LICENSE` ファイルの著作権年号を `2019-2026 Takashi Kodama` に更新。
+  - 各プロジェクトのアセンブリメタデータ（`AssemblyInfo.cs`）において `AssemblyCompany`（`"Takashi Kodama"`）および `AssemblyCopyright`（`"Copyright © 2019-2026 Takashi Kodama"`）を設定・統一。
+  - 同梱・依存するオープンソースライブラリ（`CommunityToolkit.Mvvm`, `System.Text.Json`, `Costura.Fody`, `Moq` 等）のライセンス条文および著作権者情報を明記した `THIRD-PARTY-NOTICES.md` を新設。
+  - `README.md` に `THIRD-PARTY-NOTICES.md` への案内およびライセンス表記を追加。
 
 ## [3.0.0] - 2026-09-26
 

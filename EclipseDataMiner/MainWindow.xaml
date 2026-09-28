@@ -11,13 +11,13 @@
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>    <!-- 1. 4つのメインタブコンテンツ -->
-            <RowDefinition Height="120"/>  <!-- 2. ログ出力コンソール -->
-            <RowDefinition Height="Auto"/> <!-- 3. プログレスバー & 実行コントロールバー (Run / Cancel) -->
+            <RowDefinition Height="*"/>    <!-- 1. Main Tab Controls -->
+            <RowDefinition Height="120"/>  <!-- 2. Console Output -->
+            <RowDefinition Height="Auto"/> <!-- 3. Progress & Execution Bar (Run / Cancel) -->
         </Grid.RowDefinitions>
 
         <TabControl x:Name="MainTabControl" Grid.Row="0" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}" Margin="0,0,0,10">
-            <!-- Tab 1: 検索条件 & 合致プラン一覧 & 抽出対象選択 -->
+            <!-- Tab 1: Search Criteria & Matched Plans & Selection -->
             <TabItem Header="1- 📋 Plan Search">
                 <Grid Margin="0,6,0,0">
                     <Grid.RowDefinitions>
@@ -25,9 +25,9 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-            <GroupBox Header="🔍 計画検索・絞り込み条件 (Plan Search &amp; Filter)" Margin="0,0,0,8">
+            <GroupBox Header="🔍 Plan Search &amp; Filter Criteria" Margin="0,0,0,8">
                 <StackPanel>
-                    <!-- プリセットセレクター＆保存・説明編集バー ＆ 正規表現ヒント -->
+                    <!-- Preset Selector, Save/Delete, and Regex Hints -->
                     <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="5" Padding="8,6" Margin="0,0,0,8">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -40,26 +40,26 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- 1行目左: Preset セレクター, Save, Delete -->
+                            <!-- Row 1 Left: Preset Selector, Save, Delete -->
                             <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="🔖 Preset:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource BrushText}"/>
                                 <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" 
                                           Text="{Binding PresetNameInput, UpdateSourceTrigger=PropertyChanged}"
                                           IsEditable="True" Width="240" Margin="0,0,6,0"
                                           DisplayMemberPath="Name"
-                                          ToolTip="検索条件プリセットの選択、または名前を入力して保存"/>
+                                          ToolTip="Select search preset or enter a name to save"/>
                                 <Button Content="💾 Save" Command="{Binding SavePresetCommand}" 
                                         Style="{StaticResource ModernButton}" Padding="10,3" Margin="0,0,4,0"
-                                        ToolTip="現在の検索条件と説明文を入力した名前でプリセット保存"/>
+                                        ToolTip="Save current filter criteria and description as preset"/>
                                 <Button Content="🗑 Delete" Command="{Binding DeletePresetCommand}" 
                                         Style="{StaticResource DangerButton}" Padding="10,3" Margin="0,0,6,0"
-                                        ToolTip="選択中のプリセットを削除（Presets フォルダのファイルを削除）"/>
+                                        ToolTip="Delete selected preset from Presets folder"/>
                             </StackPanel>
 
-                            <!-- 1行目右: ❓ Regex Hints ポップアップボタン -->
+                            <!-- Row 1 Right: ❓ Regex Hints Popup Button -->
                             <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center">
                                 <ToggleButton x:Name="BtnSearchRegexHints" Content="❓ Regex Hints ▾" Style="{StaticResource ModernToggleButton}" Padding="10,3"
-                                              ToolTip="計画ID・患者ID・ターゲット輪郭で使える臨床正規表現のヒントとサンプルを表示"/>
+                                              ToolTip="Show clinical regex cheat sheet for Plan ID, Patient ID, and Target Volume"/>
                                 <Popup x:Name="PopupSearchRegexHints" IsOpen="{Binding IsChecked, ElementName=BtnSearchRegexHints, Mode=TwoWay}"
                                        StaysOpen="False" PlacementTarget="{Binding ElementName=BtnSearchRegexHints}"
                                        Placement="Bottom" AllowsTransparency="True" PopupAnimation="Fade">
@@ -75,17 +75,17 @@
                                                 <RowDefinition Height="*"/>
                                             </Grid.RowDefinitions>
 
-                                            <!-- ヘッダー -->
+                                            <!-- Header -->
                                             <DockPanel Grid.Row="0" Margin="0,0,0,6" LastChildFill="False">
-                                                <TextBlock Text="💡 計画検索用 正規表現チートシート (Plan Regex Hints)" FontWeight="Bold" FontSize="12.5" Foreground="{StaticResource BrushPrimary}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="💡 Plan Regex Cheat Sheet" FontWeight="Bold" FontSize="12.5" Foreground="{StaticResource BrushPrimary}" VerticalAlignment="Center"/>
                                                 <Button DockPanel.Dock="Right" Content="✕" Style="{StaticResource ModernButton}" Padding="6,1" FontSize="11"
-                                                        Click="InsertSearchSnippetButton_Click" ToolTip="閉じる"/>
+                                                        Click="InsertSearchSnippetButton_Click" ToolTip="Close"/>
                                             </DockPanel>
 
-                                            <TextBlock Grid.Row="1" Text="Plan ID や Patient ID、Target Volume の「Regex」モードで利用できる頻出パターン一覧です。「Insert」を押すと Plan ID 欄に設定されます。"
+                                            <TextBlock Grid.Row="1" Text="Frequent clinical regex patterns for Plan ID, Patient ID, and Target Volume. Click 'Insert' to apply to Plan ID."
                                                        FontSize="11" Foreground="{StaticResource BrushTextMuted}" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
-                                            <!-- スニペット一覧 -->
+                                            <!-- Snippets List -->
                                             <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" MaxHeight="300">
                                                 <ItemsControl ItemsSource="{Binding SearchRegexSnippets}">
                                                     <ItemsControl.ItemTemplate>
@@ -104,13 +104,13 @@
                                                                             </Border>
                                                                         </StackPanel>
                                                                         <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#475569"/>
-                                                                        <TextBlock Text="{Binding Example, StringFormat='例: {0}'}" FontSize="10" Foreground="#64748B" FontStyle="Italic"/>
+                                                                        <TextBlock Text="{Binding Example, StringFormat='Ex: {0}'}" FontSize="10" Foreground="#64748B" FontStyle="Italic"/>
                                                                     </StackPanel>
                                                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
                                                                         <Button Content="Copy" Command="{Binding DataContext.CopyRegexSnippetCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                                                                CommandParameter="{Binding Pattern}" Style="{StaticResource ModernButton}" Padding="6,2" FontSize="11" Margin="0,0,4,0" ToolTip="クリップボードにコピー"/>
+                                                                                CommandParameter="{Binding Pattern}" Style="{StaticResource ModernButton}" Padding="6,2" FontSize="11" Margin="0,0,4,0" ToolTip="Copy to clipboard"/>
                                                                         <Button Content="Insert" Command="{Binding DataContext.InsertSearchRegexSnippetCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                                                                CommandParameter="{Binding Pattern}" Click="InsertSearchSnippetButton_Click" Style="{StaticResource PrimaryButton}" Padding="8,2" FontSize="11" ToolTip="Plan ID欄へ挿入しRegexモードに変更"/>
+                                                                                CommandParameter="{Binding Pattern}" Click="InsertSearchSnippetButton_Click" Style="{StaticResource PrimaryButton}" Padding="8,2" FontSize="11" ToolTip="Insert into Plan ID and switch to Regex mode"/>
                                                                     </StackPanel>
                                                                 </Grid>
                                                             </Border>
@@ -123,7 +123,7 @@
                                 </Popup>
                             </StackPanel>
 
-                            <!-- 2行目: プリセット説明編集テキストボックス (Description) -->
+                            <!-- Row 2: Preset Description (Description) -->
                             <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,6,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -132,7 +132,7 @@
                                 <Label Content="Description:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource BrushTextMuted}" Padding="0,0,8,0"/>
                                 <TextBox Grid.Column="1" Text="{Binding PresetDescriptionInput, UpdateSourceTrigger=PropertyChanged}" 
                                          VerticalContentAlignment="Center" Padding="8,4"
-                                         ToolTip="選択中プリセットの臨床プロトコルや適応疾患の説明文（編集して「💾 Save」で保存）"/>
+                                         ToolTip="Description of clinical protocol or disease site for selected preset (edit and save)"/>
                             </Grid>
                         </Grid>
                     </Border>
@@ -151,7 +151,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- 1行目: Patient ID, Course ID, Logic 切替 -->
+                        <!-- Row 1: Patient ID, Course ID, Logic Switch -->
                         <Label Content="Patient ID:" Grid.Row="0" Grid.Column="0" FontWeight="SemiBold"/>
                         <Grid Grid.Row="0" Grid.Column="1" Margin="2,3">
                             <Grid.ColumnDefinitions>
@@ -159,9 +159,9 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox Text="{Binding PatientIdText, UpdateSourceTrigger=PropertyChanged}" Grid.Column="0"
-                                     ToolTip="カンマ区切りで複数OR検索。! または - で除外指定可能 (例: 100, 200, !QA)"/>
+                                     ToolTip="Comma-separated OR search. Prefix with ! or - to exclude (e.g., 100, 200, !QA)"/>
                             <ComboBox SelectedItem="{Binding PatientIdMatchMode}" Grid.Column="1" Width="82" Margin="4,0,0,0"
-                                      ToolTip="Patient ID の一致モード (Contains: 部分一致, Exact: 完全一致, Regex: 正規表現)">
+                                      ToolTip="Match mode (Contains: substring, Exact: exact match, Regex: regular expression)">
                                 <models:TextMatchMode>Contains</models:TextMatchMode>
                                 <models:TextMatchMode>Exact</models:TextMatchMode>
                                 <models:TextMatchMode>Regex</models:TextMatchMode>
@@ -175,16 +175,16 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox Text="{Binding CourseIdText, UpdateSourceTrigger=PropertyChanged}" Grid.Column="0"
-                                     ToolTip="カンマ区切りで複数OR検索。! または - で除外指定可能 (例: C1, !C_Test)"/>
+                                     ToolTip="Comma-separated OR search. Prefix with ! or - to exclude (e.g., C1, !C_Test)"/>
                             <ComboBox SelectedItem="{Binding CourseIdMatchMode}" Grid.Column="1" Width="82" Margin="4,0,0,0"
-                                      ToolTip="Course ID の一致モード (Contains: 部分一致, Exact: 完全一致, Regex: 正規表現)">
+                                      ToolTip="Match mode (Contains: substring, Exact: exact match, Regex: regular expression)">
                                 <models:TextMatchMode>Contains</models:TextMatchMode>
                                 <models:TextMatchMode>Exact</models:TextMatchMode>
                                 <models:TextMatchMode>Regex</models:TextMatchMode>
                             </ComboBox>
                         </Grid>
 
-                        <!-- セグメント風 Logic 切り替え -->
+                        <!-- Logic Switch -->
                         <Border Grid.Row="0" Grid.Column="4" Background="#F1F5F9" CornerRadius="4" Padding="4,2" Margin="12,2,0,2" VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Logic:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="4,0,8,0" Foreground="{StaticResource BrushTextMuted}"/>
@@ -193,7 +193,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- 2行目: Plan ID, Target Volume, 承認ステータス -->
+                        <!-- Row 2: Plan ID, Target Volume, Approval Status -->
                         <Label Content="Plan ID:" Grid.Row="1" Grid.Column="0" FontWeight="SemiBold"/>
                         <Grid Grid.Row="1" Grid.Column="1" Margin="2,3">
                             <Grid.ColumnDefinitions>
@@ -201,9 +201,9 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox Text="{Binding PlanIdText, UpdateSourceTrigger=PropertyChanged}" Grid.Column="0"
-                                     ToolTip="カンマ区切りで複数OR検索。! または - で除外指定可能 (例: VMAT, IMRT, !QA, !Test)"/>
+                                     ToolTip="Comma-separated OR search. Prefix with ! or - to exclude (e.g., VMAT, IMRT, !QA, !Test)"/>
                             <ComboBox SelectedItem="{Binding PlanIdMatchMode}" Grid.Column="1" Width="82" Margin="4,0,0,0"
-                                      ToolTip="Plan ID の一致モード (Contains: 部分一致, Exact: 完全一致, Regex: 正規表現)">
+                                      ToolTip="Match mode (Contains: substring, Exact: exact match, Regex: regular expression)">
                                 <models:TextMatchMode>Contains</models:TextMatchMode>
                                 <models:TextMatchMode>Exact</models:TextMatchMode>
                                 <models:TextMatchMode>Regex</models:TextMatchMode>
@@ -217,42 +217,42 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox Text="{Binding TargetVolumeIdText, UpdateSourceTrigger=PropertyChanged}" Grid.Column="0"
-                                     ToolTip="Target Volume ID の一致検索。! または - で除外指定可能 (例: PTV, !PTV_QA)"/>
+                                     ToolTip="Target Volume ID search. Prefix with ! or - to exclude (e.g., PTV, !PTV_QA)"/>
                             <ComboBox SelectedItem="{Binding TargetVolumeMatchMode}" Grid.Column="1" Width="82" Margin="4,0,0,0"
-                                      ToolTip="Target Volume の一致モード (Contains: 部分一致, Exact: 完全一致, Regex: 正規表現)">
+                                      ToolTip="Match mode (Contains: substring, Exact: exact match, Regex: regular expression)">
                                 <models:TextMatchMode>Contains</models:TextMatchMode>
                                 <models:TextMatchMode>Exact</models:TextMatchMode>
                                 <models:TextMatchMode>Regex</models:TextMatchMode>
                             </ComboBox>
                         </Grid>
 
-                        <!-- 承認ステータスフィルタ -->
+                        <!-- Approval Status Filter -->
                         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="4" VerticalAlignment="Center" Margin="12,2,0,2">
                             <CheckBox Content="Unapproved" IsChecked="{Binding FilterUnapproved}" Margin="0,0,8,0"/>
                             <CheckBox Content="Plan approved" IsChecked="{Binding FilterPlanApproved}" Margin="0,0,8,0"/>
                             <CheckBox Content="TRT approved" IsChecked="{Binding FilterTreatmentApproved}"/>
                         </StackPanel>
 
-                        <!-- 3行目: 線量条件, PlanSum オプション -->
+                        <!-- Row 3: Dose Criteria & PlanSum Option -->
                         <Label Content="Dose/Fr [Gy]:" Grid.Row="2" Grid.Column="0" FontWeight="SemiBold"/>
                         <TextBox Text="{Binding DosePerFractionText, UpdateSourceTrigger=PropertyChanged}" 
                                  Grid.Row="2" Grid.Column="1" Margin="2,3" 
-                                 ToolTip="1回線量 (Gy)。単一値(2.0)、範囲指定(1.8-2.2 / 1.8~2.2)、不等号(&gt;=10, &lt;3)に対応"/>
+                                 ToolTip="Dose per fraction (Gy). Supports single value (2.0), range (1.8-2.2), and inequalities (&gt;=10, &lt;3)"/>
 
                         <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="12,0,0,0">
                             <Label Content="Fractions:" FontWeight="SemiBold"/>
                             <TextBox Text="{Binding NumberOfFractionsText, UpdateSourceTrigger=PropertyChanged}" Width="55" Margin="2,3" 
-                                     ToolTip="分割回数。単一値(39)、範囲指定(30-35)、不等号(&lt;=5, &gt;=10)に対応"/>
+                                     ToolTip="Number of fractions. Supports single value (39), range (30-35), and inequalities (&lt;=5, &gt;=10)"/>
 
                             <Label Content="Total Dose [Gy]:" FontWeight="SemiBold" Margin="10,0,0,0"/>
                             <TextBox Text="{Binding TotalDoseText, UpdateSourceTrigger=PropertyChanged}" Width="70" Margin="2,3" 
-                                     ToolTip="処方総線量 (Gy)。単一値(78)、範囲指定(70-80 / 70~80)、不等号(&gt;=60)に対応"/>
+                                     ToolTip="Prescription total dose (Gy). Supports single value (78), range (70-80), and inequalities (&gt;=60)"/>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="4" VerticalAlignment="Center" Margin="12,2,0,2">
                             <TextBlock Text="Dose:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{StaticResource BrushTextMuted}"/>
                             <ComboBox SelectedItem="{Binding DosePresence}" Width="92" Margin="0,0,8,0"
-                                      ToolTip="線量計算の有無による絞り込み (All: 全て, HasDose: 線量あり[計算済み], NoDose: 線量なし[未計算])">
+                                      ToolTip="Filter by dose status (All: all, HasDose: calculated, NoDose: uncalculated)">
                                 <models:DosePresenceFilter>All</models:DosePresenceFilter>
                                 <models:DosePresenceFilter>HasDose</models:DosePresenceFilter>
                                 <models:DosePresenceFilter>NoDose</models:DosePresenceFilter>
@@ -260,12 +260,12 @@
 
                             <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,3">
                                 <CheckBox Content="Include PlanSum" IsChecked="{Binding Options.ExportPlanSums}" 
-                                          FontWeight="Bold" Foreground="#1E40AF" ToolTip="合算計画 (PlanSum) も抽出対象に含めます"/>
+                                          FontWeight="Bold" Foreground="#1E40AF" ToolTip="Include PlanSum in search targets"/>
                             </Border>
                         </StackPanel>
                     </Grid>
 
-                    <!-- 高度フィルタ (Machine, Energy, Technique, Date Range) 折りたたみ式パネル -->
+                    <!-- Advanced Filters (Machine, Energy, Technique, Date Range) -->
                     <Expander Header="▾ Advanced Filters (Machine, Energy, Technique, Date Range)" 
                               Margin="0,8,0,0" IsExpanded="False"
                               Foreground="{StaticResource BrushTextMuted}" FontSize="12">
@@ -284,27 +284,27 @@
                                     <ColumnDefinition Width="1.2*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- 1行目: 照射パラメータ (Machine ID, Energy, Technique) -->
+                                <!-- Row 1: Beam Parameters (Machine ID, Energy, Technique) -->
                                 <Label Content="Machine ID:" Grid.Row="0" Grid.Column="0" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 <TextBox Text="{Binding MachineFilterText, UpdateSourceTrigger=PropertyChanged}" 
                                          Grid.Row="0" Grid.Column="1" Margin="2,3" 
-                                         ToolTip="治療装置ID。カンマ区切りで複数OR指定。! または - で除外指定可能 (例: TrueBeam, Clinac_iX, !QA_Linac)"/>
+                                         ToolTip="Treatment machine ID. Comma-separated OR search. Prefix with ! or - to exclude (e.g., TrueBeam, Clinac_iX, !QA_Linac)"/>
 
                                 <Label Content="Energy:" Grid.Row="0" Grid.Column="2" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                 <TextBox Text="{Binding EnergyFilterText, UpdateSourceTrigger=PropertyChanged}" 
                                          Grid.Row="0" Grid.Column="3" Margin="2,3" 
-                                         ToolTip="照射エネルギー。カンマ区切りで複数OR指定。! または - で除外指定可能 (例: 6X, 10X, !6FFF)"/>
+                                         ToolTip="Beam energy. Comma-separated OR search. Prefix with ! or - to exclude (e.g., 6X, 10X, !6FFF)"/>
 
                                 <Label Content="Technique:" Grid.Row="0" Grid.Column="4" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                 <TextBox Text="{Binding TechniqueFilterText, UpdateSourceTrigger=PropertyChanged}" 
                                          Grid.Row="0" Grid.Column="5" Margin="2,3" 
-                                         ToolTip="照射手法・MLC技術。カンマ区切りで複数OR指定。! または - で除外指定可能 (例: ARC, STATIC, !SRS)"/>
+                                         ToolTip="Delivery technique. Comma-separated OR search. Prefix with ! or - to exclude (e.g., ARC, STATIC, !SRS)"/>
 
-                                <!-- 2行目: 日付範囲フィルタ (Date Target, From, To, Clear) -->
+                                <!-- Row 2: Date Range Filter (Date Target, From, To, Clear) -->
                                 <Label Content="Date Target:" Grid.Row="1" Grid.Column="0" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,6,0,0"/>
                                 <ComboBox ItemsSource="{Binding DateTargetOptions}" SelectedItem="{Binding DateTarget}"
                                           Grid.Row="1" Grid.Column="1" Margin="2,9,2,3" VerticalAlignment="Center"
-                                          ToolTip="日付フィルタの判定対象日付"/>
+                                          ToolTip="Target date field for filtering"/>
 
                                 <Label Content="Date Range:" Grid.Row="1" Grid.Column="2" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,6,0,0"/>
                                 <Grid Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="3" Margin="2,6,0,0" VerticalAlignment="Center">
@@ -315,27 +315,27 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <DatePicker SelectedDate="{Binding DateFrom, Mode=TwoWay}" Grid.Column="0"
-                                                ToolTip="開始日 (From: この日以降)"/>
+                                                ToolTip="Start date (From)"/>
                                     <TextBlock Text="〜" Grid.Column="1" VerticalAlignment="Center" Margin="6,0" FontWeight="Bold" Foreground="{StaticResource BrushTextMuted}"/>
                                     <DatePicker SelectedDate="{Binding DateTo, Mode=TwoWay}" Grid.Column="2"
-                                                ToolTip="終了日 (To: この日以前)"/>
+                                                ToolTip="End date (To)"/>
                                     <Button Content="✕ Clear" Command="{Binding ClearDatesCommand}" Grid.Column="3"
                                             Style="{StaticResource ModernButton}" Padding="8,2" Margin="8,0,0,0"
-                                            ToolTip="日付範囲の指定をクリア"/>
+                                            ToolTip="Clear date range"/>
                                 </Grid>
                             </Grid>
                         </Border>
                     </Expander>
 
-                    <!-- 検索実行フッターバー (唯一の Search Plans 実行ポイント) -->
+                    <!-- Search Execution Footer Bar -->
                     <Border Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="5" 
                             Padding="12,7" Margin="0,8,0,0">
                         <DockPanel LastChildFill="True">
                             <Button DockPanel.Dock="Right" Content="🔍 Search Plans" Command="{Binding SearchPlansCommand}" 
                                     Style="{StaticResource PrimaryButton}" Background="#0284C7" Foreground="White" BorderBrush="#0369A1" 
                                     FontWeight="Bold" Padding="22,6" FontSize="13"
-                                    ToolTip="上記の条件に合致するプランを高速検索し、下部の一覧に表示します"/>
-                            <TextBlock Text="💡 上記の検索条件（患者/計画/ターゲット/線量/承認/装置/手法/日付）で治療計画を高速走査し、下部のプラン一覧にプレビュー表示します。" 
+                                    ToolTip="Search database for plans matching all specified criteria and display below"/>
+                            <TextBlock Text="💡 Searches treatment plans matching specified criteria across the database and previews results in the table below." 
                                        Foreground="{StaticResource BrushTextMuted}" VerticalAlignment="Center" FontSize="11.5" 
                                        TextTrimming="CharacterEllipsis" Margin="0,0,12,0"/>
                         </DockPanel>
@@ -343,39 +343,38 @@
                 </StackPanel>
             </GroupBox>
 
-                    <!-- 検索合致プラン一覧 & 選択操作ツールバー -->
+                    <!-- Matched Plans List & Toolbar -->
                     <Grid Grid.Row="1">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <!-- ツールバー: 一括選択/解除/反転, 選択サマリー -->
+                        <!-- Toolbar: Select All, Unselect All, Invert, Selection Summary -->
                     <Border Grid.Row="0" Background="{StaticResource BrushSurface}" 
                             BorderBrush="{StaticResource BrushCardBorder}" BorderThickness="1" 
                             CornerRadius="4" Padding="10,6" Margin="0,0,0,8">
-                        <DockPanel LastChildFill="False">
-                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                                <Button Content="Select All" Command="{Binding SelectAllPlansCommand}" 
-                                        Style="{StaticResource ModernButton}" Padding="12,4" Margin="0,0,4,0"
-                                        ToolTip="一覧内のすべてのプランにチェックを付けます"/>
-                                <Button Content="Unselect All" Command="{Binding UnselectAllPlansCommand}" 
-                                        Style="{StaticResource ModernButton}" Padding="12,4" Margin="2,0"
-                                        ToolTip="すべてのプランのチェックを外します"/>
-                                <Button Content="Invert" Command="{Binding InvertPlanSelectionCommand}" 
-                                        Style="{StaticResource ModernButton}" Padding="12,4" Margin="2,0"
-                                        ToolTip="プランの選択状態を反転します"/>
-                            </StackPanel>
-
+                        <DockPanel LastChildFill="True">
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
                                 <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="8,3">
                                     <TextBlock Text="{Binding MatchedPlansSummaryText}" FontWeight="Bold" Foreground="#1E40AF" FontSize="11.5"/>
                                 </Border>
                             </StackPanel>
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                                <Button Content="Select All" Command="{Binding SelectAllPlansCommand}" 
+                                        Style="{StaticResource ModernButton}" Padding="12,4" Margin="0,0,4,0"
+                                        ToolTip="Select all matched plans"/>
+                                <Button Content="Unselect All" Command="{Binding UnselectAllPlansCommand}" 
+                                        Style="{StaticResource ModernButton}" Padding="12,4" Margin="2,0"
+                                        ToolTip="Deselect all matched plans"/>
+                                <Button Content="Invert" Command="{Binding InvertPlanSelectionCommand}" 
+                                        Style="{StaticResource ModernButton}" Padding="12,4" Margin="2,0"
+                                        ToolTip="Invert selection for all plans"/>
+                            </StackPanel>
                         </DockPanel>
                     </Border>
 
-                    <!-- プラン一覧 DataGrid (検索条件全項目を表示) -->
+                    <!-- DataGrid of Matched Plans -->
                     <DataGrid Grid.Row="1" ItemsSource="{Binding MatchedPlans}" 
                               AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
                               GridLinesVisibility="Horizontal" HeadersVisibility="Column"
@@ -410,7 +409,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- Tab 2: 輪郭事前マッピング & エイリアス (2-Pane Layout) -->
+            <!-- Tab 2: Structure Pre-Scan & Alias Mapping (2-Pane Layout) -->
             <TabItem Header="2- 📐 Structure Mapping">
                 <Grid Margin="0,8,0,0">
                     <Grid.ColumnDefinitions>
@@ -419,7 +418,7 @@
                         <ColumnDefinition Width="1.0*" MinWidth="340"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- 左ペイン: マッピングルール定義 (永続化ルール) -->
+                    <!-- Left Pane: Mapping Rules Definition -->
                     <GroupBox Grid.Column="0" Header="Mapping Rules (Rule Definitions)" Margin="0">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -427,16 +426,20 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            <DockPanel Grid.Row="0" Margin="0,0,0,8" LastChildFill="False">
+                            <DockPanel Grid.Row="0" Margin="0,0,0,8" LastChildFill="True">
+                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                                    <Button Content="📂 Load JSON" Command="{Binding LoadMappingRulesCommand}" Style="{StaticResource ModernButton}" Margin="2,0" ToolTip="Load mapping rules from JSON"/>
+                                    <Button Content="💾 Save JSON" Command="{Binding SaveMappingRulesCommand}" Style="{StaticResource ModernButton}" Margin="2,0,0,0" ToolTip="Save mapping rules to JSON"/>
+                                </StackPanel>
                                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                                    <Button Content="+ Add Rule" Command="{Binding AddRuleCommand}" Style="{StaticResource ModernButton}" Margin="0,0,4,0"/>
+                                    <Button Content="+ Add Rule" Command="{Binding AddRuleCommand}" Style="{StaticResource ModernButton}" Margin="0,0,3,0"/>
                                     <Button Content="- Delete" Command="{Binding DeleteRuleCommand}" Click="DeleteRuleButton_Click" Style="{StaticResource ModernButton}" Margin="2,0"/>
-                                    <Button Content="▲ Up" Command="{Binding MoveUpRuleCommand}" Style="{StaticResource ModernButton}" Margin="6,0,2,0" ToolTip="選択ルールを上位（高優先度）に移動"/>
-                                    <Button Content="▼ Down" Command="{Binding MoveDownRuleCommand}" Style="{StaticResource ModernButton}" Margin="2,0" ToolTip="選択ルールを下位（低優先度）に移動"/>
+                                    <Button Content="▲ Up" Command="{Binding MoveUpRuleCommand}" PreviewMouseDown="MoveRuleButton_PreviewMouseDown" Click="MoveRuleButton_Click" Style="{StaticResource ModernButton}" Margin="4,0,2,0" ToolTip="Move selected rule up (higher priority)"/>
+                                    <Button Content="▼ Down" Command="{Binding MoveDownRuleCommand}" PreviewMouseDown="MoveRuleButton_PreviewMouseDown" Click="MoveRuleButton_Click" Style="{StaticResource ModernButton}" Margin="2,0" ToolTip="Move selected rule down (lower priority)"/>
 
-                                    <!-- 臨床正規表現ヒントポップアップ -->
-                                    <ToggleButton x:Name="BtnRegexHints" Content="❓ Regex Hints ▾" Style="{StaticResource ModernToggleButton}" Margin="8,0,2,0" 
-                                                  ToolTip="臨床用正規表現のスニペット一覧とヒントを表示"/>
+                                    <!-- Clinical Regex Snippets Popup -->
+                                    <ToggleButton x:Name="BtnRegexHints" Content="❓ Regex Hints ▾" Style="{StaticResource ModernToggleButton}" Margin="6,0,2,0" 
+                                                  ToolTip="Show clinical regex cheat sheet and snippets"/>
                                     <Popup x:Name="PopupRegexHints" IsOpen="{Binding IsChecked, ElementName=BtnRegexHints, Mode=TwoWay}"
                                            StaysOpen="False" PlacementTarget="{Binding ElementName=BtnRegexHints}"
                                            Placement="Bottom" AllowsTransparency="True" PopupAnimation="Fade">
@@ -453,10 +456,10 @@
                                                 </Grid.RowDefinitions>
 
                                                 <DockPanel Grid.Row="0" Margin="0,0,0,6">
-                                                    <TextBlock Text="💡 Clinical Regex Snippets (頻出パターン集)" FontWeight="Bold" FontSize="13" Foreground="{StaticResource BrushTextPrimary}"/>
+                                                    <TextBlock Text="💡 Clinical Regex Snippets" FontWeight="Bold" FontSize="13" Foreground="{StaticResource BrushTextPrimary}"/>
                                                     <Button DockPanel.Dock="Right" Content="✕" Click="CloseRegexHintsPopup_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" FontWeight="Bold" Foreground="#94A3B8" Padding="4,0" VerticalAlignment="Center"/>
                                                 </DockPanel>
-                                                <TextBlock Grid.Row="1" Text="「Insert」を押すと選択中ルールのパターンに挿入され、Match Mode が自動的に Regex に切り替わります。" 
+                                                <TextBlock Grid.Row="1" Text="Click 'Insert' to apply the pattern to the selected rule and switch Match Mode to Regex." 
                                                            FontSize="11" Foreground="{StaticResource BrushTextMuted}" TextWrapping="Wrap" Margin="0,0,0,10"/>
 
                                                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
@@ -477,13 +480,13 @@
                                                                                 </Border>
                                                                             </StackPanel>
                                                                             <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#475569"/>
-                                                                            <TextBlock Text="{Binding Example, StringFormat='例: {0}'}" FontSize="10" Foreground="#64748B" FontStyle="Italic"/>
+                                                                            <TextBlock Text="{Binding Example, StringFormat='Ex: {0}'}" FontSize="10" Foreground="#64748B" FontStyle="Italic"/>
                                                                         </StackPanel>
                                                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
                                                                             <Button Content="Copy" Command="{Binding DataContext.CopyRegexSnippetCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                                                                    CommandParameter="{Binding Pattern}" Style="{StaticResource ModernButton}" Padding="6,2" FontSize="11" Margin="0,0,4,0" ToolTip="クリップボードにコピー"/>
+                                                                                    CommandParameter="{Binding Pattern}" Style="{StaticResource ModernButton}" Padding="6,2" FontSize="11" Margin="0,0,4,0" ToolTip="Copy to clipboard"/>
                                                                             <Button Content="Insert" Command="{Binding DataContext.InsertRegexSnippetCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                                                                    CommandParameter="{Binding Pattern}" Click="InsertSnippetButton_Click" Style="{StaticResource PrimaryButton}" Padding="8,2" FontSize="11" ToolTip="選択行のパターンへ挿入しRegexモードに変更"/>
+                                                                                    CommandParameter="{Binding Pattern}" Click="InsertSnippetButton_Click" Style="{StaticResource PrimaryButton}" Padding="8,2" FontSize="11" ToolTip="Insert into selected rule and switch to Regex mode"/>
                                                                         </StackPanel>
                                                                     </Grid>
                                                                 </Border>
@@ -495,14 +498,10 @@
                                         </Border>
                                     </Popup>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                                    <Button Content="Load Rules (JSON)" Command="{Binding LoadMappingRulesCommand}" Style="{StaticResource ModernButton}" Margin="2,0"/>
-                                    <Button Content="Save Rules (JSON)" Command="{Binding SaveMappingRulesCommand}" Style="{StaticResource ModernButton}" Margin="2,0,0,0"/>
-                                </StackPanel>
                             </DockPanel>
 
                             <DataGrid x:Name="MappingRulesGrid" Grid.Row="1" ItemsSource="{Binding MappingRules}" SelectedItem="{Binding SelectedRule}"
-                                      AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="False"
+                                      AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
                                       SelectionChanged="DataGrid_SelectionChanged">
                                 <DataGrid.Columns>
                                     <DataGridCheckBoxColumn Header="Extract" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="55"/>
@@ -564,16 +563,16 @@
                                             </x:Array>
                                         </DataGridComboBoxColumn.ItemsSource>
                                     </DataGridComboBoxColumn>
-                                    <DataGridTextColumn Header="Target Alias (統合名)" Binding="{Binding TargetAlias, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                                    <DataGridTextColumn Header="Target Alias" Binding="{Binding TargetAlias, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>
                     </GroupBox>
 
-                    <!-- スプリッター (幅のドラッグ調整) -->
+                    <!-- Splitter -->
                     <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="#CBD5E1"/>
 
-                    <!-- 右ペイン: 事前スキャン結果 ＆ マッピング適用プレビュー -->
+                    <!-- Right Pane: Discovered Structures & Mapping Preview -->
                     <GroupBox Grid.Column="2" Header="Discovered Structures &amp; Mapping Preview" Margin="0">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -582,26 +581,27 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            <DockPanel Grid.Row="0" Margin="0,0,0,6" LastChildFill="False">
-                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                                    <Button Content="🔍 Pre-Scan Structures" Command="{Binding RunPreScanCommand}" 
-                                            Style="{StaticResource PrimaryButton}" Padding="12,5" Margin="0,0,4,0"/>
-                                    <Button Content="⏹ Cancel" Command="{Binding CancelCommand}" 
-                                            Style="{StaticResource DangerButton}" Padding="10,5" Margin="2,0,6,0"
-                                            ToolTip="実行中の事前スキャンを中止します"/>
-                                    <Button Content="+ Add to Rules" Command="{Binding AddDiscoveredToRulesCommand}" 
-                                            Style="{StaticResource ModernButton}" Margin="2,0" 
-                                            ToolTip="選択した輪郭（または未マッピング輪郭）を左ペインのルール定義に追加します"/>
-                                    <Button Content="↻ Refresh Preview" Command="{Binding RefreshPreviewCommand}" 
-                                            Style="{StaticResource ModernButton}" Margin="2,0" 
-                                            ToolTip="最新のルール定義をプレビューに再適用します"/>
-                                </StackPanel>
-                                <Border DockPanel.Dock="Right" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="12" Padding="8,2" VerticalAlignment="Center" Margin="4,0,0,0">
-                                    <TextBlock Text="{Binding PreScanScopeBadgeText}" FontWeight="SemiBold" FontSize="11" Foreground="#1E40AF" VerticalAlignment="Center" ToolTip="Plan Search で選択された計画が事前スキャンの走査対象となります"/>
+                            <DockPanel Grid.Row="0" Margin="0,0,0,6" LastChildFill="True">
+                                <Border DockPanel.Dock="Right" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="12" Padding="8,3" VerticalAlignment="Center" Margin="6,0,0,0">
+                                    <TextBlock Text="{Binding PreScanScopeBadgeText}" FontWeight="SemiBold" FontSize="11" Foreground="#1E40AF" VerticalAlignment="Center" ToolTip="Plans selected in Plan Search tab are scanned"/>
                                 </Border>
+                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                                    <Button Content="🔍 Pre-Scan" Command="{Binding RunPreScanCommand}" 
+                                            Style="{StaticResource PrimaryButton}" Padding="10,4" Margin="0,0,3,0"
+                                            ToolTip="Scan structures for target treatment plans"/>
+                                    <Button Content="⏹ Cancel" Command="{Binding CancelCommand}" 
+                                            Style="{StaticResource DangerButton}" Padding="8,4" Margin="2,0,4,0"
+                                            ToolTip="Cancel ongoing structure pre-scan"/>
+                                    <Button Content="+ Add to Rules" Command="{Binding AddDiscoveredToRulesCommand}" 
+                                            Style="{StaticResource ModernButton}" Padding="8,4" Margin="2,0" 
+                                            ToolTip="Add selected (or unmapped) structures to mapping rules in the left pane"/>
+                                    <Button Content="↻ Refresh" Command="{Binding RefreshPreviewCommand}" 
+                                            Style="{StaticResource ModernButton}" Padding="8,4" Margin="2,0" 
+                                            ToolTip="Re-evaluate and refresh mapping preview with current rules"/>
+                                </StackPanel>
                             </DockPanel>
 
-                            <!-- クイックフィルタバー -->
+                            <!-- Quick Filter Bar -->
                             <Border Grid.Row="1" Background="#F1F5F9" CornerRadius="4" Padding="6,4" Margin="0,0,0,6">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -611,22 +611,22 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- テキスト検索 -->
+                                    <!-- Text Filter -->
                                     <TextBox Grid.Column="0" Text="{Binding DiscoveredFilterText, UpdateSourceTrigger=PropertyChanged}" 
                                              VerticalContentAlignment="Center" Margin="0,0,6,0"
-                                             ToolTip="輪郭IDまたは解決先Aliasで部分一致検索（リアルタイム絞り込み）"/>
+                                             ToolTip="Filter structures by ID or resolved alias (real-time search)"/>
 
-                                    <!-- ステータスフィルタ (All / Unmapped Only / Mapped Only / Excluded Only) -->
+                                    <!-- Status Filter (All / Unmapped Only / Mapped Only / Excluded Only) -->
                                     <ComboBox Grid.Column="1" ItemsSource="{Binding DiscoveredFilterStatusOptions}" 
                                               SelectedItem="{Binding DiscoveredFilterStatus}" Width="130" Margin="0,0,6,0"
-                                              VerticalContentAlignment="Center" ToolTip="ステータスで絞り込み"/>
+                                              VerticalContentAlignment="Center" ToolTip="Filter by mapping status"/>
 
-                                    <!-- フィルタクリアボタン -->
+                                    <!-- Filter Clear Button -->
                                     <Button Grid.Column="2" Content="Clear" Command="{Binding ClearDiscoveredFilterCommand}"
                                             Style="{StaticResource ModernButton}" Padding="8,2" FontSize="11" Margin="0,0,6,0"
-                                            ToolTip="フィルタを解除して全件表示に戻します"/>
+                                            ToolTip="Reset filter and show all structures"/>
 
-                                    <!-- 絞り込み件数バッジ -->
+                                    <!-- Filtered Count Badge -->
                                     <Border Grid.Column="3" Background="#E2E8F0" CornerRadius="3" Padding="6,2" VerticalAlignment="Center">
                                         <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrushTextPrimary}">
                                             <TextBlock.Text>
@@ -642,11 +642,11 @@
 
                             <DataGrid Grid.Row="2" ItemsSource="{Binding DiscoveredStructuresView}" SelectedItem="{Binding SelectedDiscoveredItem}"
                                       AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
-                                      ToolTip="項目をダブルクリックするとマッピングルールへ直接追加できます">
+                                      ToolTip="Double-click an item to add it directly to mapping rules">
                                 <DataGrid.RowStyle>
                                     <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                                         <EventSetter Event="MouseDoubleClick" Handler="DiscoveredRow_MouseDoubleClick"/>
-                                        <Setter Property="ToolTip" Value="ダブルクリックでルールに追加"/>
+                                        <Setter Property="ToolTip" Value="Double-click to add rule"/>
                                     </Style>
                                 </DataGrid.RowStyle>
                                 <DataGrid.Columns>
@@ -684,28 +684,30 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- アラートノート: 基本統計量の自動出力について -->
+                    <!-- Alert Note: Auto Export of Basic Statistics -->
                     <Border Grid.Row="0" Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="4" Padding="10,6" Margin="0,0,0,8">
                         <DockPanel>
-                            <TextBlock Text="💡 基本統計量の自動出力:" FontWeight="Bold" Foreground="#15803D" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="全対象輪郭の Volume[cc], Max dose[Gy], Mean dose[Gy], Min dose[Gy] は自動出力されるため、個別登録は不要です。" 
+                            <TextBlock Text="💡 Auto Export of Basic Statistics:" FontWeight="Bold" Foreground="#15803D" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Volume[cc], Max dose[Gy], Mean dose[Gy], and Min dose[Gy] are automatically exported for all mapped structures, so individual registration is not required." 
                                        Foreground="#166534" VerticalAlignment="Center"/>
                         </DockPanel>
                     </Border>
 
-                    <DockPanel Grid.Row="1" Margin="0,0,0,8" LastChildFill="False">
+                    <DockPanel Grid.Row="1" Margin="0,0,0,8" LastChildFill="True">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                            <Button Content="📂 Load CSV" Command="{Binding LoadDqpCommand}" Style="{StaticResource ModernButton}" Margin="2,0" ToolTip="Load DQP parameters from CSV"/>
+                            <Button Content="💾 Save CSV" Command="{Binding SaveDqpCommand}" Style="{StaticResource ModernButton}" Margin="2,0,0,0" ToolTip="Save DQP parameters to CSV"/>
+                        </StackPanel>
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                             <Button Content="+ Add DQP" Command="{Binding AddDqpCommand}" Style="{StaticResource ModernButton}" Margin="0,0,4,0"/>
                             <Button Content="- Delete" Command="{Binding DeleteDqpCommand}" Click="DeleteDqpButton_Click" Style="{StaticResource ModernButton}" Margin="2,0"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                            <Button Content="Load DQP (CSV)" Command="{Binding LoadDqpCommand}" Style="{StaticResource ModernButton}" Margin="2,0"/>
-                            <Button Content="Save DQP (CSV)" Command="{Binding SaveDqpCommand}" Style="{StaticResource ModernButton}" Margin="2,0,0,0"/>
+                            <Button Content="▲ Up" Command="{Binding MoveUpDqpCommand}" PreviewMouseDown="MoveDqpButton_PreviewMouseDown" Click="MoveDqpButton_Click" Style="{StaticResource ModernButton}" Margin="6,0,2,0" ToolTip="Move selected DQP metric up"/>
+                            <Button Content="▼ Down" Command="{Binding MoveDownDqpCommand}" PreviewMouseDown="MoveDqpButton_PreviewMouseDown" Click="MoveDqpButton_Click" Style="{StaticResource ModernButton}" Margin="2,0" ToolTip="Move selected DQP metric down"/>
                         </StackPanel>
                     </DockPanel>
 
                     <DataGrid x:Name="DqpGrid" Grid.Row="2" ItemsSource="{Binding DQPList}" SelectedItem="{Binding SelectedDqp}" 
-                              AutoGenerateColumns="False" CanUserDeleteRows="False"
+                              AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
                               SelectionChanged="DataGrid_SelectionChanged">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Structure Name / Target Alias" Binding="{Binding structureName}" Width="220"/>
@@ -741,11 +743,11 @@
                 </Grid>
             </TabItem>
 
-            <!-- Tab 4: 抽出・解析オプション & 出力先ファイル設定 -->
+            <!-- Tab 4: Extraction & Analysis Options & Output Destination -->
             <TabItem Header="4- ⚙️ Extraction &amp; Analysis Options">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,8,0,0">
                     <StackPanel>
-                        <!-- 出力先ファイル設定カード (最上段) -->
+                        <!-- Output File Destination Card -->
                         <GroupBox Header="📁 Export File Destination" Margin="0,0,0,10">
                             <Grid Margin="4,2">
                                 <Grid.ColumnDefinitions>
@@ -757,13 +759,13 @@
                                 <Label Content="Output CSV File:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <TextBox Grid.Column="1" Text="{Binding OutputFilePath, Mode=TwoWay}" Padding="8,5" IsReadOnly="True"
                                          Background="#F8FAFC" BorderBrush="{StaticResource BrushCardBorder}" VerticalAlignment="Center"
-                                         ToolTip="データマイニング結果を出力する CSV ファイルのフルパス"/>
+                                         ToolTip="Full path of the output CSV file"/>
                                 <Button Grid.Column="2" Content="📁 Browse..." Command="{Binding SelectOutputFolderCommand}" 
                                         Style="{StaticResource ModernButton}" Padding="12,5" Margin="6,0,3,0"
-                                        ToolTip="出力先フォルダおよびファイル名を選択"/>
+                                        ToolTip="Select output folder and file name"/>
                                 <Button Grid.Column="3" Content="📂 Open Folder" Command="{Binding OpenOutputFolderCommand}" 
                                         Style="{StaticResource ModernButton}" Padding="12,5" Margin="3,0,0,0"
-                                        ToolTip="出力先フォルダをエクスプローラーで開く"/>
+                                        ToolTip="Open output folder in File Explorer"/>
                             </Grid>
                         </GroupBox>
 
@@ -773,7 +775,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- 左列カード群 -->
+                        <!-- Left Column -->
                         <StackPanel Grid.Column="0" Margin="0,0,6,0">
                             <GroupBox Header="Plan Metadata Extraction">
                                 <WrapPanel>
@@ -795,13 +797,13 @@
                             </GroupBox>
                         </StackPanel>
 
-                        <!-- 右列カード群 -->
+                        <!-- Right Column -->
                         <StackPanel Grid.Column="1" Margin="6,0,0,0">
                             <GroupBox Header="Plan Complexity Analysis">
                                 <StackPanel Margin="4">
                                     <CheckBox Content="Calculate Modulation Complexity Score (MCS), Edge Metric, Leaf Travel, Arc Length" 
                                               IsChecked="{Binding Options.ExportPlanComplexity}" Margin="6" FontWeight="SemiBold"/>
-                                    <TextBlock Text="※各ビームの MLC 軌跡から複雑度指標を自動算出します。" 
+                                    <TextBlock Text="※ Modulation complexity metrics are automatically calculated from MLC leaf sequences." 
                                                FontSize="11" Foreground="{StaticResource BrushTextMuted}" Margin="26,0,6,6"/>
                                 </StackPanel>
                             </GroupBox>
@@ -812,18 +814,18 @@
                                         <StackPanel>
                                             <CheckBox Content="🔒 Anonymize Patient ID (SHA-256) &amp; Redact Personal Info" 
                                                       IsChecked="{Binding Options.AnonymizeOutput}" FontWeight="Bold" Foreground="#991B1B"/>
-                                            <TextBlock Text="患者IDをハッシュ化し、生年月日・承認者名を REDACTED にマスクします。" 
+                                            <TextBlock Text="Hashes Patient ID and masks birth dates and approver names as REDACTED." 
                                                        FontSize="11" Foreground="#B91C1C" Margin="22,2,0,0"/>
                                         </StackPanel>
                                     </Border>
 
                                     <CheckBox Content="🤖 Simultaneously Export JSON Lines (.jsonl)" 
                                               IsChecked="{Binding Options.ExportJsonl}" Margin="6" FontWeight="SemiBold"
-                                              ToolTip="機械学習・AI 解析用の階層化 JSONL ファイルを同時出力します"/>
+                                              ToolTip="Simultaneously export hierarchical JSONL file for ML / AI analysis"/>
 
                                     <CheckBox Content="⚡ Bypass Structure Pre-Scan" 
                                               IsChecked="{Binding Options.BypassPreScan}" Margin="6"
-                                              ToolTip="チェックをONにすると、事前の輪郭スキャン確認ダイアログをスキップし、DQPリスト等の輪郭名で直接抽出を開始します。"/>
+                                              ToolTip="When checked, bypasses pre-scan confirmation and starts extraction directly with DQP list structure names."/>
                                 </StackPanel>
                             </GroupBox>
                         </StackPanel>
@@ -833,7 +835,7 @@
             </TabItem>
         </TabControl>
 
-        <!-- 2. ログ出力コンソール (Dark Terminal Style) -->
+        <!-- 2. Console Output (Dark Terminal Style) -->
         <Border Grid.Row="1" Background="#090D16" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Margin="0,0,0,8" Padding="8,6">
             <Grid>
                 <Grid.RowDefinitions>
@@ -860,23 +862,23 @@
             </Grid>
         </Border>
 
-        <!-- 3. プログレスバー & 実行コントロールバー (Run Extraction / Cancel とプログレスバーを同高度に配置) -->
+        <!-- 3. Progress Bar & Execution Control Bar -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- 実行・中断ボタン -->
+            <!-- Execution & Cancel Buttons -->
             <StackPanel Orientation="Horizontal" Grid.Column="0" Margin="0,0,10,0" VerticalAlignment="Center">
                 <Button Content="▶ Run Extraction" Command="{Binding RunExtractionCommand}" 
                         Style="{StaticResource PrimaryButton}" Padding="16,6" Margin="0,0,6,0" FontSize="12.5"
-                        ToolTip="選択されたプラン（または全合致プラン）の本番データ抽出を実行"/>
+                        ToolTip="Execute production data extraction for selected (or all matched) plans"/>
                 <Button Content="⏹ Cancel" Command="{Binding CancelCommand}" 
                         Style="{StaticResource DangerButton}" Padding="14,6" FontSize="12.5"/>
             </StackPanel>
 
-            <!-- プログレスバー（進捗率・ステータステキスト重ね表示） -->
+            <!-- Progress Bar with Percentage and Status Overlay -->
             <Grid Grid.Column="1" VerticalAlignment="Center">
                 <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="28"/>
                 <DockPanel LastChildFill="False">

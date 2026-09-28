@@ -1,27 +1,27 @@
 namespace EclipseDataMiner.Models
 {
     /// <summary>
-    /// 正規表現ヒント・チートシートスニペット項目
+    /// Regular expression cheat sheet snippet item.
     /// </summary>
     public class RegexSnippetItem
     {
         /// <summary>
-        /// 正規表現パターン文字列
+        /// Regular expression pattern string.
         /// </summary>
         public string Pattern { get; set; }
 
         /// <summary>
-        /// スニペットタイトル（例: 前方一致）
+        /// Snippet title (e.g. Starts with).
         /// </summary>
         public string Title { get; set; }
 
         /// <summary>
-        /// スニペットの機能解説
+        /// Description of the snippet pattern.
         /// </summary>
         public string Description { get; set; }
 
         /// <summary>
-        /// マッチする臨床輪郭の具体例
+        /// Example clinical contour IDs that match this pattern.
         /// </summary>
         public string Example { get; set; }
     }

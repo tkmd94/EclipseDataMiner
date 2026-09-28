@@ -5,14 +5,14 @@ using System.Runtime.CompilerServices;
 namespace EclipseDataMiner.Models
 {
     /// <summary>
-    /// Search & Filter で検索・合致したプラン情報項目（選択可能プレビュー用）
+    /// Matched plan information item from Search & Filter (for selectable preview UI).
     /// </summary>
     public class MatchedPlanItem : INotifyPropertyChanged
     {
         private bool _isSelected = true;
 
         /// <summary>
-        /// データ抽出の対象とするかどうかのチェック状態
+        /// Checked state indicating whether to include this plan in data extraction.
         /// </summary>
         public bool IsSelected
         {
@@ -32,12 +32,12 @@ namespace EclipseDataMiner.Models
         public string PlanId { get; set; } = string.Empty;
 
         /// <summary>
-        /// PlanSetup または PlanSum
+        /// PlanSetup or PlanSum
         /// </summary>
         public string PlanType { get; set; } = "PlanSetup";
 
         /// <summary>
-        /// Approval Status (Approved, Completed, UnApproved, PlanSum など)
+        /// Approval Status (Approved, Completed, UnApproved, PlanSum, etc.)
         /// </summary>
         public string ApprovalStatus { get; set; } = string.Empty;
 
@@ -87,29 +87,29 @@ namespace EclipseDataMiner.Models
         public string DateTargetLabel { get; set; } = string.Empty;
 
         /// <summary>
-        /// 計画作成日 (CreationDate)
+        /// Plan creation date (CreationDate)
         /// </summary>
         public DateTime? CreationDate { get; set; }
 
         /// <summary>
-        /// 計画承認日 (PlanningApprovalDate)
+        /// Planning approval date (PlanningApprovalDate)
         /// </summary>
         public DateTime? PlanningApprovalDate { get; set; }
 
         /// <summary>
-        /// 治療承認日 (TreatmentApprovalDate)
+        /// Treatment approval date (TreatmentApprovalDate)
         /// </summary>
         public DateTime? TreatmentApprovalDate { get; set; }
 
         public string TargetVolumeId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 線量計算の有無 (true = 線量あり, false = 線量なし/未計算)
+        /// Whether 3D dose is calculated (true = calculated dose available, false = no calculated dose)
         /// </summary>
         public bool HasDose { get; set; }
 
         /// <summary>
-        /// 患者ID、コースID、プランIDを一意に識別するキー (例: "12345|Course1|Prostate_VMAT")
+        /// Unique identification key for patient, course, and plan (e.g. "12345|Course1|Prostate_VMAT")
         /// </summary>
         public string UniqueKey => $"{PatientId}|{CourseId}|{PlanId}";
 

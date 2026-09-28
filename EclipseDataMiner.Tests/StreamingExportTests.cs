@@ -31,7 +31,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("CSVストリーミングエクスポーターがヘッダーとデータ行を正しくフラット形式で出力することを検証")]
+        [Description("Verifies that CsvStreamExporter writes header and data rows properly in flat format")]
         public void CsvStreamExporter_ShouldWriteCorrectFlatRow()
         {
             // Arrange
@@ -102,7 +102,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("匿名化オプション有効時に患者IDがハッシュ化され、生年月日がREDACTEDになることを検証")]
+        [Description("Verifies that patient ID is hashed and date of birth is REDACTED when anonymization option is enabled")]
         public void CsvStreamExporter_WhenAnonymizeEnabled_ShouldMaskPersonalData()
         {
             // Arrange
@@ -134,14 +134,14 @@ namespace EclipseDataMiner.Tests
             string[] lines = File.ReadAllLines(csvPath);
             string dataRow = lines[1];
 
-            Assert.IsFalse(dataRow.Contains("SECRET_ID_999"), "生患者IDが出力されてはいけません");
-            Assert.IsFalse(dataRow.Contains("1970-01-01"), "生年月日が出力されてはいけません");
-            Assert.IsFalse(dataRow.Contains("Dr. Yamada"), "承認者名が出力されてはいけません");
+            Assert.IsFalse(dataRow.Contains("SECRET_ID_999"), "Raw patient ID must not be exported");
+            Assert.IsFalse(dataRow.Contains("1970-01-01"), "Date of birth must not be exported");
+            Assert.IsFalse(dataRow.Contains("Dr. Yamada"), "Approver name must not be exported");
             StringAssert.Contains(dataRow, "REDACTED");
         }
 
         [TestMethod]
-        [Description("JsonlStreamExporter が1プランを1行の有効なJSONとしてストリーミング出力することを検証")]
+        [Description("Verifies that JsonlStreamExporter writes one plan per line as valid streaming JSON")]
         public void JsonlStreamExporter_ShouldWriteValidJsonLine()
         {
             // Arrange
@@ -173,7 +173,7 @@ namespace EclipseDataMiner.Tests
             string[] lines = File.ReadAllLines(jsonlPath);
             Assert.AreEqual(1, lines.Length);
 
-            // JSONパース検証
+            // Verify JSON parsing
             using (var doc = JsonDocument.Parse(lines[0]))
             {
                 var root = doc.RootElement;
@@ -184,7 +184,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("各輪郭の基本統計量(Volume, Max, Mean, Min)およびDQP指標が正しく並んで出力されることを検証")]
+        [Description("Verifies that basic structure statistics (Volume, Max, Mean, Min) and DQP metrics are properly exported side-by-side")]
         public void CsvStreamExporter_WithBasicStatsAndDqp_ShouldWriteAllColumnsCorrectly()
         {
             // Arrange
@@ -256,7 +256,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("線量0 Gy、特殊文字（日本語・記号）を含む輪郭名や欠損値が混在してもCSV出力が破損しないことを検証")]
+        [Description("Verifies that CSV output is not corrupted when zero dose, special characters in structure names, or missing values are present")]
         public void CsvStreamExporter_WhenZeroDoseOrSpecialChars_ShouldFormatSafely()
         {
             // Arrange
@@ -265,7 +265,7 @@ namespace EclipseDataMiner.Tests
 
             var dqpColumns = new List<DqpColumnDefinition>
             {
-                new DqpColumnDefinition { StructureIdentifier = "耳下腺_L", MetricKey = "Dose_50", HeaderText = "耳下腺_L-D50%[Gy]", ColumnType = DqpColumnType.DqpMetric },
+                new DqpColumnDefinition { StructureIdentifier = "Parotid_L", MetricKey = "Dose_50", HeaderText = "Parotid_L-D50%[Gy]", ColumnType = DqpColumnType.DqpMetric },
                 new DqpColumnDefinition { StructureIdentifier = "PTV+5mm", MetricKey = "V_20", HeaderText = "PTV+5mm-V20Gy[%]", ColumnType = DqpColumnType.DqpMetric }
             };
 
@@ -274,13 +274,13 @@ namespace EclipseDataMiner.Tests
                 PatientId = "PT_SPECIAL",
                 CourseId = "C1",
                 PlanId = "P_ZERO",
-                TotalDoseGy = 0.0, // 線量 0 Gy
+                TotalDoseGy = 0.0, // Dose 0 Gy
                 DosePerFractionGy = 0.0,
                 NumberOfFractions = 0,
                 CalculationLogs = new List<string> { "Log with, comma \"quotes\" and\nnewline" },
                 DvhMetrics = new List<DvhMetricResult>
                 {
-                    new DvhMetricResult { TargetAlias = "耳下腺_L", MetricKey = "Dose_50", Value = null, Unit = "Gy" }, // 欠損
+                    new DvhMetricResult { TargetAlias = "Parotid_L", MetricKey = "Dose_50", Value = null, Unit = "Gy" }, // Missing
                     new DvhMetricResult { TargetAlias = "PTV+5mm", MetricKey = "V_20", Value = 15.5, Unit = "%" }
                 }
             };
@@ -298,16 +298,16 @@ namespace EclipseDataMiner.Tests
             Assert.AreEqual(2, lines.Length);
 
             string row = lines[1];
-            // 欠損値は N/A
+            // Missing values are N/A
             StringAssert.Contains(row, "N/A");
-            // 正常値はフォーマットされて出力
+            // Valid values are formatted
             StringAssert.Contains(row, "15.50");
             // 0.00 Gy
             StringAssert.Contains(row, "0.00");
         }
 
         [TestMethod]
-        [Description("特殊文字やnullプロパティを含むプランレコードが有効なJSONL行としてシリアライズ可能であることを検証")]
+        [Description("Verifies that plan records with special characters and null properties serialize into valid JSONL lines")]
         public void JsonlStreamExporter_WhenSpecialCharsAndNulls_ShouldProduceValidJson()
         {
             // Arrange
@@ -338,7 +338,7 @@ namespace EclipseDataMiner.Tests
             string[] lines = File.ReadAllLines(jsonlPath, Encoding.UTF8);
             Assert.AreEqual(1, lines.Length);
 
-            // System.Text.Json.JsonDocument でパース可能であることを検証
+            // Verify parseable by System.Text.Json.JsonDocument
             using (var doc = JsonDocument.Parse(lines[0]))
             {
                 var root = doc.RootElement;
@@ -351,7 +351,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("CalculationLogオプション有効時にビームごとのログ集約(#B1#;LOG:0...;#B2#;LOG:0...)が正しくCSV出力されることを検証")]
+        [Description("Verifies that per-beam calculation logs (#B1#;LOG:0...;#B2#;LOG:0...) are exported to CSV when CalculationLog option is enabled")]
         public void CsvStreamExporter_WhenCalculationLogExportEnabled_ShouldExportAggregatedBeamLogsWithCorrectFormat()
         {
             // Arrange
@@ -397,12 +397,12 @@ namespace EclipseDataMiner.Tests
             StringAssert.Contains(header, "CalculationLog");
 
             string row = lines[1];
-            // ビームごとのタグとログインデックスがセミコロンで連結され正しく出力されていること
+            // Beam tags and log indices are joined with semicolons
             StringAssert.Contains(row, "#B1#;LOG:0Information: Imaging Device: ID=Def_CTScanner;LOG:1Information: Service: AcurosXB;#B2#;LOG:0Information: Imaging Device: ID=Def_CTScanner;LOG:1Information: Service: Photon_Optimizer");
         }
 
         [TestMethod]
-        [Description("CalculationLogオプション有効時にログが空の場合はN/Aが出力されることを検証")]
+        [Description("Verifies that N/A is exported when CalculationLogs is empty and CalculationLog option is enabled")]
         public void CsvStreamExporter_WhenCalculationLogEmpty_ShouldExportNA()
         {
             // Arrange

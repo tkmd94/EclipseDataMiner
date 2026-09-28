@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace EclipseDataMiner.Models
 {
     /// <summary>
-    /// 検索・フィルタリング条件のプリセットモデル
+    /// Search and filtering criteria preset model.
     /// </summary>
     public class SearchPreset
     {
@@ -13,7 +13,7 @@ namespace EclipseDataMiner.Models
         public bool IsBuiltIn { get; set; } = false;
 
         /// <summary>
-        /// プリセットの保存先ファイルフルパス（JSONシリアライズ対象外）
+        /// Destination file full path for saving presets (excluded from JSON serialization).
         /// </summary>
         [JsonIgnore]
         public string FilePath { get; set; } = string.Empty;
@@ -34,7 +34,7 @@ namespace EclipseDataMiner.Models
         public string NumberOfFractionsText { get; set; } = string.Empty;
         public string TotalDoseText { get; set; } = string.Empty;
 
-        // 高度メタデータフィルタ
+        // Advanced metadata filters
         public string MachineFilterText { get; set; } = string.Empty;
         public string EnergyFilterText { get; set; } = string.Empty;
         public string TechniqueFilterText { get; set; } = string.Empty;

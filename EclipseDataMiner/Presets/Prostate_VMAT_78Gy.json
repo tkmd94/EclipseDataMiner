@@ -1,6 +1,6 @@
 {
   "Name": "Prostate VMAT 78Gy (Standard)",
-  "Description": "前立腺VMAT標準処方（2Gy×39回=78Gy、QA/テスト計画除外）",
+  "Description": "Prostate standard VMAT prescription (2Gy x 39fx = 78Gy, excluding QA/test plans)",
   "IsBuiltIn": false,
   "PatientIdText": "",
   "PatientIdMatchMode": "Contains",

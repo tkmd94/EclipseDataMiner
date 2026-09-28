@@ -12,7 +12,7 @@ namespace EclipseDataMiner.Tests
     public class SearchFilterTests
     {
         [TestMethod]
-        [Description("患者IDのカンマ区切りリストによるOR部分一致検索を検証")]
+        [Description("Verifies OR-based partial matching search using comma-separated patient ID lists")]
         public void IsPatientMatch_WhenMultipleIdsSpecified_ShouldMatchAny()
         {
             // Arrange
@@ -29,7 +29,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("グローバル論理AND: すべての指定条件を満たす場合のみ true になることを検証")]
+        [Description("Global logical AND: Verifies true only when all specified conditions are satisfied")]
         public void IsPlanMatch_WhenGlobalLogicIsAnd_ShouldRequireAllConditions()
         {
             // Arrange
@@ -40,18 +40,18 @@ namespace EclipseDataMiner.Tests
                 TotalDoseGy = 60.0
             };
 
-            // Act & Assert - 両方一致
+            // Act & Assert - Both match
             Assert.IsTrue(SearchFilterService.IsPlanMatch("VMAT_Prostate", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteria));
 
-            // Plan ID は一致するが線量が不一致 -> false
+            // Plan ID matches but dose does not -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("VMAT_Prostate", "PTV", 2.0, 39, 78.0, "TreatmentApproved", false, criteria));
 
-            // 線量は一致するが Plan ID が不一致 -> false
+            // Dose matches but Plan ID does not -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("IMRT_Prostate", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteria));
         }
 
         [TestMethod]
-        [Description("グローバル論理OR: 指定条件のいずれかを満たせば true になることを検証")]
+        [Description("Global logical OR: Verifies true when any of the specified conditions is met")]
         public void IsPlanMatch_WhenGlobalLogicIsOr_ShouldMatchIfAnyConditionMet()
         {
             // Arrange
@@ -62,18 +62,18 @@ namespace EclipseDataMiner.Tests
                 TotalDoseGy = 60.0
             };
 
-            // Plan ID のみ一致 -> true
+            // Plan ID only matches -> true
             Assert.IsTrue(SearchFilterService.IsPlanMatch("VMAT_Prostate", "PTV", 2.0, 39, 78.0, "TreatmentApproved", false, criteria));
 
-            // 線量のみ一致 -> true
+            // Dose only matches -> true
             Assert.IsTrue(SearchFilterService.IsPlanMatch("IMRT_Prostate", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteria));
 
-            // いずれも不一致 -> false
+            // Neither matches -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("CyberKnife", "PTV", 10.0, 4, 40.0, "TreatmentApproved", false, criteria));
         }
 
         [TestMethod]
-        [Description("PlanSum は IncludePlanSums オプションが false の場合に除外されることを検証")]
+        [Description("Verifies that PlanSum is excluded when IncludePlanSums option is false")]
         public void IsPlanMatch_PlanSumHandling_ShouldRespectOption()
         {
             // Arrange
@@ -86,7 +86,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("承認ステータスフィルタによる除外・許可判定を検証")]
+        [Description("Verifies exclusion/permission checks based on approval status filter")]
         public void IsApprovalStatusMatch_ShouldFilterProperly()
         {
             // Arrange
@@ -104,33 +104,33 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("ViewModel での AND/OR 論理切り替えが相互排他的に正しく連動することを検証")]
+        [Description("Verifies that AND/OR logic toggles mutually synchronize in ViewModel")]
         public void GlobalLogicToggle_InViewModel_ShouldMutuallySync()
         {
             // Arrange
             var vm = new EclipseDataMiner.ViewModels.MainViewModel();
 
-            // 初期状態は AND が true, OR が false
+            // Initial state: AND is true, OR is false
             Assert.IsTrue(vm.GlobalLogicIsAnd);
             Assert.IsFalse(vm.GlobalLogicIsOr);
 
-            // Act: OR を true に設定
+            // Act: Set OR to true
             vm.GlobalLogicIsOr = true;
 
-            // Assert: AND が false, OR が true
+            // Assert: AND is false, OR is true
             Assert.IsFalse(vm.GlobalLogicIsAnd);
             Assert.IsTrue(vm.GlobalLogicIsOr);
 
-            // Act: 再び AND を true に設定
+            // Act: Set AND to true again
             vm.GlobalLogicIsAnd = true;
 
-            // Assert: AND が true, OR が false
+            // Assert: AND is true, OR is false
             Assert.IsTrue(vm.GlobalLogicIsAnd);
             Assert.IsFalse(vm.GlobalLogicIsOr);
         }
 
         [TestMethod]
-        [Description("カンマ区切りパーサーが連続カンマや全角・半角スペースを安全にトリム・除外することを検証")]
+        [Description("Verifies that comma-separated parser safely trims and ignores consecutive commas and whitespace")]
         public void ParseCommaSeparated_WithSpacesAndConsecutiveCommas_ShouldSanitize()
         {
             // Arrange
@@ -147,7 +147,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("カンマ区切りパーサーに null や空白のみを渡した際に空リストを返すことを検証")]
+        [Description("Verifies that comma-separated parser returns an empty list when given null or whitespace")]
         public void ParseCommaSeparated_WhenNullOrEmpty_ShouldReturnEmptyList()
         {
             // Act & Assert
@@ -157,29 +157,29 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("PlanSum (合算計画) の包含・除外オプションが正確に判定されることを検証")]
+        [Description("Verifies that inclusion/exclusion option for PlanSum is evaluated accurately")]
         public void IsPlanMatch_WhenPlanSumIncludedAndExcluded_ShouldFilterProperly()
         {
-            // Arrange: PlanSum を除外する設定
+            // Arrange: Criteria excluding PlanSum
             var criteriaExclude = new SearchFilterCriteria { IncludePlanSums = false };
-            // PlanSum を包含する設定
+            // Criteria including PlanSum
             var criteriaInclude = new SearchFilterCriteria { IncludePlanSums = true };
 
             // Act & Assert
-            // 通常プラン (isPlanSum: false) -> どちらでも合致
+            // Regular plan (isPlanSum: false) -> Matches in both
             Assert.IsTrue(SearchFilterService.IsPlanMatch("Plan1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteriaExclude));
             Assert.IsTrue(SearchFilterService.IsPlanMatch("Plan1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteriaInclude));
 
-            // PlanSum (isPlanSum: true) -> 除外設定では false、包含設定では true
+            // PlanSum (isPlanSum: true) -> False when excluded, True when included
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PlanSum_Total", "PTV", null, null, 70.0, "TreatmentApproved", true, criteriaExclude));
             Assert.IsTrue(SearchFilterService.IsPlanMatch("PlanSum_Total", "PTV", null, null, 70.0, "TreatmentApproved", true, criteriaInclude));
         }
 
         [TestMethod]
-        [Description("グローバル論理AND: Patient ID, Course ID を含む全指定条件が一致しなければならないことを検証")]
+        [Description("Global logical AND: Verifies that all specified conditions including Patient ID and Course ID must match")]
         public void IsPlanMatch_WhenPatientAndCourseIncluded_InAndLogic_ShouldRequireAll()
         {
-            // Arrange: Patient ID, Course ID, Plan ID すべて指定
+            // Arrange: Specify Patient ID, Course ID, and Plan ID
             var criteria = new SearchFilterCriteria
             {
                 GlobalLogicIsAnd = true,
@@ -188,21 +188,21 @@ namespace EclipseDataMiner.Tests
                 PlanIdFilter = new List<string> { "VMAT" }
             };
 
-            // 全て一致 -> true
+            // All match -> true
             Assert.IsTrue(SearchFilterService.IsPlanMatch("PT100_ABC", "C1_Rad", "VMAT_1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteria));
 
-            // Patient ID 不一致 -> false
+            // Patient ID mismatch -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT200_ABC", "C1_Rad", "VMAT_1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteria));
 
-            // Course ID 不一致 -> false
+            // Course ID mismatch -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT100_ABC", "C2_Boost", "VMAT_1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteria));
 
-            // Plan ID 不一致 -> false
+            // Plan ID mismatch -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT100_ABC", "C1_Rad", "IMRT_1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteria));
         }
 
         [TestMethod]
-        [Description("グローバル論理OR: Patient ID, Course ID, Plan ID, 線量のいずれか1つでも一致すれば true になることを検証")]
+        [Description("Global logical OR: Verifies true when any of Patient ID, Course ID, Plan ID, or dose matches")]
         public void IsPlanMatch_WhenPatientAndCourseIncluded_InOrLogic_ShouldMatchIfAny()
         {
             // Arrange
@@ -215,24 +215,24 @@ namespace EclipseDataMiner.Tests
                 TotalDoseGy = 60.0
             };
 
-            // Patient ID のみ一致 -> true
+            // Patient ID only matches -> true
             Assert.IsTrue(SearchFilterService.IsPlanMatch("PT100", "C99", "OTHER", "PTV", 2.0, 20, 40.0, "TreatmentApproved", false, criteria));
 
-            // Course ID のみ一致 -> true
+            // Course ID only matches -> true
             Assert.IsTrue(SearchFilterService.IsPlanMatch("PT999", "C1", "OTHER", "PTV", 2.0, 20, 40.0, "TreatmentApproved", false, criteria));
 
-            // Plan ID のみ一致 -> true
+            // Plan ID only matches -> true
             Assert.IsTrue(SearchFilterService.IsPlanMatch("PT999", "C99", "VMAT_Pros", "PTV", 2.0, 20, 40.0, "TreatmentApproved", false, criteria));
 
-            // 線量のみ一致 -> true
+            // Dose only matches -> true
             Assert.IsTrue(SearchFilterService.IsPlanMatch("PT999", "C99", "OTHER", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteria));
 
-            // 全て不一致 -> false
+            // None match -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT999", "C99", "OTHER", "PTV", 2.0, 20, 40.0, "TreatmentApproved", false, criteria));
         }
 
         [TestMethod]
-        [Description("ShouldSkipPatient: ANDロジック時、患者IDが不一致なら即時スキップされることを検証")]
+        [Description("ShouldSkipPatient: In AND logic, verifies immediate skip when patient ID does not match")]
         public void ShouldSkipPatient_WhenAndLogic_ShouldSkipIfPatientNotMatched()
         {
             var criteria = new SearchFilterCriteria
@@ -242,43 +242,43 @@ namespace EclipseDataMiner.Tests
                 PlanIdFilter = new List<string> { "VMAT" }
             };
 
-            // 一致 -> スキップしない (false)
+            // Match -> Do not skip (false)
             Assert.IsFalse(SearchFilterService.ShouldSkipPatient("PT100_A", criteria));
 
-            // 不一致 -> スキップする (true)
+            // Mismatch -> Skip (true)
             Assert.IsTrue(SearchFilterService.ShouldSkipPatient("PT200", criteria));
         }
 
         [TestMethod]
-        [Description("ShouldSkipPatient: ORロジック時、プラン条件等があれば患者ID不一致でもスキップしないことを検証")]
+        [Description("ShouldSkipPatient: In OR logic, verifies patient is not skipped on ID mismatch if plan criteria exist")]
         public void ShouldSkipPatient_WhenOrLogic_ShouldNotSkipIfOtherCriteriaSpecified()
         {
             var criteriaWithOther = new SearchFilterCriteria
             {
                 GlobalLogicIsAnd = false,
                 PatientIdFilter = new List<string> { "PT100" },
-                PlanIdFilter = new List<string> { "VMAT" } // 他条件あり
+                PlanIdFilter = new List<string> { "VMAT" } // Other criteria exist
             };
 
-            // 患者ID不一致でも、Plan IDが指定されているためスキップしてはならない
+            // Even if Patient ID mismatches, Plan ID is specified so it must not be skipped
             Assert.IsFalse(SearchFilterService.ShouldSkipPatient("PT200", criteriaWithOther));
 
-            // 他条件が一切指定されていない場合
+            // When no other criteria are specified
             var criteriaPatientOnly = new SearchFilterCriteria
             {
                 GlobalLogicIsAnd = false,
                 PatientIdFilter = new List<string> { "PT100" }
             };
 
-            // 患者ID一致 -> スキップしない
+            // Patient ID matches -> Do not skip
             Assert.IsFalse(SearchFilterService.ShouldSkipPatient("PT100", criteriaPatientOnly));
 
-            // 患者ID不一致かつ他条件なし -> スキップ可能
+            // Patient ID mismatches with no other criteria -> Can skip
             Assert.IsTrue(SearchFilterService.ShouldSkipPatient("PT200", criteriaPatientOnly));
         }
 
         [TestMethod]
-        [Description("ShouldSkipCourse: コーススキップ判定がAND/ORで適切に動作することを検証")]
+        [Description("ShouldSkipCourse: Verifies course skip evaluation behaves properly in AND/OR logic")]
         public void ShouldSkipCourse_WhenAndOrLogic_ShouldBehaveCorrectly()
         {
             var criteriaAnd = new SearchFilterCriteria
@@ -288,7 +288,7 @@ namespace EclipseDataMiner.Tests
                 PlanIdFilter = new List<string> { "VMAT" }
             };
 
-            // AND: コース不一致なら即スキップ
+            // AND: Immediate skip if course mismatches
             Assert.IsTrue(SearchFilterService.ShouldSkipCourse("C2", criteriaAnd));
             Assert.IsFalse(SearchFilterService.ShouldSkipCourse("C1", criteriaAnd));
 
@@ -299,7 +299,7 @@ namespace EclipseDataMiner.Tests
                 PlanIdFilter = new List<string> { "VMAT" }
             };
 
-            // OR: 他条件 (PlanId) があるため、コース不一致でもスキップしない
+            // OR: Other criteria (PlanId) exist, so do not skip on course mismatch
             Assert.IsFalse(SearchFilterService.ShouldSkipCourse("C2", criteriaOrWithPlan));
 
             var criteriaOrCourseOnly = new SearchFilterCriteria
@@ -308,26 +308,26 @@ namespace EclipseDataMiner.Tests
                 CourseIdFilter = new List<string> { "C1" }
             };
 
-            // OR: コース条件のみの場合、コース不一致ならスキップ可能
+            // OR: Course criteria only; can skip if course mismatches
             Assert.IsTrue(SearchFilterService.ShouldSkipCourse("C2", criteriaOrCourseOnly));
         }
 
         [TestMethod]
-        [Description("IsTextMatch: Exact (完全一致) モード時、「a」で「Plan」がヒットせず、完全一致のみヒットすることを検証")]
+        [Description("IsTextMatch: Exact mode verifies 'a' does not match 'Plan' and matches only exact values")]
         public void IsTextMatch_WhenModeIsExact_ShouldMatchOnlyExactValues()
         {
             var filter = new List<string> { "a" };
 
-            // 部分一致なら "Plan" に "a" が含まれるが、Exact では不一致
+            // In partial match "Plan" contains "a", but in Exact mode it mismatches
             Assert.IsFalse(SearchFilterService.IsTextMatch("Plan", filter, TextMatchMode.Exact));
 
-            // 完全一致（大文字小文字無視）なら一致
+            // Exact match (case insensitive) matches
             Assert.IsTrue(SearchFilterService.IsTextMatch("a", filter, TextMatchMode.Exact));
             Assert.IsTrue(SearchFilterService.IsTextMatch("A", filter, TextMatchMode.Exact));
         }
 
         [TestMethod]
-        [Description("IsTextMatch: Regex (正規表現) モード時、パターンに適合する場合のみヒットすることを検証")]
+        [Description("IsTextMatch: Regex mode verifies matches only when fitting regex pattern")]
         public void IsTextMatch_WhenModeIsRegex_ShouldMatchRegexPattern()
         {
             var filter = new List<string> { "^Plan_\\d+$" };
@@ -339,35 +339,35 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("IsPlanMatch: PlanIdMatchMode が Exact の場合、「a」で「Plan」がスキップされ、「Plan」で完全一致することを検証")]
+        [Description("IsPlanMatch: When PlanIdMatchMode is Exact, 'a' skips 'Plan' and 'Plan' matches exactly")]
         public void IsPlanMatch_WhenPlanIdMatchModeIsExact_ShouldFilterCorrectly()
         {
-            // Plan ID フィルタに "a" を指定し、モードを Exact に設定
+            // Set "a" in Plan ID filter and mode to Exact
             var criteriaExactA = new SearchFilterCriteria
             {
                 PlanIdFilter = new List<string> { "a" },
                 PlanIdMatchMode = TextMatchMode.Exact
             };
 
-            // Plan ID が "Plan" の計画 -> false (「a」を含んでいるが完全一致ではないためヒットしない)
+            // Plan with Plan ID "Plan" -> false (contains "a" but not exact match)
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT1", "C1", "Plan", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteriaExactA));
 
-            // Plan ID フィルタに "Plan" を指定し、モードを Exact に設定
+            // Set "Plan" in Plan ID filter and mode to Exact
             var criteriaExactPlan = new SearchFilterCriteria
             {
                 PlanIdFilter = new List<string> { "Plan" },
                 PlanIdMatchMode = TextMatchMode.Exact
             };
 
-            // Plan ID が "Plan" の計画 -> true
+            // Plan with Plan ID "Plan" -> true
             Assert.IsTrue(SearchFilterService.IsPlanMatch("PT1", "C1", "Plan", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteriaExactPlan));
 
-            // Plan ID が "Plan1" の計画 -> false
+            // Plan with Plan ID "Plan1" -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT1", "C1", "Plan1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false, criteriaExactPlan));
         }
 
         [TestMethod]
-        [Description("IsPlanMatch: PlanIdMatchMode が Regex の場合、正規表現で正しくフィルタされることを検証")]
+        [Description("IsPlanMatch: When PlanIdMatchMode is Regex, verifies accurate filtering by regular expression")]
         public void IsPlanMatch_WhenPlanIdMatchModeIsRegex_ShouldFilterCorrectly()
         {
             var criteriaRegex = new SearchFilterCriteria
@@ -383,7 +383,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("ParseTextFilter: 通常トークンと除外トークン(! / -)の分離パースを検証")]
+        [Description("ParseTextFilter: Verifies separated parsing of regular tokens and exclusion tokens (! / -)")]
         public void ParseTextFilter_WithIncludesAndExcludes_ShouldSeparateProperly()
         {
             SearchFilterCriteria.ParseTextFilter("VMAT, IMRT, !QA, -Test,  !Verify  ", out var inc, out var exc);
@@ -399,7 +399,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("NumericFilterCriteria.Parse: 範囲指定 (70-80, 70~80) の解析および IsMatch 判定を検証")]
+        [Description("NumericFilterCriteria.Parse: Verifies parsing and IsMatch evaluation for range syntax (70-80, 70~80)")]
         public void NumericFilterCriteria_RangeSyntax_ShouldParseAndMatchCorrectly()
         {
             var rangeHyphen = NumericFilterCriteria.Parse("70-80");
@@ -420,7 +420,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("NumericFilterCriteria.Parse: 不等号指定 (>=10, <30) の解析および IsMatch 判定を検証")]
+        [Description("NumericFilterCriteria.Parse: Verifies parsing and IsMatch evaluation for inequality syntax (>=10, <30)")]
         public void NumericFilterCriteria_InequalitySyntax_ShouldParseAndMatchCorrectly()
         {
             var gte = NumericFilterCriteria.Parse(">= 10");
@@ -439,7 +439,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("IsPlanMatch: NOT除外フィルタ (!QA, !Test) の判定を検証")]
+        [Description("IsPlanMatch: Verifies NOT exclude filter (!QA, !Test) evaluation")]
         public void IsPlanMatch_WithExcludeFilters_ShouldExcludeMatchedPlans()
         {
             // Plan ID: VMAT, IMRT, !QA
@@ -451,21 +451,21 @@ namespace EclipseDataMiner.Tests
                 PlanIdMatchMode = TextMatchMode.Contains
             };
 
-            // VMAT_Prostate -> 一致
+            // VMAT_Prostate -> Match
             Assert.IsTrue(SearchFilterService.IsPlanMatch("PT1", "C1", "VMAT_Prostate", "PTV", null, null, null, "TreatmentApproved", false, criteria));
 
-            // VMAT_QA -> "QA" を含むため除外されるべき
+            // VMAT_QA -> Contains "QA", so should be excluded
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT1", "C1", "VMAT_QA", "PTV", null, null, null, "TreatmentApproved", false, criteria));
 
-            // QA_IMRT -> "QA" を含むため除外
+            // QA_IMRT -> Contains "QA", so excluded
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT1", "C1", "QA_IMRT", "PTV", null, null, null, "TreatmentApproved", false, criteria));
 
-            // 3DCRT -> 包含リストに不一致
+            // 3DCRT -> Does not match include list
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT1", "C1", "3DCRT", "PTV", null, null, null, "TreatmentApproved", false, criteria));
         }
 
         [TestMethod]
-        [Description("IsPlanMatch: 除外フィルタ単独指定 (!QA) の場合、QA以外がすべて一致することを検証")]
+        [Description("IsPlanMatch: Verifies that only non-QA plans match when only an exclude filter (!QA) is specified")]
         public void IsPlanMatch_WithOnlyExcludeFilters_ShouldMatchNonExcludedPlans()
         {
             SearchFilterCriteria.ParseTextFilter("!QA, !Test", out var inc, out var exc);
@@ -482,7 +482,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("IsPlanMatch: 臨床プロトコル条件（肺SBRT: >=10Gy/Fr, 4-5Fr, 48-60Gy）の複合判定を検証")]
+        [Description("IsPlanMatch: Verifies composite protocol criteria evaluation (Lung SBRT: >=10Gy/Fr, 4-5Fr, 48-60Gy)")]
         public void IsPlanMatch_LungSbrtCriteria_ShouldMatchCorrectProtocol()
         {
             var criteria = new SearchFilterCriteria
@@ -493,21 +493,21 @@ namespace EclipseDataMiner.Tests
                 GlobalLogicIsAnd = true
             };
 
-            // 肺SBRTプラン: 12Gy × 4Fr = 48Gy -> 一致
+            // Lung SBRT plan: 12Gy x 4Fr = 48Gy -> Match
             Assert.IsTrue(SearchFilterService.IsPlanMatch("PT1", "C1", "Lung_SBRT", "PTV", 12.0, 4, 48.0, "TreatmentApproved", false, criteria));
 
-            // 肺SBRTプラン: 10Gy × 5Fr = 50Gy -> 一致
+            // Lung SBRT plan: 10Gy x 5Fr = 50Gy -> Match
             Assert.IsTrue(SearchFilterService.IsPlanMatch("PT1", "C1", "Lung_SBRT", "PTV", 10.0, 5, 50.0, "TreatmentApproved", false, criteria));
 
-            // 前立腺通常分割: 2Gy × 39Fr = 78Gy -> 不一致
+            // Prostate standard fractionation: 2Gy x 39Fr = 78Gy -> Mismatch
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT2", "C1", "Prostate", "PTV", 2.0, 39, 78.0, "TreatmentApproved", false, criteria));
 
-            // 線量は合致するが分割数が30回 -> 不一致
+            // Dose matches but fractions is 30 -> Mismatch
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT3", "C1", "Other", "PTV", 10.0, 30, 50.0, "TreatmentApproved", false, criteria));
         }
 
         [TestMethod]
-        [Description("SearchPresetService: プリセットフォルダ配下の個別JSONファイル保存・読込・削除を検証")]
+        [Description("SearchPresetService: Verifies individual JSON file save, load, and deletion within presets folder")]
         public void SearchPresetService_DirectoryBased_SaveAndLoadAndDelete_ShouldPreservePresets()
         {
             string tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"presets_test_{System.Guid.NewGuid()}");
@@ -526,14 +526,14 @@ namespace EclipseDataMiner.Tests
                     GlobalLogicIsAnd = true
                 };
 
-                // 単一プリセット保存
+                // Save single preset
                 service.SavePreset(custom);
 
-                // 物理ファイルが存在することを確認
+                // Verify physical file exists
                 string expectedFile = System.IO.Path.Combine(tempDir, "Custom Palliative 30Gy.json");
                 Assert.IsTrue(System.IO.File.Exists(expectedFile));
 
-                // 再ロード
+                // Reload
                 var reloadedService = new SearchPresetService(tempDir);
                 var reloaded = reloadedService.LoadPresets();
                 Assert.AreEqual(1, reloaded.Count);
@@ -545,7 +545,7 @@ namespace EclipseDataMiner.Tests
                 Assert.AreEqual("30", reloadedCustom.TotalDoseText);
                 Assert.AreEqual(expectedFile, reloadedCustom.FilePath);
 
-                // 削除
+                // Delete
                 service.DeletePreset(reloadedCustom);
                 Assert.IsFalse(System.IO.File.Exists(expectedFile));
                 Assert.AreEqual(0, service.LoadPresets().Count);
@@ -560,7 +560,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("MainViewModel: ApplyPreset および BuildCriteria による検索条件構築の連動を検証")]
+        [Description("MainViewModel: Verifies criteria construction integration with ApplyPreset and BuildCriteria")]
         public void MainViewModel_ApplyPreset_ShouldUpdateCriteriaProperly()
         {
             string tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"presets_vm_{System.Guid.NewGuid()}");
@@ -580,15 +580,15 @@ namespace EclipseDataMiner.Tests
                 var loaded = vm.Presets.FirstOrDefault(p => p.Name == "Lung SBRT Test");
                 Assert.IsNotNull(loaded);
 
-                // プリセットを選択・適用
+                // Select and apply preset
                 vm.SelectedPreset = loaded;
 
-                // ViewModel のプロパティが更新されたことを確認
+                // Verify ViewModel properties updated
                 Assert.AreEqual(">= 10", vm.DosePerFractionText);
                 Assert.AreEqual("4 - 5", vm.NumberOfFractionsText);
                 Assert.AreEqual("48 - 60", vm.TotalDoseText);
 
-                // BuildCriteria の結果を検証
+                // Verify BuildCriteria output
                 var criteria = vm.BuildCriteria();
                 Assert.IsNotNull(criteria.DosePerFractionCriteria);
                 Assert.IsTrue(criteria.DosePerFractionCriteria.IsMatch(12.0));
@@ -608,7 +608,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("MainViewModel: プリセットの保存および削除（組み込み制限なし・自由削除）の検証")]
+        [Description("MainViewModel: Verifies saving and deleting presets (no built-in restrictions, arbitrary deletion)")]
         public void MainViewModel_PresetManagement_SaveAndDelete_ShouldFunction()
         {
             string tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"presets_manage_{System.Guid.NewGuid()}");
@@ -617,11 +617,11 @@ namespace EclipseDataMiner.Tests
                 var service = new SearchPresetService(tempDir);
                 var vm = new MainViewModel(service);
 
-                // 初期状態は空
+                // Initial state is empty
                 Assert.AreEqual(0, vm.Presets.Count);
                 Assert.IsFalse(vm.DeletePresetCommand.CanExecute(null));
 
-                // 新規プリセットを保存
+                // Save new preset
                 vm.PresetNameInput = "My Protocol";
                 vm.PlanIdText = "VMAT_New";
                 vm.DosePerFractionText = "2.5";
@@ -635,10 +635,10 @@ namespace EclipseDataMiner.Tests
                 Assert.AreEqual("VMAT_New", saved.PlanIdText);
                 Assert.AreEqual(saved, vm.SelectedPreset);
 
-                // 選択されているため削除可能
+                // Deletable because it is selected
                 Assert.IsTrue(vm.DeletePresetCommand.CanExecute(null));
 
-                // 物理ファイルも存在することを確認
+                // Verify physical file exists
                 string expectedFile = System.IO.Path.Combine(tempDir, "My Protocol.json");
                 Assert.IsTrue(System.IO.File.Exists(expectedFile));
             }
@@ -652,37 +652,37 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("IsDateMatch: 日付範囲（From〜To、片側指定、Null対応）の判定を検証")]
+        [Description("IsDateMatch: Verifies date range matching (From to To, open-ended, null handling)")]
         public void IsDateMatch_VariousRanges_ShouldFilterCorrectly()
         {
             var date = new System.DateTime(2025, 6, 15, 14, 30, 0);
 
-            // 1. 指定なし -> 常に true
+            // 1. Unspecified -> always true
             Assert.IsTrue(SearchFilterService.IsDateMatch(date, null, null));
             Assert.IsTrue(SearchFilterService.IsDateMatch(null, null, null));
 
-            // 2. 日付指定ありで対象日付が null -> false
+            // 2. Date criteria specified but target date is null -> false
             Assert.IsFalse(SearchFilterService.IsDateMatch(null, new System.DateTime(2025, 1, 1), null));
             Assert.IsFalse(SearchFilterService.IsDateMatch(null, null, new System.DateTime(2025, 12, 31)));
 
-            // 3. From のみ指定
-            Assert.IsTrue(SearchFilterService.IsDateMatch(date, new System.DateTime(2025, 6, 15), null)); // 当日含む
+            // 3. From only specified
+            Assert.IsTrue(SearchFilterService.IsDateMatch(date, new System.DateTime(2025, 6, 15), null)); // Same day included
             Assert.IsTrue(SearchFilterService.IsDateMatch(date, new System.DateTime(2025, 6, 1), null));
             Assert.IsFalse(SearchFilterService.IsDateMatch(date, new System.DateTime(2025, 6, 16), null));
 
-            // 4. To のみ指定
-            Assert.IsTrue(SearchFilterService.IsDateMatch(date, null, new System.DateTime(2025, 6, 15))); // 当日23:59:59まで含む
+            // 4. To only specified
+            Assert.IsTrue(SearchFilterService.IsDateMatch(date, null, new System.DateTime(2025, 6, 15))); // Includes up to 23:59:59
             Assert.IsTrue(SearchFilterService.IsDateMatch(date, null, new System.DateTime(2025, 7, 1)));
             Assert.IsFalse(SearchFilterService.IsDateMatch(date, null, new System.DateTime(2025, 6, 14)));
 
-            // 5. From 〜 To 範囲指定
+            // 5. From to To range specified
             Assert.IsTrue(SearchFilterService.IsDateMatch(date, new System.DateTime(2025, 6, 1), new System.DateTime(2025, 6, 30)));
             Assert.IsFalse(SearchFilterService.IsDateMatch(date, new System.DateTime(2025, 1, 1), new System.DateTime(2025, 5, 31)));
             Assert.IsFalse(SearchFilterService.IsDateMatch(date, new System.DateTime(2025, 7, 1), new System.DateTime(2025, 12, 31)));
         }
 
         [TestMethod]
-        [Description("IsBeamMatch: Machine, Energy, Technique の包含・!除外の複合判定を検証")]
+        [Description("IsBeamMatch: Verifies composite evaluation of Machine, Energy, Technique inclusion and !exclusion")]
         public void IsBeamMatch_MachineEnergyTechnique_ShouldFilterCorrectly()
         {
             var normalBeams = new List<BeamRecord>
@@ -691,37 +691,37 @@ namespace EclipseDataMiner.Tests
                 new BeamRecord { BeamId = "B2", TreatmentUnit = "TrueBeam1", EnergyModeDisplayName = "10X", Technique = "ARC", IsSetupField = false }
             };
 
-            // 1. Machine ID 包含一致
+            // 1. Machine ID inclusion match
             Assert.IsTrue(SearchFilterService.IsBeamMatch(normalBeams,
                 machineIncludes: new List<string> { "TrueBeam" }, machineExcludes: null,
                 energyIncludes: null, energyExcludes: null,
                 techniqueIncludes: null, techniqueExcludes: null));
 
-            // 2. Machine ID 不一致
+            // 2. Machine ID mismatch
             Assert.IsFalse(SearchFilterService.IsBeamMatch(normalBeams,
                 machineIncludes: new List<string> { "Clinac" }, machineExcludes: null,
                 energyIncludes: null, energyExcludes: null,
                 techniqueIncludes: null, techniqueExcludes: null));
 
-            // 3. Machine ID 除外 (!TrueBeam1)
+            // 3. Machine ID exclusion (!TrueBeam1)
             Assert.IsFalse(SearchFilterService.IsBeamMatch(normalBeams,
                 machineIncludes: null, machineExcludes: new List<string> { "TrueBeam1" },
                 energyIncludes: null, energyExcludes: null,
                 techniqueIncludes: null, techniqueExcludes: null));
 
-            // 4. Energy 包含一致 (6X)
+            // 4. Energy inclusion match (6X)
             Assert.IsTrue(SearchFilterService.IsBeamMatch(normalBeams,
                 machineIncludes: null, machineExcludes: null,
                 energyIncludes: new List<string> { "6X" }, energyExcludes: null,
                 techniqueIncludes: null, techniqueExcludes: null));
 
-            // 5. Energy 除外 (!10X) -> B2が10Xなので除外されるべき
+            // 5. Energy exclusion (!10X) -> B2 is 10X so it should be excluded
             Assert.IsFalse(SearchFilterService.IsBeamMatch(normalBeams,
                 machineIncludes: null, machineExcludes: null,
                 energyIncludes: null, energyExcludes: new List<string> { "10X" },
                 techniqueIncludes: null, techniqueExcludes: null));
 
-            // 6. Technique 包含 (ARC) & 除外 (!STATIC) -> STATICはないのでARCで一致
+            // 6. Technique inclusion (ARC) & exclusion (!STATIC) -> STATIC absent, matches via ARC
             Assert.IsTrue(SearchFilterService.IsBeamMatch(normalBeams,
                 machineIncludes: null, machineExcludes: null,
                 energyIncludes: null, energyExcludes: null,
@@ -729,7 +729,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("IsPlanMatch: 日付範囲とビーム照射パラメータを含めた総合判定を検証")]
+        [Description("IsPlanMatch: Verifies comprehensive evaluation including date ranges and beam delivery parameters")]
         public void IsPlanMatch_WithDateAndBeamFilters_ShouldEvaluateAccurately()
         {
             var criteria = new SearchFilterCriteria
@@ -751,14 +751,14 @@ namespace EclipseDataMiner.Tests
 
             var approvedDate = new System.DateTime(2025, 6, 20);
 
-            // 全条件合致 -> true
+            // All conditions match -> true
             Assert.IsTrue(SearchFilterService.IsPlanMatch("PT1", "C1", "VMAT_Prostate", "PTV", 2.0, 39, 78.0, "TreatmentApproved", false, approvedDate, beams, criteria));
 
-            // 日付が範囲外 (2024年) -> false
+            // Date out of range (2024) -> false
             var oldDate = new System.DateTime(2024, 12, 10);
             Assert.IsFalse(SearchFilterService.IsPlanMatch("PT1", "C1", "VMAT_Prostate", "PTV", 2.0, 39, 78.0, "TreatmentApproved", false, oldDate, beams, criteria));
 
-            // マシンが不一致 -> false
+            // Machine mismatch -> false
             var otherBeams = new List<BeamRecord>
             {
                 new BeamRecord { BeamId = "Field1", TreatmentUnit = "Clinac_iX", EnergyModeDisplayName = "6X", Technique = "VMAT_ARC", IsSetupField = false }
@@ -767,7 +767,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("MainViewModel: 高度フィルタのプロパティ、ClearDatesCommand、およびプリセット保存復元を検証")]
+        [Description("MainViewModel: Verifies advanced filter properties, ClearDatesCommand, and preset save/load")]
         public void MainViewModel_AdvancedFiltersAndPresetSync_ShouldWorkCorrectly()
         {
             string tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"presets_adv_{System.Guid.NewGuid()}");
@@ -776,7 +776,7 @@ namespace EclipseDataMiner.Tests
                 var service = new SearchPresetService(tempDir);
                 var vm = new MainViewModel(service);
 
-                // 高度フィルタプロパティを設定
+                // Configure advanced filter properties
                 vm.MachineFilterText = "TrueBeam, Clinac, !QA_Linac";
                 vm.EnergyFilterText = "6X, 10X, !6FFF";
                 vm.TechniqueFilterText = "ARC, !STATIC";
@@ -784,7 +784,7 @@ namespace EclipseDataMiner.Tests
                 vm.DateFrom = new System.DateTime(2025, 4, 1);
                 vm.DateTo = new System.DateTime(2025, 9, 30);
 
-                // BuildCriteria の検証
+                // Verify BuildCriteria
                 var criteria = vm.BuildCriteria();
                 Assert.AreEqual(2, criteria.MachineFilter.Count);
                 Assert.AreEqual(1, criteria.MachineExcludeFilter.Count);
@@ -795,19 +795,19 @@ namespace EclipseDataMiner.Tests
                 Assert.AreEqual(new System.DateTime(2025, 4, 1), criteria.DateFrom);
                 Assert.AreEqual(new System.DateTime(2025, 9, 30), criteria.DateTo);
 
-                // ClearDatesCommand の検証
+                // Verify ClearDatesCommand
                 Assert.IsTrue(vm.ClearDatesCommand.CanExecute(null));
                 vm.ClearDatesCommand.Execute(null);
                 Assert.IsNull(vm.DateFrom);
                 Assert.IsNull(vm.DateTo);
 
-                // プリセットとして保存
+                // Save as preset
                 vm.DateFrom = new System.DateTime(2025, 4, 1);
                 vm.DateTo = new System.DateTime(2025, 9, 30);
                 vm.PresetNameInput = "Stereotactic Advanced";
                 vm.SavePresetCommand.Execute(null);
 
-                // 再ロードしてプリセット適用
+                // Reload and apply preset
                 var reloadedService = new SearchPresetService(tempDir);
                 var vm2 = new MainViewModel(reloadedService);
                 var loadedPreset = vm2.Presets.FirstOrDefault(p => p.Name == "Stereotactic Advanced");
@@ -831,10 +831,10 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("XAML整合性テスト: MainWindow.xaml で使用されている全 StaticResource が App.xaml に定義されていることを検証（起動クラッシュ再発防止）")]
+        [Description("XAML integrity test: Verifies that all StaticResources used in MainWindow.xaml are defined in App.xaml (preventing startup crash recurrence)")]
         public void XamlResourceIntegrity_ShouldHaveNoMissingStaticResources()
         {
-            // プロジェクトのルートパスを探索
+            // Search for project root path
             string currentDir = System.AppDomain.CurrentDomain.BaseDirectory;
             string solutionDir = System.IO.Path.GetFullPath(System.IO.Path.Combine(currentDir, @"..\..\.."));
             string appXamlPath = System.IO.Path.Combine(solutionDir, @"EclipseDataMiner\App.xaml");
@@ -842,7 +842,7 @@ namespace EclipseDataMiner.Tests
 
             if (!System.IO.File.Exists(appXamlPath) || !System.IO.File.Exists(mainXamlPath))
             {
-                // テスト実行環境によってはパスが異なる場合のフォールバック探索
+                // Fallback search when paths differ depending on test execution environment
                 string fallbackAppXaml = System.IO.Path.GetFullPath(@"g:\Source\Repos\tkmd94\EclipseDataMiner\EclipseDataMiner\App.xaml");
                 string fallbackMainXaml = System.IO.Path.GetFullPath(@"g:\Source\Repos\tkmd94\EclipseDataMiner\EclipseDataMiner\MainWindow.xaml");
                 if (System.IO.File.Exists(fallbackAppXaml))
@@ -886,7 +886,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("WPF XAML完全ロード検証: STAスレッド上でAppおよびMainWindowを初期化し、Style TargetType不一致や実行時パース例外が一切発生しないことを検証")]
+        [Description("WPF XAML full load test: Initializes App and MainWindow on STA thread, verifying no Style TargetType mismatches or runtime parsing exceptions")]
         public void MainWindow_XamlLoadingAndStyleResolution_ShouldNotThrowException()
         {
             System.Exception thrownException = null;
@@ -928,7 +928,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("MatchedPlanItem: UniqueKey 生成、複数エネルギー/手法表示、ターゲット輪郭表示の検証")]
+        [Description("MatchedPlanItem: Verifies UniqueKey generation, multiple energy/technique display, and target volume formatting")]
         public void MatchedPlanItem_UniqueKey_AndFormattedValues_ShouldWork()
         {
             var item = new MatchedPlanItem
@@ -963,13 +963,13 @@ namespace EclipseDataMiner.Tests
             Assert.AreEqual("ARC, STATIC", item.Technique);
             Assert.IsTrue(item.IsSelected);
 
-            // HasDose のフォーマット (true = ✔, false = —)
+            // HasDose formatting (true = ✔, false = —)
             item.HasDose = true;
             Assert.AreEqual("✔", item.FormattedHasDose);
             item.HasDose = false;
             Assert.AreEqual("—", item.FormattedHasDose);
 
-            // 空の場合のフォーマット
+            // Empty formatting
             var emptyItem = new MatchedPlanItem();
             Assert.AreEqual("-", emptyItem.FormattedTargetVolume);
             Assert.AreEqual("—", emptyItem.FormattedHasDose);
@@ -982,7 +982,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("MainViewModel: プラン選択コマンド（全選択・全解除・反転・サマリー更新）の動作検証")]
+        [Description("MainViewModel: Verifies plan selection commands (select all, unselect all, invert, summary update)")]
         public void MainViewModel_PlanSelectionCommands_SelectAll_Unselect_Invert_ShouldUpdateSummary()
         {
             var vm = new MainViewModel();
@@ -999,26 +999,26 @@ namespace EclipseDataMiner.Tests
             Assert.AreEqual("Selected: 3 / 3 Plans", vm.MatchedPlansSummaryText);
             Assert.IsTrue(vm.HasMatchedPlans);
 
-            // 全解除
+            // Unselect all
             vm.UnselectAllPlansCommand.Execute(null);
             Assert.IsFalse(p1.IsSelected);
             Assert.IsFalse(p2.IsSelected);
             Assert.IsFalse(p3.IsSelected);
             Assert.AreEqual("Selected: 0 / 3 Plans", vm.MatchedPlansSummaryText);
 
-            // 反転
+            // Invert
             vm.InvertPlanSelectionCommand.Execute(null);
             Assert.IsTrue(p1.IsSelected);
             Assert.IsTrue(p2.IsSelected);
             Assert.IsTrue(p3.IsSelected);
             Assert.AreEqual("Selected: 3 / 3 Plans", vm.MatchedPlansSummaryText);
 
-            // 1件手動解除
+            // Manually uncheck 1 item
             p1.IsSelected = false;
             vm.UpdateMatchedPlansSummary();
             Assert.AreEqual("Selected: 2 / 3 Plans", vm.MatchedPlansSummaryText);
 
-            // 全選択
+            // Select all
             vm.SelectAllPlansCommand.Execute(null);
             Assert.IsTrue(p1.IsSelected);
             Assert.IsTrue(p2.IsSelected);
@@ -1027,7 +1027,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("MainViewModel: SearchPlansCommand の CanExecute と IsRunning の同期検証")]
+        [Description("MainViewModel: Verifies synchronization between SearchPlansCommand.CanExecute and IsRunning")]
         public void MainViewModel_SearchPlansCommand_CanExecute_ShouldSyncWithIsRunning()
         {
             var vm = new MainViewModel();
@@ -1045,7 +1045,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("SearchPresetService: デフォルトPresetsディレクトリに初期サンプルプリセットが存在・ロード可能であることの整合性検証")]
+        [Description("SearchPresetService: Verifies that initial sample presets exist and can be loaded from the default Presets directory")]
         public void SearchPresetService_DefaultPresetsDirectory_ShouldContainValidPresets()
         {
             var service = new SearchPresetService();
@@ -1057,40 +1057,40 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("NumericFilterCriteria: 範囲・不等号・単一値検索で double.NaN や Infinity が渡された場合に確実に除外されることを検証")]
+        [Description("NumericFilterCriteria: Verifies that double.NaN or Infinity are properly excluded in range, inequality, and exact value searches")]
         public void NumericFilterCriteria_WhenTargetIsNaNOrInfinity_ShouldAlwaysReturnFalse()
         {
-            // 範囲検索 (70-80)
+            // Range search (70-80)
             var rangeCriteria = NumericFilterCriteria.Parse("70-80");
             Assert.IsFalse(rangeCriteria.IsMatch(double.NaN), "Range filter should return false for NaN");
             Assert.IsFalse(rangeCriteria.IsMatch(double.PositiveInfinity), "Range filter should return false for PositiveInfinity");
             Assert.IsFalse(rangeCriteria.IsMatch(double.NegativeInfinity), "Range filter should return false for NegativeInfinity");
             Assert.IsTrue(rangeCriteria.IsMatch(75.0), "Range filter should match valid value");
 
-            // 不等号検索 (>= 10)
+            // Inequality search (>= 10)
             var gteCriteria = NumericFilterCriteria.Parse(">=10");
             Assert.IsFalse(gteCriteria.IsMatch(double.NaN), "GTE filter should return false for NaN");
             Assert.IsFalse(gteCriteria.IsMatch(double.PositiveInfinity), "GTE filter should return false for PositiveInfinity");
             Assert.IsTrue(gteCriteria.IsMatch(10.0), "GTE filter should match boundary value");
 
-            // 不等号検索 (<= 100)
+            // Inequality search (<= 100)
             var lteCriteria = NumericFilterCriteria.Parse("<=100");
             Assert.IsFalse(lteCriteria.IsMatch(double.NaN), "LTE filter should return false for NaN");
             Assert.IsFalse(lteCriteria.IsMatch(double.NegativeInfinity), "LTE filter should return false for NegativeInfinity");
             Assert.IsTrue(lteCriteria.IsMatch(50.0), "LTE filter should match valid value");
 
-            // 単一値検索 (78)
+            // Exact value search (78)
             var exactCriteria = NumericFilterCriteria.Parse("78");
             Assert.IsFalse(exactCriteria.IsMatch(double.NaN), "Exact filter should return false for NaN");
             Assert.IsTrue(exactCriteria.IsMatch(78.0), "Exact filter should match exact value");
 
-            // 空フィルターは全許可
+            // Empty filter matches everything
             var emptyCriteria = NumericFilterCriteria.Parse("");
             Assert.IsTrue(emptyCriteria.IsMatch(double.NaN), "Empty filter should accept anything");
         }
 
         [TestMethod]
-        [Description("SearchFilterService: 線量が NaN の場合に TotalDose / DosePerFraction フィルタで除外されることを検証")]
+        [Description("SearchFilterService: Verifies that NaN dose plans are excluded by TotalDose and DosePerFraction filters")]
         public void SearchFilterService_WhenPlanDoseIsNaN_ShouldNotMatchNumericFilters()
         {
             var criteria = new SearchFilterCriteria
@@ -1100,17 +1100,17 @@ namespace EclipseDataMiner.Tests
                 DosePerFractionCriteria = NumericFilterCriteria.Parse(">=2.0")
             };
 
-            // 線量が NaN の場合 -> false
+            // Dose is NaN -> false
             bool matchWithNaN = SearchFilterService.IsPlanMatch("VMAT1", "PTV", double.NaN, 35, double.NaN, "TreatmentApproved", false, criteria);
             Assert.IsFalse(matchWithNaN, "Plan with NaN dose must not match range or inequality filter");
 
-            // 正常値の場合 -> true
+            // Valid dose -> true
             bool matchWithValid = SearchFilterService.IsPlanMatch("VMAT1", "PTV", 2.0, 37, 74.0, "TreatmentApproved", false, criteria);
             Assert.IsTrue(matchWithValid, "Plan with valid dose should match filter");
         }
 
         [TestMethod]
-        [Description("MainViewModel: プリセットの Description 編集・保存・再選択時の整合性を検証")]
+        [Description("MainViewModel: Verifies consistency when editing, saving, and re-selecting preset descriptions")]
         public void MainViewModel_PresetDescription_EditAndSave_ShouldPersist()
         {
             string tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "EDM_Preset_Desc_Test_" + System.Guid.NewGuid().ToString("N"));
@@ -1120,31 +1120,31 @@ namespace EclipseDataMiner.Tests
                 var service = new SearchPresetService(tempDir);
                 var vm = new MainViewModel(service);
 
-                // 新規プリセット作成
+                // Create new preset
                 string presetName = "Test_Edit_Desc";
                 vm.PresetNameInput = presetName;
                 vm.PresetDescriptionInput = "Initial description for testing";
                 vm.PlanIdText = "VMAT*";
                 vm.ExecuteSavePreset();
 
-                // 保存されたプリセットの Description を確認
+                // Check Description of the saved preset
                 var saved = vm.Presets.FirstOrDefault(p => p.Name == presetName);
                 Assert.IsNotNull(saved);
                 Assert.AreEqual("Initial description for testing", saved.Description);
 
-                // 画面上で Description を編集して上書き保存
+                // Edit Description on UI and overwrite save
                 vm.SelectedPreset = saved;
                 Assert.AreEqual("Initial description for testing", vm.PresetDescriptionInput);
 
                 vm.PresetDescriptionInput = "Updated description text with clinical notes";
                 vm.ExecuteSavePreset();
 
-                // 更新結果を確認
+                // Verify update result
                 var updated = vm.Presets.FirstOrDefault(p => p.Name == presetName);
                 Assert.IsNotNull(updated);
                 Assert.AreEqual("Updated description text with clinical notes", updated.Description);
 
-                // 再度サービスからロードしてファイル永続化も検証
+                // Reload from service to verify file persistence
                 var reloadedService = new SearchPresetService(tempDir);
                 var reloadedPresets = reloadedService.LoadPresets();
                 var persisted = reloadedPresets.FirstOrDefault(p => p.Name == presetName);
@@ -1161,7 +1161,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("MainViewModel: 計画検索用の正規表現ヒントスニペットが初期化され挿入可能であることを検証")]
+        [Description("MainViewModel: Verifies that regular expression hint snippets for plan search are populated and insertable")]
         public void MainViewModel_SearchRegexSnippets_ShouldBePopulatedAndInsertable()
         {
             var vm = new MainViewModel();
@@ -1170,7 +1170,7 @@ namespace EclipseDataMiner.Tests
             Assert.IsTrue(vm.SearchRegexSnippets.Any(s => s.Pattern.Contains("VMAT|IMRT")), "Should contain OR pattern snippet");
             Assert.IsTrue(vm.SearchRegexSnippets.Any(s => s.Pattern.Contains("Boost")), "Should contain Boost pattern snippet");
 
-            // 挿入コマンドの実行検証
+            // Verify execution of insert command
             var snippet = vm.SearchRegexSnippets.First(s => s.Pattern.Contains("VMAT|IMRT"));
             vm.PlanIdText = "";
             vm.InsertSearchRegexSnippetCommand.Execute(snippet.Pattern);
@@ -1179,7 +1179,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("SearchFilterService: DosePresenceFilter.HasDose は線量計算済みプランのみ合致し、未計算・NaN・0Gyを除外することを検証")]
+        [Description("SearchFilterService: Verifies that DosePresenceFilter.HasDose matches only dose-calculated plans, excluding uncalculated, NaN, and 0 Gy plans")]
         public void SearchFilterService_DosePresenceFilter_HasDose_ShouldOnlyMatchCalculatedPlans()
         {
             var criteria = new SearchFilterCriteria
@@ -1187,21 +1187,21 @@ namespace EclipseDataMiner.Tests
                 DosePresence = DosePresenceFilter.HasDose
             };
 
-            // 線量あり（計算済み） -> true
+            // Dose present (calculated) -> true
             Assert.IsTrue(SearchFilterService.IsPlanMatch("VMAT1", "PTV", 2.0, 35, 70.0, "TreatmentApproved", false, criteria));
 
-            // 線量なし (null) -> false
+            // No dose (null) -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("VMAT1", "PTV", null, 35, null, "TreatmentApproved", false, criteria));
 
-            // 線量が NaN -> false
+            // Dose is NaN -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("VMAT1", "PTV", double.NaN, 35, double.NaN, "TreatmentApproved", false, criteria));
 
-            // 線量が 0Gy -> false
+            // Dose is 0 Gy -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("VMAT1", "PTV", 0.0, 35, 0.0, "TreatmentApproved", false, criteria));
         }
 
         [TestMethod]
-        [Description("SearchFilterService: DosePresenceFilter.NoDose は線量未計算プランのみ合致し、計算済みプランを除外することを検証")]
+        [Description("SearchFilterService: Verifies that DosePresenceFilter.NoDose matches only uncalculated plans and excludes calculated plans")]
         public void SearchFilterService_DosePresenceFilter_NoDose_ShouldOnlyMatchUncalculatedPlans()
         {
             var criteria = new SearchFilterCriteria
@@ -1209,18 +1209,18 @@ namespace EclipseDataMiner.Tests
                 DosePresence = DosePresenceFilter.NoDose
             };
 
-            // 線量あり（計算済み） -> false
+            // Dose present (calculated) -> false
             Assert.IsFalse(SearchFilterService.IsPlanMatch("VMAT1", "PTV", 2.0, 35, 70.0, "TreatmentApproved", false, criteria));
 
-            // 線量なし (null) -> true
+            // No dose (null) -> true
             Assert.IsTrue(SearchFilterService.IsPlanMatch("VMAT1", "PTV", null, 35, null, "TreatmentApproved", false, criteria));
 
-            // 線量が NaN -> true (未計算として扱う)
+            // Dose is NaN -> true (treated as uncalculated)
             Assert.IsTrue(SearchFilterService.IsPlanMatch("VMAT1", "PTV", double.NaN, 35, double.NaN, "TreatmentApproved", false, criteria));
         }
 
         [TestMethod]
-        [Description("MainViewModel: DosePresence フィルタがプリセット保存・適用および BuildCriteria と同期することを検証")]
+        [Description("MainViewModel: Verifies that DosePresence filter syncs with preset save/apply and BuildCriteria")]
         public void MainViewModel_DosePresenceFilter_PresetSync_ShouldWorkCorrectly()
         {
             string tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "EDM_Preset_Dose_Test_" + System.Guid.NewGuid().ToString("N"));
@@ -1230,24 +1230,24 @@ namespace EclipseDataMiner.Tests
                 var service = new SearchPresetService(tempDir);
                 var vm = new MainViewModel(service);
 
-                // 初期状態は All
+                // Default state is All
                 Assert.AreEqual(DosePresenceFilter.All, vm.DosePresence);
 
-                // HasDose に設定して保存
+                // Set to HasDose and save
                 vm.PresetNameInput = "Preset_HasDose";
                 vm.DosePresence = DosePresenceFilter.HasDose;
                 vm.ExecuteSavePreset();
 
-                // Criteria にも反映されることを確認
+                // Verify reflection in Criteria
                 var criteria = vm.BuildCriteria();
                 Assert.AreEqual(DosePresenceFilter.HasDose, criteria.DosePresence);
 
-                // NoDose プリセットも作成
+                // Create NoDose preset as well
                 vm.PresetNameInput = "Preset_NoDose";
                 vm.DosePresence = DosePresenceFilter.NoDose;
                 vm.ExecuteSavePreset();
 
-                // プリセット切り替えで復元されることを確認
+                // Verify restoration when switching presets
                 var presetHasDose = vm.Presets.First(p => p.Name == "Preset_HasDose");
                 vm.SelectedPreset = presetHasDose;
                 Assert.AreEqual(DosePresenceFilter.HasDose, vm.DosePresence);
@@ -1266,7 +1266,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("Advanced Filter (照射パラメータ・日付範囲) 指定時に beamRecords および targetDate が渡されることで IsPlanMatch が正しく一致判定されることを検証 (事前スキャン不具合防止)")]
+        [Description("IsPlanMatch: Verifies that passing beamRecords and targetDate with Advanced Filters (irradiation parameters and date range) correctly matches plans")]
         public void IsPlanMatch_WithAdvancedFilter_WhenBeamsAndDatesSupplied_ShouldMatchCorrectly()
         {
             // Arrange
@@ -1286,24 +1286,24 @@ namespace EclipseDataMiner.Tests
             };
             var validDate = new DateTime(2026, 6, 15);
 
-            // Act & Assert 1: ビーム情報と日付情報を両方渡した場合 -> 合致 (True)
+            // Act & Assert 1: When both beam and date info are provided -> Match (True)
             bool matchWithAllInfo = SearchFilterService.IsPlanMatch(
                 "PT01", "C1", "Plan1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false,
                 validDate, validBeams, criteria);
-            Assert.IsTrue(matchWithAllInfo, "ビーム情報と日付情報が合致する場合は True と判定されるべき");
+            Assert.IsTrue(matchWithAllInfo, "Should evaluate to True when both beam information and date match.");
 
-            // Act & Assert 2: ビーム情報・日付情報が null の場合（旧実装の事前スキャンバグのシミュレーション） -> 不一致 (False)
+            // Act & Assert 2: When beam or date info is null -> Non-match (False)
             bool matchWithoutBeams = SearchFilterService.IsPlanMatch(
                 "PT01", "C1", "Plan1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false,
                 validDate, null, criteria);
-            Assert.IsFalse(matchWithoutBeams, "ビーム情報が null の場合は Advanced Filter に合致せず False になる");
+            Assert.IsFalse(matchWithoutBeams, "Should be False when beam information is null with Advanced Filter specified.");
 
             bool matchWithoutDate = SearchFilterService.IsPlanMatch(
                 "PT01", "C1", "Plan1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false,
                 null, validBeams, criteria);
-            Assert.IsFalse(matchWithoutDate, "日付情報が null の場合は日付範囲フィルタに合致せず False になる");
+            Assert.IsFalse(matchWithoutDate, "Should be False when date information is null with date range filter specified.");
 
-            // Act & Assert 3: 異なる装置（Clinac）のビーム情報 -> 不一致 (False)
+            // Act & Assert 3: Beam information with different machine (Clinac) -> Non-match (False)
             var mismatchBeams = new List<BeamRecord>
             {
                 new BeamRecord { BeamId = "B1", TreatmentUnit = "Clinac_iX", EnergyModeDisplayName = "6X", Technique = "ARC" }
@@ -1311,21 +1311,21 @@ namespace EclipseDataMiner.Tests
             bool matchMismatchBeam = SearchFilterService.IsPlanMatch(
                 "PT01", "C1", "Plan1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false,
                 validDate, mismatchBeams, criteria);
-            Assert.IsFalse(matchMismatchBeam, "装置名が不一致のビーム情報は除外されるべき");
+            Assert.IsFalse(matchMismatchBeam, "Beams with non-matching machine names should be excluded.");
 
-            // Act & Assert 4: 日付範囲外（2025年） -> 不一致 (False)
+            // Act & Assert 4: Outside date range (2025) -> Non-match (False)
             var outOfRangeDate = new DateTime(2025, 12, 31);
             bool matchOutOfRangeDate = SearchFilterService.IsPlanMatch(
                 "PT01", "C1", "Plan1", "PTV", 2.0, 30, 60.0, "TreatmentApproved", false,
                 outOfRangeDate, validBeams, criteria);
-            Assert.IsFalse(matchOutOfRangeDate, "日付範囲外の計画は除外されるべき");
+            Assert.IsFalse(matchOutOfRangeDate, "Plans outside the date range should be excluded.");
         }
 
         [TestMethod]
-        [Description("ShouldSkipPatient: ORロジック時に NumberOfFractions のみが指定されている場合、患者IDが不一致でもスキップされないことを検証")]
+        [Description("ShouldSkipPatient: Verifies that when only NumberOfFractions is specified in OR mode, patients with non-matching IDs are not skipped")]
         public void ShouldSkipPatient_WhenNumberOfFractionsSpecified_InOrLogic_ShouldNotSkip()
         {
-            // Arrange: OR モードで患者IDは "PT999"、分割数は 30
+            // Arrange: OR mode with PatientId='PT999' and Fractions=30
             var criteria = new SearchFilterCriteria
             {
                 GlobalLogicIsAnd = false,
@@ -1333,13 +1333,13 @@ namespace EclipseDataMiner.Tests
                 NumberOfFractions = 30
             };
 
-            // Act & Assert: 対象患者 "PT001" は患者ID不一致だが、分割数条件が存在するためスキップしてはならない
+            // Act & Assert: Target patient 'PT001' does not match PatientId, but must not be skipped because fraction condition exists
             bool shouldSkip = SearchFilterService.ShouldSkipPatient("PT001", criteria);
-            Assert.IsFalse(shouldSkip, "ORモードで分割数条件が存在する場合、不一致患者も探索対象としてスキップしてはならない");
+            Assert.IsFalse(shouldSkip, "Non-matching patients must not be skipped when fraction condition is specified in OR mode.");
         }
 
         [TestMethod]
-        [Description("IsPlanMatch: PlanSum に対して作成日および線量有無マーカーが渡された場合、DosePresence および日付フィルタが正確に機能することを検証")]
+        [Description("IsPlanMatch: Verifies that DosePresence and date filters work accurately when creation date and dose presence markers are passed for PlanSum")]
         public void IsPlanMatch_PlanSum_WithDosePresenceAndDate_ShouldFilterProperly()
         {
             // Arrange
@@ -1353,33 +1353,33 @@ namespace EclipseDataMiner.Tests
             };
 
             var validDate = new DateTime(2026, 5, 20);
-            double? hasDoseMarker = 1.0; // 線量ありマーカー
+            double? hasDoseMarker = 1.0; // Marker indicating dose is present
 
-            // Case 1: 線量あり + 日付範囲内 -> 一致 (True)
+            // Case 1: Dose present + within date range -> Match (True)
             bool match = SearchFilterService.IsPlanMatch(
                 "PT01", "C1", "PlanSum1", null, null, null, hasDoseMarker, "PlanSum", true,
                 validDate, null, criteria);
-            Assert.IsTrue(match, "線量ありかつ日付範囲内の PlanSum は True になるべき");
+            Assert.IsTrue(match, "PlanSum with dose within date range should be True.");
 
-            // Case 2: 線量なし (null) + DosePresence=HasDose -> 不一致 (False)
+            // Case 2: No dose (null) + DosePresence=HasDose -> Non-match (False)
             bool noDoseMatch = SearchFilterService.IsPlanMatch(
                 "PT01", "C1", "PlanSum1", null, null, null, null, "PlanSum", true,
                 validDate, null, criteria);
-            Assert.IsFalse(noDoseMatch, "DosePresence=HasDose の時、線量なし PlanSum は False になるべき");
+            Assert.IsFalse(noDoseMatch, "PlanSum without dose should be False when DosePresence=HasDose.");
 
-            // Case 3: DosePresence=NoDose に変更時、線量なし PlanSum は 一致 (True)
+            // Case 3: When changed to DosePresence=NoDose, PlanSum without dose -> Match (True)
             criteria.DosePresence = DosePresenceFilter.NoDose;
             bool noDoseCriteriaMatch = SearchFilterService.IsPlanMatch(
                 "PT01", "C1", "PlanSum1", null, null, null, null, "PlanSum", true,
                 validDate, null, criteria);
-            Assert.IsTrue(noDoseCriteriaMatch, "DosePresence=NoDose の時、線量なし PlanSum は True になるべき");
+            Assert.IsTrue(noDoseCriteriaMatch, "PlanSum without dose should be True when DosePresence=NoDose.");
 
-            // Case 4: 日付範囲外（2024年） -> 不一致 (False)
+            // Case 4: Outside date range (2024) -> Non-match (False)
             var outOfRangeDate = new DateTime(2024, 1, 1);
             bool outOfDateMatch = SearchFilterService.IsPlanMatch(
                 "PT01", "C1", "PlanSum1", null, null, null, null, "PlanSum", true,
                 outOfRangeDate, null, criteria);
-            Assert.IsFalse(outOfDateMatch, "日付範囲外の PlanSum は除外されるべき");
+            Assert.IsFalse(outOfDateMatch, "PlanSum outside date range should be excluded.");
         }
     }
 }

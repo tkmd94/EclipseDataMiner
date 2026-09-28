@@ -1,6 +1,6 @@
 {
   "Name": "All Treatment Approved (Exclude QA)",
-  "Description": "治療承認済み（TreatmentApproved）全計画（QA・検証計画を除外）",
+  "Description": "All TreatmentApproved plans (excluding QA and verification plans)",
   "IsBuiltIn": false,
   "PatientIdText": "",
   "PatientIdMatchMode": "Contains",

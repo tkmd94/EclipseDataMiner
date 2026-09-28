@@ -1,5 +1,7 @@
 # EclipseDataMiner 臨床コミッショニング手順書 (Clinical Commissioning Guide)
 
+[English](COMMISSIONING.en.md) | **日本語**
+
 本ドキュメントは、Varian Eclipse ESAPI 治療計画データマイニング・スタンドアロンアプリケーション **EclipseDataMiner (v3.0 / Eclipse v15.6 & v16.1 対応)** を施設の臨床・研究運用に投入する前に実施すべき**コミッショニング（受入試験・臨床妥当性検証）の実施基準、検証項目チェックリスト、および安全管理手順**を定めたものです。
 
 > [!NOTE]

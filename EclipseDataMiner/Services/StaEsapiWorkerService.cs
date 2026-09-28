@@ -13,7 +13,7 @@ using VMS.TPS.Common.Model.Types;
 namespace EclipseDataMiner.Services
 {
     /// <summary>
-    /// 進捗通知用データ
+    /// Progress notification information.
     /// </summary>
     public class ExtractionProgressInfo
     {
@@ -25,14 +25,14 @@ namespace EclipseDataMiner.Services
     }
 
     /// <summary>
-    /// 専用 STA スレッド上で ESAPI 走査・抽出・メモリ管理を実行するサービス
+    /// Service running ESAPI traversal, data extraction, and memory management on a dedicated STA thread.
     /// </summary>
     public class StaEsapiWorkerService
     {
         private const int GarbageCollectionInterval = 200;
 
         /// <summary>
-        /// 検索条件に合致するプランの輪郭IDを高速スキャン（事前マッピング用）
+        /// Rapidly scans structure IDs from plans matching search criteria (for pre-mapping).
         /// </summary>
         public Task<List<DiscoveredStructureItem>> RunPreScanAsync(
             SearchFilterCriteria criteria,
@@ -67,14 +67,14 @@ namespace EclipseDataMiner.Services
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        // 選択されたプラン一覧がある場合、その対象患者でなければ高速スキップ
+                        // Fast-skip if target plan list exists and patient is not included
                         if (targetPatientIds != null && !targetPatientIds.Contains(patsum.Id))
                         {
                             count++;
                             continue;
                         }
 
-                        // 選択患者であるか、または検索条件に合致する患者のみオープン
+                        // Open patient only if in target list or matching search criteria
                         if (targetPatientIds != null || !SearchFilterService.ShouldSkipPatient(patsum.Id, criteria))
                         {
                             Patient pat = null;
@@ -92,7 +92,7 @@ namespace EclipseDataMiner.Services
                             }
                             catch (Exception)
                             {
-                                // 患者オープン失敗時は安全にスキップ
+                                // Safely skip if patient open fails
                             }
                             finally
                             {
@@ -132,7 +132,7 @@ namespace EclipseDataMiner.Services
                         MatchStatus = "Unmapped (Raw)"
                     }).OrderByDescending(d => d.HitCount).ToList();
 
-                    // 既存のルールを適用してプレビュー状態を解決
+                    // Apply existing rules to resolve preview status
                     StructureMappingService.RefreshPreview(discoveredList, mappingRules);
 
                     tcs.SetResult(discoveredList);
@@ -159,7 +159,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// 検索条件に合致するプラン一覧を軽量走査（メタデータのみ読み取り、線量計算は行わない）
+        /// Performs a lightweight scan of plans matching criteria (reads metadata only, does not evaluate dose).
         /// </summary>
         public Task<List<MatchedPlanItem>> SearchPlansAsync(
             SearchFilterCriteria criteria,
@@ -200,7 +200,7 @@ namespace EclipseDataMiner.Services
                             }
                             catch (Exception)
                             {
-                                // 患者オープン失敗時は安全にスキップ
+                                // Safely skip if patient open fails
                             }
                             finally
                             {
@@ -256,7 +256,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// データマイニング本抽出処理（ストリーミング出力）
+        /// Full data mining extraction process (streaming output).
         /// </summary>
         public Task<int> RunExtractionAsync(
             SearchFilterCriteria criteria,
@@ -277,10 +277,10 @@ namespace EclipseDataMiner.Services
 
                 try
                 {
-                    // DQP出力ヘッダーの生成
+                    // Build DQP output column headers
                     var dqpHeaders = BuildDqpColumns(dqpDefinitions, mappingRules);
 
-                    // パイプラインの初期化
+                    // Initialize streaming export pipeline
                     pipeline = new StreamingExportPipeline();
                     pipeline.Initialize(outputCsvPath, options, dqpHeaders);
 
@@ -353,7 +353,7 @@ namespace EclipseDataMiner.Services
                             });
                         }
 
-                        // 定期的なGCによるアンマネージドリソース解放
+                        // Periodic GC to release unmanaged ESAPI resources
                         if (processedCount % GarbageCollectionInterval == 0)
                         {
                             GC.Collect();
@@ -399,7 +399,7 @@ namespace EclipseDataMiner.Services
                 cancellationToken.ThrowIfCancellationRequested();
                 if (SearchFilterService.ShouldSkipCourse(course.Id, criteria)) continue;
 
-                // PlanSetup のスキャン
+                // Scan PlanSetups
                 foreach (PlanSetup plan in course.PlanSetups)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -442,7 +442,7 @@ namespace EclipseDataMiner.Services
                     }
                 }
 
-                // PlanSum のスキャン
+                // Scan PlanSums
                 if (criteria.IncludePlanSums)
                 {
                     foreach (PlanSum sum in course.PlanSums)
@@ -514,7 +514,7 @@ namespace EclipseDataMiner.Services
 
                     if (SearchFilterService.IsPlanMatch(patient.Id, course.Id, plan.Id, targetId, dosePerFr, numFr, totalDose, status, false, targetDate, beamRecords, criteria))
                     {
-                        // 複数ビームが存在する場合でもすべての装置・エネルギー・照射手法を重複なくカンマ区切りで集約
+                        // Aggregate machines, energies, and techniques across multiple beams as distinct comma-separated strings
                         string machines = "-";
                         string energies = "-";
                         string techniques = "-";
@@ -615,7 +615,7 @@ namespace EclipseDataMiner.Services
                 cancellationToken.ThrowIfCancellationRequested();
                 if (SearchFilterService.ShouldSkipCourse(course.Id, criteria)) continue;
 
-                // PlanSetup の抽出
+                // Extract PlanSetup
                 foreach (PlanSetup plan in course.PlanSetups)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -647,7 +647,7 @@ namespace EclipseDataMiner.Services
                     }
                 }
 
-                // PlanSum の抽出（オプション有効時のみ）
+                // Extract PlanSum (only when enabled)
                 if (criteria.IncludePlanSums)
                 {
                     foreach (PlanSum sum in course.PlanSums)
@@ -813,7 +813,7 @@ namespace EclipseDataMiner.Services
                 PlanningApprovalDate = plan.PlanningApprovalDate
             };
 
-            // ビーム情報の収集
+            // Collect beam records
             int beamCount = 0;
             foreach (Beam b in plan.Beams)
             {
@@ -864,12 +864,12 @@ namespace EclipseDataMiner.Services
             }
             record.NumberOfBeams = beamCount;
 
-            // 計算モデル
+            // Calculation models
             record.CalculationModelPhoton = plan.PhotonCalculationModel ?? string.Empty;
             record.CalculationModelElectron = plan.ElectronCalculationModel ?? string.Empty;
             record.PlanNormalizationMethod = plan.PlanNormalizationMethod ?? string.Empty;
 
-            // 臨床プロトコル
+            // Clinical protocol
             if (options.ExportClinicalProtocol)
             {
                 try
@@ -881,7 +881,7 @@ namespace EclipseDataMiner.Services
                 catch { }
             }
 
-            // 最適化設定
+            // Optimization setup
             if (options.ExportOptimizationObjectives && plan.OptimizationSetup != null)
             {
                 try
@@ -893,7 +893,7 @@ namespace EclipseDataMiner.Services
                 catch { }
             }
 
-            // プラン複雑性
+            // Plan complexity
             if (options.ExportPlanComplexity)
             {
                 try
@@ -905,7 +905,7 @@ namespace EclipseDataMiner.Services
                 catch { }
             }
 
-            // DVH統計およびDQP指標の計算
+            // Calculate DVH statistics and DQP metrics
             if (plan.StructureSet != null && plan.Dose != null)
             {
                 ExtractDvhAndDqp(plan, plan.StructureSet, dqpDefinitions, mappingRules, record, cancellationToken);
@@ -933,7 +933,7 @@ namespace EclipseDataMiner.Services
                 IsPlanSum = true,
                 DateOfBirth = patient.DateOfBirth,
                 TargetVolumeId = StringSanitizer.NotApplicable,
-                DosePerFractionGy = null, // PlanSum には1回線量の単一概念がないため null
+                DosePerFractionGy = null, // Null because PlanSum does not have a single fraction dose
                 NumberOfFractions = null,
                 TotalDoseGy = null,
                 NumberOfBeams = 0,
@@ -947,7 +947,7 @@ namespace EclipseDataMiner.Services
                 PlanComplexitySummary = StringSanitizer.NotApplicable
             };
 
-            // DVH統計およびDQP指標の計算 (PlanSum)
+            // Calculate DVH statistics and DQP metrics (PlanSum)
             if (sum.StructureSet != null && sum.Dose != null)
             {
                 ExtractDvhAndDqp(sum, sum.StructureSet, dqpDefinitions, mappingRules, record, cancellationToken);
@@ -1030,15 +1030,15 @@ namespace EclipseDataMiner.Services
         {
             if (structureSet == null || structureSet.Structures == null) return;
 
-            // 処方総線量（PlanSetupの場合は TotalDose）
+            // Prescription total dose (TotalDose for PlanSetup)
             DoseValue prescriptionTotalDose = DoseValue.UndefinedDose();
             if (planItem is PlanSetup ps)
             {
                 prescriptionTotalDose = ps.TotalDose;
             }
 
-            // 1. 基本統計量（Volume, Max, Mean, Min）を計算
-            // 対象: マッピングルールで選択された輪郭および DQP リストに指定されている輪郭（エイリアス含む）
+            // 1. Calculate basic statistics (Volume, Max, Mean, Min)
+            // Targets: structures selected by mapping rules and structures specified in DQP list (including aliases)
             var distinctStructNames = GetTargetStructureNames(dqpDefinitions, mappingRules);
 
             foreach (var sName in distinctStructNames)
@@ -1080,7 +1080,7 @@ namespace EclipseDataMiner.Services
                 }
             }
 
-            // 2. DQP指標の計算
+            // 2. Calculate DQP metrics
             if (dqpDefinitions == null || dqpDefinitions.Count == 0) return;
 
             foreach (var dqp in dqpDefinitions)
@@ -1114,7 +1114,7 @@ namespace EclipseDataMiner.Services
                         var dosePresOut = dqp.OutputUnit == IOUnit.Relative ? DoseValuePresentation.Relative : DoseValuePresentation.Absolute;
                         var volPresOut = dqp.OutputUnit == IOUnit.Relative ? VolumePresentation.Relative : VolumePresentation.AbsoluteCm3;
 
-                        // 相対線量の基準線量（プラン処方総線量、未設定時は dvh.MaxDose にフォールバック）
+                        // Reference dose for relative dose (plan prescription total dose; falls back to dvh.MaxDose if unconfigured)
                         DoseValue refDose = (!prescriptionTotalDose.IsUndefined() && prescriptionTotalDose.Dose > 0)
                             ? prescriptionTotalDose
                             : dvh.MaxDose;
@@ -1179,7 +1179,7 @@ namespace EclipseDataMiner.Services
                     }
                     catch (Exception)
                     {
-                        // DVH計算エラー時はスキップ
+                        // Skip on DVH calculation error
                     }
                 }
             }
@@ -1189,7 +1189,7 @@ namespace EclipseDataMiner.Services
         {
             var list = new List<DqpColumnDefinition>();
 
-            // 1. 各輪郭の基本統計量（Volume, Max, Mean, Min）列
+            // 1. Basic statistics (Volume, Max, Mean, Min) columns per structure
             var distinctStructNames = GetTargetStructureNames(dqpDefinitions, mappingRules);
 
             foreach (var sName in distinctStructNames)
@@ -1224,7 +1224,7 @@ namespace EclipseDataMiner.Services
                 });
             }
 
-            // 2. DQP 指標列（旧仕様と完全一致する臨床的ヘッダー記法）
+            // 2. DQP metric columns (clinical header notation matching legacy spec)
             if (dqpDefinitions != null)
             {
                 foreach (var dqp in dqpDefinitions)
@@ -1233,7 +1233,7 @@ namespace EclipseDataMiner.Services
 
                 string metricKey = $"{dqp.DQPtype}_{dqp.DQPvalue}_{dqp.InputUnit}_{dqp.OutputUnit}";
 
-                // プレフィックス
+                // Prefix
                 string typePrefix = dqp.DQPtype switch
                 {
                     DQPtype.Dose => "-D",
@@ -1243,12 +1243,12 @@ namespace EclipseDataMiner.Services
                     _ => $"-{dqp.DQPtype}"
                 };
 
-                // 入力単位表記
+                // Input unit notation
                 string inUnitStr = dqp.InputUnit == IOUnit.Absolute
                     ? (dqp.DQPtype == DQPtype.Dose || dqp.DQPtype == DQPtype.DoseComplement ? "cc" : "Gy")
                     : "%";
 
-                // 出力単位表記
+                // Output unit notation
                 string outUnitStr = dqp.OutputUnit == IOUnit.Absolute
                     ? (dqp.DQPtype == DQPtype.Dose || dqp.DQPtype == DQPtype.DoseComplement ? "[Gy]" : "[cc]")
                     : "[%]";
@@ -1269,13 +1269,13 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// マッピングルールおよびDQP定義から、抽出対象となる輪郭（またはエイリアス）名リストを集約
+        /// Aggregates distinct structure (or alias) names to extract from mapping rules and DQP definitions.
         /// </summary>
         private static List<string> GetTargetStructureNames(IList<DQP> dqpDefinitions, IList<StructureMappingRule> mappingRules)
         {
             var targetStructNames = new List<string>();
 
-            // 1. マッピングルールが存在する場合は、選択されている輪郭（TargetAlias または Pattern）
+            // 1. Structures selected in mapping rules (TargetAlias or Pattern)
             if (mappingRules != null)
             {
                 foreach (var r in mappingRules.Where(r => r.IsSelected))
@@ -1291,7 +1291,7 @@ namespace EclipseDataMiner.Services
                 }
             }
 
-            // 2. DQP リストに指定されている輪郭名を追加
+            // 2. Structures specified in DQP definitions
             if (dqpDefinitions != null)
             {
                 foreach (var d in dqpDefinitions.Where(d => !string.IsNullOrWhiteSpace(d.structureName)))

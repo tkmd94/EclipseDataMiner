@@ -5,37 +5,37 @@ using System.Linq;
 namespace EclipseDataMiner.Models
 {
     /// <summary>
-    /// テキスト一致モード（部分一致、完全一致、正規表現）
+    /// Text matching mode (Contains, Exact, Regex).
     /// </summary>
     public enum TextMatchMode
     {
-        Contains, // 部分一致（デフォルト）
-        Exact,    // 完全一致
-        Regex     // 正規表現
+        Contains, // Partial match (default)
+        Exact,    // Exact match
+        Regex     // Regular expression match
     }
 
     /// <summary>
-    /// 日付フィルタの対象種別
+    /// Target date field for date filtering.
     /// </summary>
     public enum DateFilterTarget
     {
-        TreatmentApprovalDate, // 治療承認日
-        PlanningApprovalDate,  // 計画承認日
-        CreationDate           // 計画作成日
+        TreatmentApprovalDate, // Treatment approval date
+        PlanningApprovalDate,  // Planning approval date
+        CreationDate           // Creation date
     }
 
     /// <summary>
-    /// 線量有無（計算済み／未計算）によるフィルタ種別
+    /// Filter mode based on dose presence (calculated or uncalculated).
     /// </summary>
     public enum DosePresenceFilter
     {
-        All,        // すべて（線量の有無を問わない・デフォルト）
-        HasDose,    // 線量あり（線量計算済み: TotalDose > 0 かつ !NaN）
-        NoDose      // 線量なし（線量未計算: TotalDose == null または NaN または <= 0）
+        All,        // All (ignore dose presence; default)
+        HasDose,    // Calculated dose present (TotalDose > 0 and !NaN)
+        NoDose      // No calculated dose (TotalDose == null or NaN or <= 0)
     }
 
     /// <summary>
-    /// 検索・フィルタリング条件モデル
+    /// Search and filtering criteria model.
     /// </summary>
     public class SearchFilterCriteria
     {
@@ -65,7 +65,7 @@ namespace EclipseDataMiner.Models
         public NumericFilterCriteria NumberOfFractionsCriteria { get; set; }
         public NumericFilterCriteria TotalDoseCriteria { get; set; }
 
-        // 高度メタデータフィルタ (Machine, Energy, Technique, Date Range)
+        // Advanced metadata filters (Machine, Energy, Technique, Date Range)
         public List<string> MachineFilter { get; set; } = new List<string>();
         public List<string> MachineExcludeFilter { get; set; } = new List<string>();
 
@@ -84,17 +84,17 @@ namespace EclipseDataMiner.Models
         public bool FilterTreatmentApproved { get; set; } = true;
 
         /// <summary>
-        /// グローバル論理切替（true: AND「すべて満たす」, false: OR「いずれかを満たす」）
+        /// Global logical condition toggle (true: AND "match all", false: OR "match any").
         /// </summary>
         public bool GlobalLogicIsAnd { get; set; } = true;
 
         /// <summary>
-        /// PlanSum（合算計画）を含めるかどうか（デフォルトfalse）
+        /// Whether to include PlanSums (default false).
         /// </summary>
         public bool IncludePlanSums { get; set; } = false;
 
         /// <summary>
-        /// テキスト入力をカンマ区切りでパースしてリスト化（後方互換用）
+        /// Parses comma-separated text into a list (for backward compatibility).
         /// </summary>
         public static List<string> ParseCommaSeparated(string input)
         {
@@ -106,7 +106,7 @@ namespace EclipseDataMiner.Models
         }
 
         /// <summary>
-        /// テキスト入力をパースし、通常条件（include）と除外条件（exclude: ! または - で開始）に分離
+        /// Parses text input and separates into inclusion terms and exclusion terms (starting with ! or -).
         /// </summary>
         public static void ParseTextFilter(string input, out List<string> includes, out List<string> excludes)
         {

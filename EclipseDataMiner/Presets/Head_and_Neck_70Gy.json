@@ -1,6 +1,6 @@
 {
   "Name": "Head & Neck 70Gy (33-35Fr)",
-  "Description": "頭頸部根治照射（33〜35分割、総線量70Gy、QA除外）",
+  "Description": "Head & Neck definitive (33-35 fx, total 70Gy, excluding QA)",
   "IsBuiltIn": false,
   "PatientIdText": "",
   "PatientIdMatchMode": "Contains",

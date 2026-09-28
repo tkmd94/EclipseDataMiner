@@ -6,7 +6,7 @@ using VMS.TPS.Common.Model.API;
 namespace EclipseDataMiner.Services
 {
     /// <summary>
-    /// ビームごとの照射野複雑度（MCS, Edge Metric, Leaf Travel, Arc Length）解析結果
+    /// Beam complexity analysis results (MCS, Edge Metric, Leaf Travel, Arc Length) per beam.
     /// </summary>
     public class BeamComplexityResult
     {
@@ -23,7 +23,7 @@ namespace EclipseDataMiner.Services
     }
 
     /// <summary>
-    /// ESAPI 非依存のコントロールポイント幾何データ
+    /// ESAPI-independent control point geometry data.
     /// </summary>
     public class ControlPointGeometry
     {
@@ -31,7 +31,7 @@ namespace EclipseDataMiner.Services
         public double JawY1 { get; set; }
         public double JawY2 { get; set; }
         /// <summary>
-        /// リーフ座標配列 [2, 60]
+        /// Leaf position coordinate array [2, 60]
         /// [0, leaf]: Left Bank (Bank B / Bank 0)
         /// [1, leaf]: Right Bank (Bank A / Bank 1)
         /// </summary>
@@ -39,7 +39,7 @@ namespace EclipseDataMiner.Services
     }
 
     /// <summary>
-    /// ESAPI 非依存のビーム幾何データ
+    /// ESAPI-independent beam geometry data.
     /// </summary>
     public class BeamGeometry
     {
@@ -51,8 +51,8 @@ namespace EclipseDataMiner.Services
     }
 
     /// <summary>
-    /// 治療計画の照射野複雑度解析エンジン
-    /// 参考文献:
+    /// Treatment plan beam delivery complexity analysis engine.
+    /// References:
     /// - Modulation Complexity Score (MCS / MCSv):
     ///   - McNiven et al., Med. Phys. 37 (2), 590-601 (2010)
     ///   - Masi et al., Med. Phys. 40 (7), 071718 (2013)
@@ -65,7 +65,7 @@ namespace EclipseDataMiner.Services
         public const double C2_EDGEMETRIC = 1.0;
 
         /// <summary>
-        /// ESAPI PlanSetup に対する解析エントリポイント
+        /// Analysis entry point for ESAPI PlanSetup.
         /// </summary>
         public static string Process(PlanSetup planSetup)
         {
@@ -114,12 +114,12 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// 後方互換用メソッド名（旧スペル）
+        /// Backward compatibility alias (legacy spelling).
         /// </summary>
         public static string Proccess(PlanSetup planSetup) => Process(planSetup);
 
         /// <summary>
-        /// ESAPI 非依存のビーム幾何データから複雑度指標群を網羅的に計算
+        /// Computes complexity metrics from ESAPI-independent beam geometry data.
         /// </summary>
         public static BeamComplexityResult AnalyzeBeam(BeamGeometry beam)
         {
@@ -173,13 +173,13 @@ namespace EclipseDataMiner.Services
                     double leafEdgeD = leafBoundArray[leaf_loop, 0];
                     double leafEdgeU = leafBoundArray[leaf_loop, 1];
 
-                    // Jaw 外のリーフ判定
+                    // Check if leaf is outside jaws
                     if (cp.JawY2 <= leafEdgeD || cp.JawY1 >= leafEdgeU)
                     {
                         continue;
                     }
 
-                    // 開口高さ leafEnd の幾何計算
+                    // Geometric calculation of exposed leaf height leafEnd
                     double leafEnd;
                     if (cp.JawY2 < leafEdgeU && cp.JawY1 > leafEdgeD)
                     {
@@ -200,13 +200,13 @@ namespace EclipseDataMiner.Services
 
                     if (leafEnd < 0) leafEnd = 0;
 
-                    // リーフ開口幅 (Right Bank - Left Bank)
+                    // Exposed leaf opening width (Right Bank - Left Bank)
                     double leafWidth = leaf[1, leaf_loop] - leaf[0, leaf_loop];
                     if (leafWidth < 0) leafWidth = 0;
 
                     double leafArea = leafEnd * leafWidth;
 
-                    // 隣接照射野内リーフとのステップ差分
+                    // Step difference between adjacent in-field leaves
                     double leafSide = 0.0;
                     if (prevInFieldLeaf >= 0)
                     {
@@ -221,13 +221,13 @@ namespace EclipseDataMiner.Services
                     countLeafInField++;
                     openLeafWidth += leafWidth;
 
-                    // Min / Max 座標の更新
+                    // Update Min / Max positions
                     if (leaf[1, leaf_loop] < minPos_Rb) minPos_Rb = leaf[1, leaf_loop];
                     if (leaf[1, leaf_loop] > maxPos_Rb) maxPos_Rb = leaf[1, leaf_loop];
                     if (leaf[0, leaf_loop] < minPos_Lb) minPos_Lb = leaf[0, leaf_loop];
                     if (leaf[0, leaf_loop] > maxPos_Lb) maxPos_Lb = leaf[0, leaf_loop];
 
-                    // リーフトラベル積算
+                    // Accumulate leaf travel
                     leafTravel += calcLT(cpIndex, leaf_loop, leaf, prevLeaf);
 
                     sumLeafSidePerCP += leafSide;
@@ -235,13 +235,13 @@ namespace EclipseDataMiner.Services
                     sumAreaPerCP += leafArea;
                 }
 
-                // コントロールポイント単位の AAV および LSV 計算
+                // Calculate AAV and LSV per control point
                 aav_CP[cpIndex] = CalculateAAV(openLeafWidth, countLeafInField, maxPos_Rb, minPos_Lb);
                 double lsv_Rb = CalculateLSV(maxPos_Rb, minPos_Rb, leafSide_Rb, countLeafInField);
                 double lsv_Lb = CalculateLSV(maxPos_Lb, minPos_Lb, leafSide_Lb, countLeafInField);
                 lsv_CP[cpIndex] = lsv_Rb * lsv_Lb;
 
-                // コントロールポイント単位の Edge Metric
+                // Edge Metric per control point
                 if (sumAreaPerCP > 1e-6)
                 {
                     edgeMetricPerCP[cpIndex] = (C1_EDGEMETRIC * sumLeafEndPerCP + C2_EDGEMETRIC * sumLeafSidePerCP) / sumAreaPerCP;
@@ -254,7 +254,7 @@ namespace EclipseDataMiner.Services
                 prevLeaf = leaf;
             }
 
-            // ビーム全体の統合指標計算
+            // Calculate aggregate metrics across the whole beam
             double mcs = CalculateMCS(aav_CP, lsv_CP, metersetWeightCP);
             double edgeMetric = CalculateEdgeMetric(edgeMetricPerCP, metersetWeightCP);
 
@@ -269,8 +269,8 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// コントロールポイントごとの Aperture Area Variability (AAV) を計算
-        /// 文献: McNiven et al. (2010) Eq. 2, Masi et al. (2013)
+        /// Calculates Aperture Area Variability (AAV) per control point.
+        /// Reference: McNiven et al. (2010) Eq. 2, Masi et al. (2013)
         /// AAV = sum(openLeafWidth) / (N * (maxPos_Rb - minPos_Lb))
         /// </summary>
         public static double CalculateAAV(double openLeafWidth, int countLeafInField, double maxPosRb, double minPosLb)
@@ -285,10 +285,10 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// コントロールポイントごとの Leaf Sequence Variability (LSV) を計算 (単一バンク)
-        /// 文献: McNiven et al. (2010) Eq. 1, Masi et al. (2013)
+        /// Calculates Leaf Sequence Variability (LSV) per control point (single bank).
+        /// Reference: McNiven et al. (2010) Eq. 1, Masi et al. (2013)
         /// LSV = ((N - 1) * posMax - sumLeafSide) / ((N - 1) * posMax)
-        /// リーフ段差がない場合（posMax == 0）または N <= 1 の場合は 1.0 (変動なし)
+        /// Returns 1.0 (no variability) if no leaf steps (posMax == 0) or N <= 1.
         /// </summary>
         public static double CalculateLSV(double maxPos, double minPos, double leafSide, int countLeafInField)
         {
@@ -305,8 +305,8 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// ビーム全体の Modulation Complexity Score (MCS / MCSv) を台形公式により積分
-        /// 文献: Masi et al. (2013) Eq. 1
+        /// Integrates Modulation Complexity Score (MCS / MCSv) across the entire beam using the trapezoidal rule.
+        /// Reference: Masi et al. (2013) Eq. 1
         /// MCS = sum_{cp=1}^{n-1} [ ((AAV_{cp} + AAV_{cp-1})/2) * ((LSV_{cp} + LSV_{cp-1})/2) * (MW_{cp} - MW_{cp-1}) ]
         /// </summary>
         public static double CalculateMCS(double[] aav_CP, double[] lsv_CP, double[] metersetWeightCP)
@@ -331,8 +331,8 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// ビーム全体の Edge Metric (EM) を各コントロールポイントの重み付け和により計算
-        /// 文献: Younge et al. (2012)
+        /// Computes Edge Metric (EM) across the beam via weighted sum of control points.
+        /// Reference: Younge et al. (2012)
         /// </summary>
         public static double CalculateEdgeMetric(double[] edgeMetricPerCP, double[] metersetWeightCP)
         {
@@ -365,7 +365,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// ガントリ回転アーク角度の幾何計算（度）
+        /// Calculates gantry rotation arc angle in degrees.
         /// </summary>
         public static double CalculateArcLength(double gantryStart, double gantryStop, string direction)
         {
@@ -388,8 +388,8 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// リーフ移動距離（Leaf Travel: LT）計算
-        /// cpCount == 0（初期コントロールポイント）では 0、以降の CP で両バンクの絶対値移動量を積算
+        /// Calculates leaf travel distance (Leaf Travel: LT).
+        /// Returns 0 for cpCount == 0 (initial CP), and accumulates absolute displacements for both banks thereafter.
         /// </summary>
         public static double calcLT(int cpCount, int leafNo, float[,] leaf, float[,] prevLeaf)
         {
@@ -402,7 +402,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// MLC モデルに応じたリーフ境界 Y 座標配列 [60, 2] の生成
+        /// Generates leaf boundary Y coordinate array [60, 2] corresponding to the MLC model.
         /// </summary>
         public static bool makeLeafBoundArray(string type, out double[,] leafBoundArray)
         {

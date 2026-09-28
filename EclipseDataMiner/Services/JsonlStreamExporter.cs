@@ -9,7 +9,7 @@ using EclipseDataMiner.Models;
 namespace EclipseDataMiner.Services
 {
     /// <summary>
-    /// 機械学習・AI用途向けの JSON Lines (JSONL) ストリーミングエクスポーター（1プラン = 1行JSON）
+    /// JSON Lines (JSONL) streaming exporter for machine learning and AI applications (1 plan per JSON line).
     /// </summary>
     public class JsonlStreamExporter : IDisposable
     {
@@ -25,18 +25,18 @@ namespace EclipseDataMiner.Services
             _jsonOptions = new JsonSerializerOptions
             {
                 Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
-                WriteIndented = false // 1行1JSON
+                WriteIndented = false // Single line JSON
             };
         }
 
         /// <summary>
-        /// 1プラン分のレコードをJSONL行として出力
+        /// Writes a single plan record as a JSONL line.
         /// </summary>
         public void WriteRecord(ExtractionPlanRecord record)
         {
             if (record == null) return;
 
-            // 匿名化オプション適用
+            // Apply anonymization options
             var target = record;
             if (_options.AnonymizeOutput)
             {

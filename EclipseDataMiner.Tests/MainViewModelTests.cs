@@ -8,38 +8,38 @@ namespace EclipseDataMiner.Tests
     public class MainViewModelTests
     {
         [TestMethod]
-        [Description("ViewModel の実行状態 (IsRunning) に応じて Run / PreScan / Cancel コマンドの活性・非活性 (CanExecute) が連動することを検証")]
+        [Description("Verifies that Run / PreScan / Cancel commands toggle CanExecute in response to ViewModel running state (IsRunning)")]
         public void CommandCanExecute_WhenRunningStateChanges_ShouldToggleProperly()
         {
             // Arrange
             var vm = new MainViewModel();
 
-            // 初期状態: 待機中 (IsRunning == false)
+            // Initial state: Idle (IsRunning == false)
             Assert.IsFalse(vm.IsRunning);
             Assert.IsTrue(vm.IsNotRunning);
             Assert.IsTrue(vm.RunPreScanCommand.CanExecute(null));
             Assert.IsTrue(vm.RunExtractionCommand.CanExecute(null));
             Assert.IsFalse(vm.CancelCommand.CanExecute(null));
 
-            // Act 1: 実行中に変更
+            // Act 1: Transition to running state
             vm.IsRunning = true;
 
-            // Assert 1: 多重実行防止により Run / PreScan は無効化、Cancel が有効化
+            // Assert 1: Run / PreScan are disabled to prevent duplicate execution, Cancel is enabled
             Assert.IsFalse(vm.RunPreScanCommand.CanExecute(null));
             Assert.IsFalse(vm.RunExtractionCommand.CanExecute(null));
             Assert.IsTrue(vm.CancelCommand.CanExecute(null));
 
-            // Act 2: 完了・停止状態に復帰
+            // Act 2: Return to idle / stopped state
             vm.IsRunning = false;
 
-            // Assert 2: 再度 Run / PreScan が実行可能になる
+            // Assert 2: Run / PreScan become executable again
             Assert.IsTrue(vm.RunPreScanCommand.CanExecute(null));
             Assert.IsTrue(vm.RunExtractionCommand.CanExecute(null));
             Assert.IsFalse(vm.CancelCommand.CanExecute(null));
         }
 
         [TestMethod]
-        [Description("キャンセル要求中 (IsCancelling == true) の場合、二重クリック防止のため CancelCommand が無効化されることを検証")]
+        [Description("Verifies that CancelCommand is disabled while cancellation is in progress (IsCancelling == true) to prevent double clicks")]
         public void CommandCanExecute_WhenCancelling_CancelCommandShouldBeDisabledToPreventDoubleExecution()
         {
             // Arrange
@@ -47,13 +47,13 @@ namespace EclipseDataMiner.Tests
             vm.IsRunning = true;
             Assert.IsTrue(vm.CancelCommand.CanExecute(null));
 
-            // Act: キャンセル要求状態に遷移
+            // Act: Transition to cancelling state
             vm.IsCancelling = true;
 
-            // Assert: CancelCommand は無効化される（二重キャンセル要求の防止）
+            // Assert: CancelCommand is disabled (preventing redundant cancellation requests)
             Assert.IsFalse(vm.CancelCommand.CanExecute(null));
 
-            // 完了復帰
+            // Return to completed state
             vm.IsRunning = false;
             vm.IsCancelling = false;
             Assert.IsFalse(vm.CancelCommand.CanExecute(null));
@@ -61,7 +61,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("初期化時にデフォルトの出力先パスが設定され、拡張子が .csv であることを検証")]
+        [Description("Verifies that a default output path is configured on initialization and has a .csv extension")]
         public void OutputFilePath_InitialValue_ShouldBeValidCsvPath()
         {
             // Arrange & Act
@@ -74,7 +74,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("進捗プロパティおよびステータステキストのバインディング更新を検証")]
+        [Description("Verifies binding updates for progress percentage and status text properties")]
         public void ProgressProperties_ShouldUpdateCorrectly()
         {
             // Arrange
@@ -90,7 +90,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("プレビュー行のダブルクリック (AddDiscoveredItemToRules) により、該当輪郭がルール定義に Exact ルールとして追加されプレビューが更新されることを検証")]
+        [Description("Verifies that double-clicking a preview row (AddDiscoveredItemToRules) adds the structure as an Exact rule and refreshes preview")]
         public void AddDiscoveredItemToRules_WhenItemDoubleClicked_ShouldAddRuleAndRefreshPreview()
         {
             // Arrange
@@ -102,22 +102,22 @@ namespace EclipseDataMiner.Tests
             };
             vm.DiscoveredStructures.Add(item);
 
-            // Act: 該当アイテムをダブルクリックしてルール追加（コマンドまたはメソッド実行）
+            // Act: Double-click item to add rule (command or method execution)
             vm.AddDiscoveredItemCommand.Execute(item);
 
-            // Assert: ルール一覧に Parotid_L が Exact ルールとして追加され、選択中ルールになっていること
+            // Assert: Parotid_L is added as Exact rule to mapping rules and selected
             Assert.AreEqual(1, vm.MappingRules.Count);
             Assert.AreEqual("Parotid_L", vm.SelectedRule.Pattern);
             Assert.AreEqual(EclipseDataMiner.Models.StructureMatchMode.Exact, vm.SelectedRule.MatchMode);
             Assert.AreEqual("Parotid_L", vm.SelectedRule.TargetAlias);
 
-            // プレビューが更新され Mapped になっていること
+            // Preview is refreshed and status becomes Mapped
             Assert.AreEqual("Parotid_L", item.ResolvedAlias);
             Assert.IsTrue(item.MatchStatus.Contains("Mapped (Exact"));
         }
 
         [TestMethod]
-        [Description("既に同名のルールが存在する項目をダブルクリックした場合、重複追加されずに既存ルールが選択されることを検証")]
+        [Description("Verifies that double-clicking an item with an existing rule selects the existing rule without creating duplicates")]
         public void AddDiscoveredItemToRules_WhenRuleAlreadyExists_ShouldSelectExistingRuleWithoutDuplication()
         {
             // Arrange
@@ -129,21 +129,21 @@ namespace EclipseDataMiner.Tests
             };
             vm.DiscoveredStructures.Add(item);
 
-            // 1回目のダブルクリック -> ルール追加 (1件)
+            // 1st double click -> adds rule (1 count)
             vm.AddDiscoveredItemToRules(item);
             Assert.AreEqual(1, vm.MappingRules.Count);
 
-            // Act: 2回目のダブルクリック
+            // Act: 2nd double click
             vm.AddDiscoveredItemToRules(item);
 
-            // Assert: ルール件数は 1 件のまま（重複防止）、SelectedRule が維持される
+            // Assert: Rule count remains 1 (preventing duplication), SelectedRule is preserved
             Assert.AreEqual(1, vm.MappingRules.Count);
             Assert.IsNotNull(vm.SelectedRule);
             Assert.AreEqual("Bladder", vm.SelectedRule.Pattern);
         }
 
         [TestMethod]
-        [Description("プレビューのテキストフィルタにより、RawStructureId または ResolvedAlias に部分一致する項目のみ絞り込まれることを検証")]
+        [Description("Verifies that preview text filter only includes items partially matching RawStructureId or ResolvedAlias")]
         public void DiscoveredFilter_ByText_ShouldFilterViewCorrectly()
         {
             // Arrange
@@ -154,26 +154,26 @@ namespace EclipseDataMiner.Tests
 
             Assert.AreEqual(3, vm.FilteredDiscoveredCount);
 
-            // Act 1: "PTV" でフィルタ
+            // Act 1: Filter by "PTV"
             vm.DiscoveredFilterText = "ptv";
             Assert.AreEqual(1, vm.FilteredDiscoveredCount);
 
-            // Act 2: "Integrated"（ResolvedAlias の部分一致）でフィルタ
+            // Act 2: Filter by "Integrated" (partial match on ResolvedAlias)
             vm.DiscoveredFilterText = "Integrated";
             Assert.AreEqual(1, vm.FilteredDiscoveredCount);
 
-            // Act 3: 該当なし
+            // Act 3: No match
             vm.DiscoveredFilterText = "NonExistent";
             Assert.AreEqual(0, vm.FilteredDiscoveredCount);
 
-            // Act 4: クリア
+            // Act 4: Clear filter
             vm.ClearDiscoveredFilterCommand.Execute(null);
             Assert.AreEqual(string.Empty, vm.DiscoveredFilterText);
             Assert.AreEqual(3, vm.FilteredDiscoveredCount);
         }
 
         [TestMethod]
-        [Description("プレビューのステータスフィルタ（Unmapped Only / Mapped Only）による絞り込みを検証")]
+        [Description("Verifies preview status filter (Unmapped Only / Mapped Only / Excluded Only)")]
         public void DiscoveredFilter_ByStatus_ShouldFilterViewCorrectly()
         {
             // Arrange
@@ -202,7 +202,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("ルール削除時に削除行の1つ下の行に自動選択が移動し、連続してDelete実行できることを検証")]
+        [Description("Verifies that deleting a rule automatically selects the row below it, enabling continuous Delete execution")]
         public void DeleteRuleCommand_ShouldSelectNextRow_AndAllowContinuousDeletion()
         {
             // Arrange
@@ -214,35 +214,35 @@ namespace EclipseDataMiner.Tests
             vm.MappingRules.Add(r2);
             vm.MappingRules.Add(r3);
 
-            // Act 1: 先頭の r1 を選択して Delete 実行
+            // Act 1: Select first row r1 and execute Delete
             vm.SelectedRule = r1;
             Assert.IsTrue(vm.DeleteRuleCommand.CanExecute(null));
             vm.DeleteRuleCommand.Execute(null);
 
-            // Assert 1: r1 が削除され、元の1つ下だった r2 が自動選択され、CanExecute が true のまま
+            // Assert 1: r1 is deleted, r2 below it is automatically selected, CanExecute remains true
             Assert.AreEqual(2, vm.MappingRules.Count);
             Assert.AreSame(r2, vm.SelectedRule);
             Assert.IsTrue(vm.DeleteRuleCommand.CanExecute(null));
 
-            // Act 2: そのまま連続して Delete 実行 (r2 を削除)
+            // Act 2: Continuously execute Delete (deleting r2)
             vm.DeleteRuleCommand.Execute(null);
 
-            // Assert 2: r2 が削除され、元の1つ下だった r3 が自動選択され、CanExecute が true のまま
+            // Assert 2: r2 is deleted, r3 below it is automatically selected, CanExecute remains true
             Assert.AreEqual(1, vm.MappingRules.Count);
             Assert.AreSame(r3, vm.SelectedRule);
             Assert.IsTrue(vm.DeleteRuleCommand.CanExecute(null));
 
-            // Act 3: 最後の1件を削除
+            // Act 3: Delete the last item
             vm.DeleteRuleCommand.Execute(null);
 
-            // Assert 3: 全件削除され、SelectedRule は null、CanExecute は false
+            // Assert 3: All deleted, SelectedRule is null, CanExecute is false
             Assert.AreEqual(0, vm.MappingRules.Count);
             Assert.IsNull(vm.SelectedRule);
             Assert.IsFalse(vm.DeleteRuleCommand.CanExecute(null));
         }
 
         [TestMethod]
-        [Description("末尾のルール削除時に、新しい末尾行（1つ上の行）が自動選択されることを検証")]
+        [Description("Verifies that deleting the last rule automatically selects the new last row (row above)")]
         public void DeleteRuleCommand_WhenDeletingLastRow_ShouldSelectNewLastRow()
         {
             // Arrange
@@ -252,18 +252,18 @@ namespace EclipseDataMiner.Tests
             vm.MappingRules.Add(r1);
             vm.MappingRules.Add(r2);
 
-            // Act: 末尾の r2 を削除
+            // Act: Delete last item r2
             vm.SelectedRule = r2;
             vm.DeleteRuleCommand.Execute(null);
 
-            // Assert: 新しい末尾である r1 が選択され、CanExecute が true のまま
+            // Assert: New last item r1 is selected, CanExecute remains true
             Assert.AreEqual(1, vm.MappingRules.Count);
             Assert.AreSame(r1, vm.SelectedRule);
             Assert.IsTrue(vm.DeleteRuleCommand.CanExecute(null));
         }
 
         [TestMethod]
-        [Description("DQP削除時に削除行の1つ下の行に自動選択が移動し、連続してDelete実行できることを検証")]
+        [Description("Verifies that deleting a DQP automatically selects the row below it, enabling continuous Delete execution")]
         public void DeleteDqpCommand_ShouldSelectNextRow_AndAllowContinuousDeletion()
         {
             // Arrange
@@ -276,27 +276,27 @@ namespace EclipseDataMiner.Tests
             vm.DQPList.Add(d2);
             vm.DQPList.Add(d3);
 
-            // Act 1: 真ん中の d2 を削除
+            // Act 1: Delete middle item d2
             vm.SelectedDqp = d2;
             Assert.IsTrue(vm.DeleteDqpCommand.CanExecute(null));
             vm.DeleteDqpCommand.Execute(null);
 
-            // Assert 1: d2 が削除され、1つ下だった d3 が自動選択される
+            // Assert 1: d2 is deleted, d3 below it is automatically selected
             Assert.AreEqual(2, vm.DQPList.Count);
             Assert.AreSame(d3, vm.SelectedDqp);
             Assert.IsTrue(vm.DeleteDqpCommand.CanExecute(null));
 
-            // Act 2: 末尾になった d3 を削除
+            // Act 2: Delete d3 which became the last item
             vm.DeleteDqpCommand.Execute(null);
 
-            // Assert 2: 新しい末尾 d1 が自動選択される
+            // Assert 2: New last item d1 is automatically selected
             Assert.AreEqual(1, vm.DQPList.Count);
             Assert.AreSame(d1, vm.SelectedDqp);
             Assert.IsTrue(vm.DeleteDqpCommand.CanExecute(null));
         }
 
         [TestMethod]
-        [Description("MainWindow のハードコード排除: WindowTitle がアセンブリの ProductVersion (InformationalVersion) から動的に取得されることを検証")]
+        [Description("Eliminates MainWindow hardcoding: Verifies that WindowTitle is derived dynamically from assembly ProductVersion (InformationalVersion)")]
         public void WindowTitle_ShouldDeriveDynamicallyFromProductVersion()
         {
             // Arrange
@@ -306,7 +306,7 @@ namespace EclipseDataMiner.Tests
             string productVer = MainViewModel.GetProductVersion();
             string title = vm.WindowTitle;
 
-            // Assert: ProductVersion が 3.0.0 であり、タイトルに含まれていること
+            // Assert: ProductVersion is 3.0.0 and contained in the title
             Assert.AreEqual("3.0.0", productVer);
             Assert.IsTrue(title.Contains("v3.0.0"), $"Title '{title}' does not contain 'v3.0.0'");
             Assert.IsTrue(title.StartsWith("EclipseDataMiner"));
@@ -314,16 +314,16 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("Plan Search で選択された計画数に応じて Tab 2 の事前スキャンスコープバッジ (PreScanScopeBadgeText) がリアルタイムに更新されることを検証")]
+        [Description("Verifies that Tab 2 PreScanScopeBadgeText updates in real time based on selected plans in Plan Search")]
         public void PreScanScopeBadgeText_ShouldReflectMatchedPlansSelection()
         {
             // Arrange
             var vm = new MainViewModel();
 
-            // 初期状態: 検索前
+            // Initial state: Prior to search
             Assert.AreEqual("🌐 Target: All Criteria Matching Plans", vm.PreScanScopeBadgeText);
 
-            // Act 1: 検索結果が3件追加（初期状態はすべて IsSelected = true）
+            // Act 1: 3 search results added (initially all IsSelected = true)
             var p1 = new EclipseDataMiner.Models.MatchedPlanItem { PatientId = "PT1", CourseId = "C1", PlanId = "Plan1", IsSelected = true };
             var p2 = new EclipseDataMiner.Models.MatchedPlanItem { PatientId = "PT1", CourseId = "C1", PlanId = "Plan2", IsSelected = true };
             var p3 = new EclipseDataMiner.Models.MatchedPlanItem { PatientId = "PT2", CourseId = "C1", PlanId = "Plan1", IsSelected = true };
@@ -332,20 +332,20 @@ namespace EclipseDataMiner.Tests
             vm.MatchedPlans.Add(p3);
             vm.UpdateMatchedPlansSummary();
 
-            // Assert 1: 3/3 選択表示
+            // Assert 1: Display shows 3 / 3 selected
             Assert.AreEqual("🎯 Target: 3 / 3 Selected Plans", vm.PreScanScopeBadgeText);
 
-            // Act 2: 1件チェック解除
+            // Act 2: Uncheck 1 item
             p2.IsSelected = false;
             vm.UpdateMatchedPlansSummary();
 
-            // Assert 2: 2/3 選択表示
+            // Assert 2: Display shows 2 / 3 selected
             Assert.AreEqual("🎯 Target: 2 / 3 Selected Plans", vm.PreScanScopeBadgeText);
 
-            // Act 3: 全解除
+            // Act 3: Deselect all
             vm.ExecuteSelectAllPlans(false);
 
-            // Assert 3: 0/3 選択表示
+            // Assert 3: Display shows 0 / 3 selected
             Assert.AreEqual("🎯 Target: 0 / 3 Selected Plans", vm.PreScanScopeBadgeText);
         }
     }

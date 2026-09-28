@@ -4,9 +4,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("EclipseDataMiner.Tests")]
 [assembly: AssemblyDescription("Unit Tests for EclipseDataMiner")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Takashi Kodama")]
 [assembly: AssemblyProduct("EclipseDataMiner.Tests")]
-[assembly: AssemblyCopyright("Copyright © 2026")]
+[assembly: AssemblyCopyright("Copyright © 2019-2026 Takashi Kodama")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -1,5 +1,7 @@
 # EclipseDataMiner システム・アーキテクチャ設計書
 
+[English](ARCHITECTURE.en.md) | **日本語**
+
 ## 1. 全体アーキテクチャ概要
 
 EclipseDataMiner は、Varian Eclipse Scripting API (ESAPI) を用いて数千〜10,000件規模の放射線治療計画から線量・幾何・メタデータを高速・安全に抽出するスタンドアロン型 WPF アプリケーションです。
@@ -17,61 +19,61 @@ EclipseDataMiner は、Varian Eclipse Scripting API (ESAPI) を用いて数千�
 
 ```mermaid
 graph TD
-    subgraph Presentation_Layer [プレゼンテーション層 (WPF / MVVM)]
-        View[MainWindow.xaml]
-        VM[MainViewModel]
-        View -->|Data Binding / Commands| VM
+    subgraph Presentation_Layer ["プレゼンテーション層 (WPF / MVVM)"]
+        View["MainWindow.xaml"]
+        VM["MainViewModel"]
+        View -->|"Data Binding / Commands"| VM
     end
 
-    subgraph Service_Layer [サービス層 (専用 STA スレッド)]
-        StaWorker[StaEsapiWorkerService]
-        FilterSvc[SearchFilterService]
-        MapSvc[StructureMappingService]
-        Pipeline[StreamingExportPipeline]
-        VM -->|Run / Cancel / Progress| StaWorker
+    subgraph Service_Layer ["サービス層 (専用 STA スレッド)"]
+        StaWorker["StaEsapiWorkerService"]
+        FilterSvc["SearchFilterService"]
+        MapSvc["StructureMappingService"]
+        Pipeline["StreamingExportPipeline"]
+        VM -->|"Run / Cancel / Progress"| StaWorker
         StaWorker --> FilterSvc
         StaWorker --> MapSvc
         StaWorker --> Pipeline
     end
 
-    subgraph DTO_Layer [中間データモデル層 (ESAPI 非依存)]
-        PlanDto[ExtractionPlanRecord]
-        BeamDto[BeamRecord]
-        OptDto[OptimizationObjectiveRecord]
-        DvhDto[DvhMetricResult]
-        Criteria[SearchFilterCriteria]
-        Options[ExtractionOptions]
-        Rules[StructureMappingRule]
+    subgraph DTO_Layer ["中間データモデル層 (ESAPI 非依存)"]
+        PlanDto["ExtractionPlanRecord"]
+        BeamDto["BeamRecord"]
+        OptDto["OptimizationObjectiveRecord"]
+        DvhDto["DvhMetricResult"]
+        Criteria["SearchFilterCriteria"]
+        Options["ExtractionOptions"]
+        Rules["StructureMappingRule"]
         PlanDto --> BeamDto
         PlanDto --> OptDto
         PlanDto --> DvhDto
     end
 
-    subgraph Output_Layer [ストリーミング出力層]
-        CsvExp[CsvStreamExporter]
-        JsonlExp[JsonlStreamExporter]
+    subgraph Output_Layer ["ストリーミング出力層"]
+        CsvExp["CsvStreamExporter"]
+        JsonlExp["JsonlStreamExporter"]
         Pipeline --> CsvExp
         Pipeline --> JsonlExp
-        CsvExp -->|Write Flat CSV| DiskCSV[DataMiningOutput.csv]
-        JsonlExp -->|Write JSON Lines| DiskJSONL[DataMiningOutput.jsonl]
+        CsvExp -->|"Write Flat CSV"| DiskCSV["DataMiningOutput.csv"]
+        JsonlExp -->|"Write JSON Lines"| DiskJSONL["DataMiningOutput.jsonl"]
     end
 
-    subgraph Host_Layer [ESAPI ホスト層]
-        EsapiApp[VMS.TPS.Common.Model.API.Application]
-        EsapiPat[Patient / PlanSetup / PlanSum]
-        StaWorker -->|Direct Access (STA)| EsapiApp
+    subgraph Host_Layer ["ESAPI ホスト層"]
+        EsapiApp["VMS.TPS.Common.Model.API.Application"]
+        EsapiPat["Patient / PlanSetup / PlanSum"]
+        StaWorker -->|"Direct Access (STA)"| EsapiApp
         EsapiApp --> EsapiPat
     end
 
-    subgraph Test_Layer [品質保証 (EclipseDataMiner.Tests)]
-        Tests[MSTest Unit Tests<br/>111 Tests 100% PASS]
+    subgraph Test_Layer ["品質保証 (EclipseDataMiner.Tests)"]
+        Tests["MSTest Unit Tests<br/>116 Tests 100% PASS"]
         Tests -.-> DTO_Layer
         Tests -.-> Service_Layer
         Tests -.-> Output_Layer
     end
 
-    StaWorker -->|Map to DTO| PlanDto
-    PlanDto -->|Push Record| Pipeline
+    StaWorker -->|"Map to DTO"| PlanDto
+    PlanDto -->|"Push Record"| Pipeline
 ```
 
 ---

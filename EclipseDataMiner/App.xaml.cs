@@ -9,7 +9,7 @@ using System.Windows;
 namespace EclipseDataMiner
 {
 	/// <summary>
-	/// App.xaml の相互作用ロジック
+	/// Interaction logic for App.xaml
 	/// </summary>
 	public partial class App : Application
 	{
@@ -17,7 +17,7 @@ namespace EclipseDataMiner
 		{
 			base.OnStartup(e);
 
-			// UIスレッドの未処理例外ハンドラ
+			// Unhandled exception handler for UI thread
 			DispatcherUnhandledException += (s, args) =>
 			{
 				string msg = $"Unhandled UI Exception:\n\n{FormatException(args.Exception)}";
@@ -25,7 +25,7 @@ namespace EclipseDataMiner
 				args.Handled = true;
 			};
 
-			// バックグラウンド・全ドメインの未処理例外ハンドラ
+			// Unhandled exception handler for background threads and entire application domain
 			AppDomain.CurrentDomain.UnhandledException += (s, args) =>
 			{
 				if (args.ExceptionObject is Exception ex)

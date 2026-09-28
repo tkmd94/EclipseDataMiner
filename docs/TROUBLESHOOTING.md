@@ -1,5 +1,7 @@
 # EclipseDataMiner トラブルシューティング & FAQ ガイド
 
+[English](TROUBLESHOOTING.en.md) | **日本語**
+
 本ドキュメントは、**EclipseDataMiner (v3.0 / Eclipse v15.6 & v16.1 対応)** の起動、環境設定、UI 操作、検索フィルタリング、輪郭事前マッピング、DQP 指標計算、およびストリーミング CSV / JSONL 出力において発生しうるエラー・警告メッセージの原因と具体的な対処方法をまとめたトラブルシューティングガイドです。
 
 ---

@@ -1,10 +1,12 @@
 # EclipseDataMiner (v3.0.0)
 
+[English](README.en.md) | **日本語**
+
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![Platform](https://img.shields.io/badge/.NET%20Framework-4.6.1-blue.svg)]()
 [![Target](https://img.shields.io/badge/Architecture-x64-orange.svg)]()
 [![Eclipse](https://img.shields.io/badge/Eclipse-v15.6%20%7C%20v16.1-purple.svg)]()
-[![Tests](https://img.shields.io/badge/MSTest-111%2F111%20PASS-success.svg)]()
+[![Tests](https://img.shields.io/badge/MSTest-116%2F116%20PASS-success.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**10,000 件規模の治療計画データマイニング・スタンドアロンアプリケーション** です。  
@@ -14,6 +16,9 @@ Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**
 
 ## 🌟 主な特徴と新機能 (v3.0.0)
 
+- 🌐 **標準英語 UI ＆ 日英バイリンガルドキュメント**:
+  - ESAPI 臨床スクリプトの国際標準に準拠した洗練された英語 UI を採用。
+  - 操作マニュアルおよび各種技術ドキュメントは日本語版と英語版を両方配備。
 - 🚀 **10,000 件規模のストリーミング出力パイプライン**:
   - 全データをメモリに溜め込まず、1 患者・1 プランごとにディスクへ即時フラッシュ。長時間実行時もメモリ消費を数十 MB 程度で平坦に維持。
 - 🔍 **輪郭事前マッピング（Pre-Scan）＆ エイリアス統合**:
@@ -97,7 +102,8 @@ Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**
 ## 📊 出力データ仕様
 
 ### 1. CSV 出力 (フラット形式)
-- 1 プラン = 1 行（カンマ区切り、UTF-8）。
+- 1 プラン = 1 行（カンマ区切り、UTF-8 with BOM）。
+- 基本計画情報 (11列) ＋ オプション情報 (最大10列) ＋ 輪郭基本統計量 (4列/輪郭) ＋ 動的 DQP 列で構成。全カラムの詳細解説は [マニュアル第4章 (docs/MANUAL.md#4)](docs/MANUAL.md#4) を参照してください。
 - 改行コードはスペース置換、カンマや引用符は適切にサニタイズエスケープされます。
 - 欠損値や該当しない項目には `N/A` が出力されます。
 
@@ -136,15 +142,16 @@ Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**
 
 | ドキュメント | 概要・対象読者 |
 | :--- | :--- |
-| 📐 **[アーキテクチャ設計書 (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md)** | レイヤー構造、STAスレッドモデル、メモリ安全管理、シーケンス図 |
-| 🏥 **[臨床コミッショニング手順書 (docs/COMMISSIONING.md)](docs/COMMISSIONING.md)** | TG-275 準拠の受入試験手順書、検証チェックリスト、臨床承認記録票 |
-| 🔧 **[トラブルシューティング & FAQ (docs/TROUBLESHOOTING.md)](docs/TROUBLESHOOTING.md)** | ESAPI 接続、メモリ不足、ファイルロック等のエラー対処法と FAQ |
-| 🤝 **[開発・コントリビューション規約 (docs/CONTRIBUTING.md)](docs/CONTRIBUTING.md)** | 開発環境構築、ビルド・テスト手順、コーディング規約、コミット規約 |
-| 📖 **[詳細操作マニュアル (docs/MANUAL.md)](docs/MANUAL.md)** | 画面構成、操作手順、事前マッピング、DQP 設定、Python (Pandas/PyTorch) 連携例 |
-| 📋 **[詳細設計仕様書 (docs/DESIGN_SPECIFICATION.md)](docs/DESIGN_SPECIFICATION.md)** | 要件定義、データ抽出仕様、ESAPI 制御詳細仕様 (v3.0.0) |
-| 🛡️ **[標準開発計画仕様書 (docs/STANDARD_DEVELOPMENT_PLAN.md)](docs/STANDARD_DEVELOPMENT_PLAN.md)** | 7大品質原則、4層 DoD ゲート、自己完結再現性規約 |
-| 📝 **[更新履歴 (docs/CHANGELOG.md)](docs/CHANGELOG.md)** | バージョン別変更履歴 (Keep a Changelog 準拠) |
-| 📖 **[総合技術マニュアル PDF (release/EclipseDataMiner_v3.0.0_Manual.pdf)](release/EclipseDataMiner_v3.0.0_Manual.pdf)** | 全ドキュメントを結合・出版品質でレイアウトした A4 印刷対応 PDF |
+| 📖 **詳細操作マニュアル** | [日本語 (docs/MANUAL.md)](docs/MANUAL.md) \| [English (docs/MANUAL.en.md)](docs/MANUAL.en.md) — 画面構成、操作手順、事前マッピング、DQP 設定、Python 連携例 |
+| 📐 **アーキテクチャ設計書** | [日本語 (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md) \| [English (docs/ARCHITECTURE.en.md)](docs/ARCHITECTURE.en.md) — レイヤー構造、STAスレッドモデル、メモリ安全管理、シーケンス図 |
+| 🏥 **臨床コミッショニング手順書** | [日本語 (docs/COMMISSIONING.md)](docs/COMMISSIONING.md) \| [English (docs/COMMISSIONING.en.md)](docs/COMMISSIONING.en.md) — TG-275 準拠の受入試験手順書、検証チェックリスト、臨床承認記録票 |
+| 🔧 **トラブルシューティング & FAQ** | [日本語 (docs/TROUBLESHOOTING.md)](docs/TROUBLESHOOTING.md) \| [English (docs/TROUBLESHOOTING.en.md)](docs/TROUBLESHOOTING.en.md) — ESAPI 接続、メモリ不足、ファイルロック等のエラー対処法と FAQ |
+| 🤝 **開発・コントリビューション規約** | [日本語 (docs/CONTRIBUTING.md)](docs/CONTRIBUTING.md) \| [English (docs/CONTRIBUTING.en.md)](docs/CONTRIBUTING.en.md) — 開発環境構築、ビルド・テスト手順、コーディング規約、コミット規約 |
+| 📋 **詳細設計仕様書** | [日本語 (docs/DESIGN_SPECIFICATION.md)](docs/DESIGN_SPECIFICATION.md) \| [English (docs/DESIGN_SPECIFICATION.en.md)](docs/DESIGN_SPECIFICATION.en.md) — 要件定義、データ抽出仕様、ESAPI 制御詳細仕様 (v3.0.0) |
+| 🛡️ **標準開発計画仕様書** | [日本語 (docs/STANDARD_DEVELOPMENT_PLAN.md)](docs/STANDARD_DEVELOPMENT_PLAN.md) \| [English (docs/STANDARD_DEVELOPMENT_PLAN.en.md)](docs/STANDARD_DEVELOPMENT_PLAN.en.md) — 7大品質原則、4層 DoD ゲート、自己完結再現性規約 |
+| 📝 **更新履歴** | [日本語 (docs/CHANGELOG.md)](docs/CHANGELOG.md) \| [English (docs/CHANGELOG.en.md)](docs/CHANGELOG.en.md) — バージョン別変更履歴 (Keep a Changelog 準拠) |
+| 📄 **サードパーティライセンス通知** | [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) — 同梱・利用しているオープンソースライブラリの一覧およびライセンス条文 |
+| 📖 **総合技術マニュアル PDF** | [日本語 (release/EclipseDataMiner_v3.0.0_Manual.pdf)](release/EclipseDataMiner_v3.0.0_Manual.pdf) \| [English (release/EclipseDataMiner_v3.0.0_Manual.en.pdf)](release/EclipseDataMiner_v3.0.0_Manual.en.pdf) — 全ドキュメントを結合・出版品質でレイアウトした A4 印刷対応 PDF |
 
 ---
 
@@ -152,7 +159,7 @@ Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**
 
 本プロジェクトは `EclipseDataMiner.Tests` (MSTest) による多層自動テストを配備しており、ESAPI データベース非接続環境でもコアロジックを 100% 検証可能です。
 
-- **テスト件数**: 111 件 (100% PASS)
+- **テスト件数**: 116 件 (100% PASS)
 - **テストカバレッジ**: 線量正規化 (`ToGy()`)、文字列サニタイズ・エスケープ、患者匿名化、CSV/JSONL ストリーミング出力、階層的 AND/OR 検索フィルタ＆UIトグル連動、線量有無判定フィルタ (HasDose/NoDose)、不等号・範囲数値フィルタ、日付・照射野パラメータフィルタ、プリセット管理＆説明文永続化、2ペイン輪郭マッピング＆リアルタイムプレビュー、特異度優先 (Exact > Contains > Regex) ＆ 上下順序制御、JSON 永続化、照射野複雑度解析アルゴリズム（MCS, Edge Metric, Leaf Travel Length, Arc Length 文献値完全一致検証）、XAMLリソース整合性検証
 
 ---
@@ -160,3 +167,4 @@ Varian 社製放射線治療計画装置 Eclipse (ESAPI) 上で動作する、**
 ## 📄 ライセンス
 
 本ソフトウェアは [MIT License](LICENSE) の下で公開されています。
+同梱・利用しているサードパーティ製オープンソースソフトウェアの著作権情報およびライセンス条文（MIT License, BSD 3-Clause, Apache 2.0）については、[サードパーティライセンス通知 (THIRD-PARTY-NOTICES.md)](THIRD-PARTY-NOTICES.md) をご参照ください。

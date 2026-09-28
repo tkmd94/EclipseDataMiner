@@ -9,7 +9,7 @@ using EclipseDataMiner.Models;
 namespace EclipseDataMiner.Services
 {
     /// <summary>
-    /// DQP出力列の種別
+    /// Types of DQP output columns.
     /// </summary>
     public enum DqpColumnType
     {
@@ -21,7 +21,7 @@ namespace EclipseDataMiner.Services
     }
 
     /// <summary>
-    /// DQP出力列の定義
+    /// Definition of a DQP output column.
     /// </summary>
     public class DqpColumnDefinition
     {
@@ -32,7 +32,7 @@ namespace EclipseDataMiner.Services
     }
 
     /// <summary>
-    /// 正規化CSVのストリーミングエクスポーター（1プラン = 1行）
+    /// Streaming exporter for normalized CSV (1 plan per row).
     /// </summary>
     public class CsvStreamExporter : IDisposable
     {
@@ -49,7 +49,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// CSVヘッダー行を出力
+        /// Writes the CSV header row.
         /// </summary>
         public void WriteHeader()
         {
@@ -57,10 +57,10 @@ namespace EclipseDataMiner.Services
 
             var sb = new StringBuilder();
 
-            // 基本ヘッダー
+            // Core headers
             sb.Append("Patient ID,Course ID,Date of birth,Plan ID,Target volume,DosePerFraction[Gy],NumberOfFractions,TotalDose[Gy],NumberOfBeams,ApprovalStatus,IsPlanSum");
 
-            // オプションヘッダー
+            // Optional headers
             if (_options.ExportPlanningApprover) sb.Append(",PlanningApprover");
             if (_options.ExportPlanningApprovalDate) sb.Append(",PlanningApprovalDate");
             if (_options.ExportBeamMU) sb.Append(",MU");
@@ -72,7 +72,7 @@ namespace EclipseDataMiner.Services
             if (_options.ExportOptimizationObjectives) sb.Append(",OptimizationObjectives");
             if (_options.ExportPlanComplexity) sb.Append(",PlanComplexity");
 
-            // DQP列
+            // DQP columns
             foreach (var col in _dqpColumns)
             {
                 sb.Append($",{StringSanitizer.EscapeCsv(col.HeaderText)}");
@@ -84,7 +84,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// 1プラン分のレコードをCSV行としてストリーミング出力
+        /// Streams a single plan record as a CSV row.
         /// </summary>
         public void WriteRecord(ExtractionPlanRecord record)
         {
@@ -97,7 +97,7 @@ namespace EclipseDataMiner.Services
 
             var sb = new StringBuilder();
 
-            // 匿名化処理
+            // Anonymization handling
             string patId = _options.AnonymizeOutput 
                 ? StringSanitizer.AnonymizePatientId(record.PatientId) 
                 : record.PatientId;
@@ -110,7 +110,7 @@ namespace EclipseDataMiner.Services
                 ? StringSanitizer.Redacted 
                 : StringSanitizer.ValueOrNA(record.PlanningApprover);
 
-            // 基本項目
+            // Core columns
             sb.Append(StringSanitizer.EscapeCsv(patId)).Append(",");
             sb.Append(StringSanitizer.EscapeCsv(record.CourseId)).Append(",");
             sb.Append(StringSanitizer.EscapeCsv(dob)).Append(",");
@@ -123,7 +123,7 @@ namespace EclipseDataMiner.Services
             sb.Append(StringSanitizer.EscapeCsv(record.ApprovalStatus)).Append(",");
             sb.Append(record.IsPlanSum ? "True" : "False");
 
-            // オプション項目
+            // Optional columns
             if (_options.ExportPlanningApprover)
             {
                 sb.Append(",").Append(StringSanitizer.EscapeCsv(approver));
@@ -179,7 +179,7 @@ namespace EclipseDataMiner.Services
                 sb.Append(",").Append(StringSanitizer.EscapeCsv(StringSanitizer.ValueOrNA(record.PlanComplexitySummary)));
             }
 
-            // DQPおよび基本統計量項目の出力
+            // DQP and basic metric columns
             foreach (var col in _dqpColumns)
             {
                 var metric = record.DvhMetrics.FirstOrDefault(m => 

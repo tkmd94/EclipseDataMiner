@@ -8,7 +8,7 @@ namespace EclipseDataMiner.Tests
     public class DoseNormalizationTests
     {
         [TestMethod]
-        [Description("DoseValue が cGy の場合に Gy に自動換算されることを検証 (例: 6000 cGy -> 60.0 Gy)")]
+        [Description("Verifies that DoseValue in cGy is automatically converted to Gy (e.g. 6000 cGy -> 60.0 Gy)")]
         public void ToGy_WhenUnitIsCGy_ShouldConvertToGy()
         {
             // Arrange
@@ -22,7 +22,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("DoseValue が Gy の場合に値がそのまま維持されることを検証 (例: 70.0 Gy -> 70.0 Gy)")]
+        [Description("Verifies that DoseValue in Gy keeps its original value (e.g. 70.0 Gy -> 70.0 Gy)")]
         public void ToGy_WhenUnitIsGy_ShouldKeepSameValue()
         {
             // Arrange
@@ -36,7 +36,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("文字列単位指定による ToGy(double, string) 換算ロジックの検証")]
+        [Description("Verifies string-based unit conversion logic in ToGy(double, string)")]
         public void ToGy_StringOverload_ShouldConvertCorrectly()
         {
             // Arrange & Act
@@ -49,7 +49,7 @@ namespace EclipseDataMiner.Tests
         }
 
         [TestMethod]
-        [Description("Gy から cGy への逆換算 (FromGy) ロジックの検証")]
+        [Description("Verifies inverse conversion from Gy to target unit (FromGy)")]
         public void FromGy_WhenTargetIsCGy_ShouldMultiplyBy100()
         {
             // Arrange & Act

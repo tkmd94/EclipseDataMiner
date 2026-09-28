@@ -21,10 +21,10 @@ namespace EclipseDataMiner.ViewModels
         private readonly StaEsapiWorkerService _workerService;
         private CancellationTokenSource _cts;
 
-        // 抽出オプション
+        // Extraction options
         public ExtractionOptions Options { get; } = new ExtractionOptions();
 
-        // ウィンドウタイトル（アセンブリの ProductVersion から動的取得しハードコードを排除）
+        // Window title (dynamically resolved from ProductVersion of the assembly)
         private string _windowTitle;
         public string WindowTitle
         {
@@ -41,7 +41,7 @@ namespace EclipseDataMiner.ViewModels
         }
 
         /// <summary>
-        /// アセンブリの ProductVersion (AssemblyInformationalVersion) を取得
+        /// Retrieves ProductVersion (AssemblyInformationalVersion) of the assembly.
         /// </summary>
         public static string GetProductVersion()
         {
@@ -49,7 +49,7 @@ namespace EclipseDataMiner.ViewModels
             {
                 var asm = typeof(MainViewModel).Assembly;
 
-                // 1. AssemblyInformationalVersionAttribute の取得（最優先: ProductVersion）
+                // 1. Retrieve AssemblyInformationalVersionAttribute (highest priority: ProductVersion)
                 var infoAttr = (System.Reflection.AssemblyInformationalVersionAttribute)
                     System.Attribute.GetCustomAttribute(asm, typeof(System.Reflection.AssemblyInformationalVersionAttribute));
                 if (!string.IsNullOrWhiteSpace(infoAttr?.InformationalVersion))
@@ -57,7 +57,7 @@ namespace EclipseDataMiner.ViewModels
                     return infoAttr.InformationalVersion.Trim();
                 }
 
-                // 2. FileVersionInfo.ProductVersion の取得
+                // 2. Retrieve FileVersionInfo.ProductVersion
                 if (!string.IsNullOrEmpty(asm.Location) && System.IO.File.Exists(asm.Location))
                 {
                     var vi = System.Diagnostics.FileVersionInfo.GetVersionInfo(asm.Location);
@@ -67,7 +67,7 @@ namespace EclipseDataMiner.ViewModels
                     }
                 }
 
-                // 3. Assembly.GetName().Version の取得（フォールバック）
+                // 3. Retrieve Assembly.GetName().Version (fallback)
                 var v = asm.GetName().Version;
                 if (v != null)
                 {
@@ -79,7 +79,7 @@ namespace EclipseDataMiner.ViewModels
             return "3.0.0";
         }
 
-        // 検索条件
+        // Search criteria
         private string _patientIdText = string.Empty;
         public string PatientIdText
         {
@@ -214,7 +214,7 @@ namespace EclipseDataMiner.ViewModels
             set => SetProperty(ref _dosePresence, value);
         }
 
-        // 高度メタデータフィルタ (Machine, Energy, Technique, Date Range)
+        // Advanced metadata filters (Machine, Energy, Technique, Date Range)
         private string _machineFilterText = string.Empty;
         public string MachineFilterText
         {
@@ -266,7 +266,7 @@ namespace EclipseDataMiner.ViewModels
 
         public IRelayCommand ClearDatesCommand { get; }
 
-        // 検索プリセット関連
+        // Search presets
         private readonly SearchPresetService _presetService;
         public ObservableCollection<SearchPreset> Presets { get; } = new ObservableCollection<SearchPreset>();
 
@@ -316,10 +316,10 @@ namespace EclipseDataMiner.ViewModels
         public IRelayCommand SavePresetCommand { get; }
         public IRelayCommand DeletePresetCommand { get; }
 
-        // 輪郭事前マッピングルールリスト（辞書・永続化ルール）
+        // Structure pre-mapping rules list (dictionary and persisted rules)
         public ObservableCollection<StructureMappingRule> MappingRules { get; } = new ObservableCollection<StructureMappingRule>();
 
-        // 事前スキャンで検出された生輪郭とマッピングプレビュー一覧
+        // Discovered raw structures from pre-scan and mapping preview list
         public ObservableCollection<DiscoveredStructureItem> DiscoveredStructures { get; } = new ObservableCollection<DiscoveredStructureItem>();
 
         private StructureMappingRule _selectedRule;
@@ -330,12 +330,20 @@ namespace EclipseDataMiner.ViewModels
             {
                 if (SetProperty(ref _selectedRule, value))
                 {
-                    (DeleteRuleCommand as IRelayCommand)?.NotifyCanExecuteChanged();
-                    (MoveUpRuleCommand as IRelayCommand)?.NotifyCanExecuteChanged();
-                    (MoveDownRuleCommand as IRelayCommand)?.NotifyCanExecuteChanged();
-                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                    UpdateRuleCommandsCanExecute();
                 }
             }
+        }
+
+        /// <summary>
+        /// Explicitly notifies CanExecute changes on rule management commands and refreshes UI command bindings.
+        /// </summary>
+        public void UpdateRuleCommandsCanExecute()
+        {
+            (DeleteRuleCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+            (MoveUpRuleCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+            (MoveDownRuleCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
         private DiscoveredStructureItem _selectedDiscoveredItem;
@@ -345,7 +353,7 @@ namespace EclipseDataMiner.ViewModels
             set => SetProperty(ref _selectedDiscoveredItem, value);
         }
 
-        // プレビューのフィルタリングプロパティ
+        // Preview filtering properties
         private string _discoveredFilterText = string.Empty;
         public string DiscoveredFilterText
         {
@@ -395,7 +403,7 @@ namespace EclipseDataMiner.ViewModels
 
         public IRelayCommand ClearDiscoveredFilterCommand { get; }
 
-        // DQP リスト
+        // DQP list
         public ObservableCollection<DQP> DQPList { get; } = new ObservableCollection<DQP>();
 
         private DQP _selectedDqp;
@@ -406,13 +414,23 @@ namespace EclipseDataMiner.ViewModels
             {
                 if (SetProperty(ref _selectedDqp, value))
                 {
-                    (DeleteDqpCommand as IRelayCommand)?.NotifyCanExecuteChanged();
-                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                    UpdateDqpCommandsCanExecute();
                 }
             }
         }
 
-        // 出力先
+        /// <summary>
+        /// Explicitly notifies CanExecute changes on DQP management commands and refreshes UI command bindings.
+        /// </summary>
+        public void UpdateDqpCommandsCanExecute()
+        {
+            (DeleteDqpCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+            (MoveUpDqpCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+            (MoveDownDqpCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        }
+
+        // Output destination
         private string _outputFilePath = string.Empty;
         public string OutputFilePath
         {
@@ -420,7 +438,7 @@ namespace EclipseDataMiner.ViewModels
             set => SetProperty(ref _outputFilePath, value);
         }
 
-        // 実行状態・進捗
+        // Execution status and progress
         private bool _isRunning = false;
         public bool IsRunning
         {
@@ -475,7 +493,7 @@ namespace EclipseDataMiner.ViewModels
             set => SetProperty(ref _logText, value);
         }
 
-        // 検索結果プラン一覧と選択状態
+        // Search results plan list and selection state
         public ObservableCollection<MatchedPlanItem> MatchedPlans { get; } = new ObservableCollection<MatchedPlanItem>();
 
         private string _matchedPlansSummaryText = "No plans searched yet.";
@@ -501,7 +519,7 @@ namespace EclipseDataMiner.ViewModels
 
         public int MatchedPlansCount => MatchedPlans.Count;
 
-        // Tab 2 (Structure Mapping) の事前スキャン対象スコープバッジ表示
+        // Pre-scan scope badge text for Tab 2 (Structure Mapping)
         public string PreScanScopeBadgeText
         {
             get
@@ -515,7 +533,7 @@ namespace EclipseDataMiner.ViewModels
             }
         }
 
-        // コマンド
+        // Commands
         public IRelayCommand SearchPlansCommand { get; }
         public IRelayCommand SelectAllPlansCommand { get; }
         public IRelayCommand UnselectAllPlansCommand { get; }
@@ -538,15 +556,17 @@ namespace EclipseDataMiner.ViewModels
         public IRelayCommand LoadDqpCommand { get; }
         public IRelayCommand AddDqpCommand { get; }
         public IRelayCommand DeleteDqpCommand { get; }
+        public IRelayCommand MoveUpDqpCommand { get; }
+        public IRelayCommand MoveDownDqpCommand { get; }
         public IRelayCommand ClearLogCommand { get; }
         public IRelayCommand CopyLogCommand { get; }
 
-        // 正規表現ヒント・スニペットコレクションとコマンド
+        // Regex cheat sheet snippets collection and commands
         public ObservableCollection<RegexSnippetItem> RegexSnippets { get; } = new ObservableCollection<RegexSnippetItem>();
         public IRelayCommand<string> InsertRegexSnippetCommand { get; }
         public IRelayCommand<string> CopyRegexSnippetCommand { get; }
 
-        // 計画検索用正規表現ヒント・スニペットコレクションとコマンド
+        // Plan search regex cheat sheet snippets collection and commands
         public ObservableCollection<RegexSnippetItem> SearchRegexSnippets { get; } = new ObservableCollection<RegexSnippetItem>();
         public IRelayCommand<string> InsertSearchRegexSnippetCommand { get; }
 
@@ -559,12 +579,12 @@ namespace EclipseDataMiner.ViewModels
             _presetService = presetService ?? new SearchPresetService();
             _workerService = new StaEsapiWorkerService();
 
-            // 初期出力パス設定
+            // Initial output path configuration
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
             string datetext = DateTime.Now.ToString("yyyyMMddHHmmss");
             OutputFilePath = Path.Combine(baseDir, $"DataMiningOutput.{datetext}.csv");
 
-            // デフォルトDQP設定
+            // Default DQP configuration
             DQPList.Add(new DQP
             {
                 structureName = "*",
@@ -574,7 +594,7 @@ namespace EclipseDataMiner.ViewModels
                 OutputUnit = IOUnit.Absolute
             });
 
-            // コマンドのバインド
+            // Command bindings
             SearchPlansCommand = new RelayCommand(async () => await ExecuteSearchPlansAsync(), () => IsNotRunning);
             SelectAllPlansCommand = new RelayCommand(() => ExecuteSelectAllPlans(true));
             UnselectAllPlansCommand = new RelayCommand(() => ExecuteSelectAllPlans(false));
@@ -599,6 +619,8 @@ namespace EclipseDataMiner.ViewModels
             LoadDqpCommand = new RelayCommand(ExecuteLoadDqp);
             AddDqpCommand = new RelayCommand(ExecuteAddDqp);
             DeleteDqpCommand = new RelayCommand(ExecuteDeleteDqp, () => SelectedDqp != null);
+            MoveUpDqpCommand = new RelayCommand(ExecuteMoveUpDqp, CanMoveUpDqp);
+            MoveDownDqpCommand = new RelayCommand(ExecuteMoveDownDqp, CanMoveDownDqp);
             ClearLogCommand = new RelayCommand(() => LogText = string.Empty);
             CopyLogCommand = new RelayCommand(ExecuteCopyLog);
             InsertRegexSnippetCommand = new RelayCommand<string>(ExecuteInsertRegexSnippet);
@@ -611,11 +633,11 @@ namespace EclipseDataMiner.ViewModels
                 DateTo = null;
             });
 
-            // 検索プリセットコマンドのバインド
+            // Search preset command bindings
             SavePresetCommand = new RelayCommand(ExecuteSavePreset);
             DeletePresetCommand = new RelayCommand(ExecuteDeletePreset, () => SelectedPreset != null);
 
-            // 検索プリセットの初期ロード
+            // Initial load of search presets
             var loadedPresets = _presetService.LoadPresets();
             if (loadedPresets != null)
             {
@@ -625,11 +647,11 @@ namespace EclipseDataMiner.ViewModels
                 }
             }
 
-            // 正規表現チートシートスニペットの初期化
+            // Initialize regex cheat sheet snippets
             InitializeRegexSnippets();
             InitializeSearchRegexSnippets();
 
-            // プレビュー用コレクションビューとフィルタの初期化
+            // Initialize collection view and filter for preview
             DiscoveredStructuresView = CollectionViewSource.GetDefaultView(DiscoveredStructures);
             if (DiscoveredStructuresView != null)
             {
@@ -641,6 +663,9 @@ namespace EclipseDataMiner.ViewModels
                 DiscoveredFilterStatus = "All";
             });
 
+            // Automatically synchronize mapping rules edits with preview in real-time
+            MappingRules.CollectionChanged += MappingRules_CollectionChanged;
+
             AppendLog("Application initialized.");
         }
 
@@ -648,7 +673,7 @@ namespace EclipseDataMiner.ViewModels
         {
             if (!(obj is DiscoveredStructureItem item)) return false;
 
-            // 1. テキスト検索（RawStructureId または ResolvedAlias の部分一致）
+            // 1. Text search (partial match against RawStructureId or ResolvedAlias)
             if (!string.IsNullOrWhiteSpace(DiscoveredFilterText))
             {
                 string search = DiscoveredFilterText.Trim();
@@ -660,7 +685,7 @@ namespace EclipseDataMiner.ViewModels
                 }
             }
 
-            // 2. ステータスフィルタ
+            // 2. Status filter
             if (!string.IsNullOrEmpty(DiscoveredFilterStatus) && DiscoveredFilterStatus != "All")
             {
                 string status = item.MatchStatus ?? string.Empty;
@@ -887,7 +912,7 @@ namespace EclipseDataMiner.ViewModels
             {
                 var results = await _workerService.SearchPlansAsync(criteria, progress, _cts.Token);
 
-                // 既存のリスナー解除
+                // Unregister existing listeners
                 foreach (var item in MatchedPlans)
                 {
                     item.PropertyChanged -= MatchedPlanItem_PropertyChanged;
@@ -901,7 +926,7 @@ namespace EclipseDataMiner.ViewModels
                 }
 
                 UpdateMatchedPlansSummary();
-                SelectedTabIndex = 0; // Plan Search タブにフォーカス
+                SelectedTabIndex = 0; // Focus Plan Search tab
 
                 ProgressText = $"Search completed. {results.Count} plans matched.";
                 AppendLog($"Plan search completed: {results.Count} plans found matching filter criteria.");
@@ -987,8 +1012,10 @@ namespace EclipseDataMiner.ViewModels
                 if (targetPlanKeys.Count == 0)
                 {
                     MessageBox.Show(
-                        "Plan Search の検索結果テーブルで抽出対象 (Extract) として選択されている計画がありません。\n少なくとも1つの計画にチェックを入れるか、プラン一覧をクリアして全体スキャンを実行してください。",
-                        "計画が選択されていません", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        "No treatment plans are selected for extraction in the Plan Search results table.\nPlease check at least one plan or clear the plan table to scan all matching plans.",
+                        "No Plans Selected", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ProgressText = "Ready";
+                    AppendLog("Pre-scan aborted: no plans selected in the table.");
                     IsRunning = false;
                     _cts?.Dispose();
                     _cts = null;
@@ -1038,20 +1065,22 @@ namespace EclipseDataMiner.ViewModels
 
         private async Task ExecuteExtractionAsync()
         {
-            // Bypass Structure Pre-Scan が未チェックで、かつマッピングルールが空の場合の安全確認
+            // Safety confirmation when Bypass Structure Pre-Scan is unchecked and mapping rules are empty
             if (!Options.BypassPreScan && MappingRules.Count == 0)
             {
                 var confirm = MessageBox.Show(
-                    "輪郭マッピング設定が読み込まれておらず、輪郭事前スキャンも実行されていません。\n\n" +
-                    "このまま直接データ抽出を実行しますか？\n\n" +
-                    "・[はい] : 事前スキャンをスキップし、DQPリストの輪郭名で直接抽出を開始します。\n" +
-                    "・[いいえ] : 抽出を中断します。（Tab 2 で 'Pre-Scan Structures' を実行するか、Tab 4 の 'Bypass Structure Pre-Scan' を有効にしてください）",
-                    "輪郭マッピング未設定の確認",
+                    "No structure mapping rules are configured and structure pre-scan has not been executed.\n\n" +
+                    "Do you want to proceed directly with data extraction?\n\n" +
+                    "• [Yes] : Bypass pre-scan and extract directly with structure names specified in DQP list.\n" +
+                    "• [No]  : Abort extraction. (Run 'Pre-Scan Structures' in Tab 2 or enable 'Bypass Structure Pre-Scan' in Tab 4)",
+                    "Confirm Unmapped Extraction",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
                 if (confirm != MessageBoxResult.Yes)
                 {
+                    AppendLog("Extraction aborted: unmapped extraction cancelled by user.");
+                    ProgressText = "Ready";
                     return;
                 }
             }
@@ -1083,10 +1112,12 @@ namespace EclipseDataMiner.ViewModels
                     if (targetPlanKeys.Count == 0)
                     {
                         MessageBox.Show(
-                            "検索結果のプランが1件も選択されていません。\nPlan Search タブのプラン一覧で抽出対象のプランにチェックを入れてください。",
-                            "抽出対象が未選択",
+                            "No treatment plans are selected in the search results.\nPlease check target plans in the Plan Search results table.",
+                            "No Plans Selected",
                             MessageBoxButton.OK,
                             MessageBoxImage.Warning);
+                        ProgressText = "Ready";
+                        AppendLog("Extraction aborted: no plans selected in the table.");
                         return;
                     }
                     AppendLog($"Filtering extraction to {targetPlanKeys.Count} selected plans (out of {MatchedPlans.Count}).");
@@ -1159,10 +1190,28 @@ namespace EclipseDataMiner.ViewModels
 
         private void ExecuteOpenOutputFolder()
         {
-            string dir = Path.GetDirectoryName(OutputFilePath);
-            if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
+            try
             {
-                System.Diagnostics.Process.Start(dir);
+                string dir = Path.GetDirectoryName(OutputFilePath);
+                if (string.IsNullOrWhiteSpace(dir))
+                {
+                    dir = AppDomain.CurrentDomain.BaseDirectory;
+                }
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = dir,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+                AppendLog($"[Info] Opened output directory: {dir}");
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"[Warning] Failed to open output folder: {ex.Message}");
             }
         }
 
@@ -1199,6 +1248,8 @@ namespace EclipseDataMiner.ViewModels
                 {
                     MappingRules.Add(r);
                 }
+                SelectedRule = MappingRules.FirstOrDefault();
+                UpdateRuleCommandsCanExecute();
                 AppendLog($"Loaded {MappingRules.Count} mapping rules from {ofd.FileName}");
                 RefreshDiscoveredPreview();
             }
@@ -1215,6 +1266,7 @@ namespace EclipseDataMiner.ViewModels
             };
             MappingRules.Add(newRule);
             SelectedRule = newRule;
+            UpdateRuleCommandsCanExecute();
             RefreshDiscoveredPreview();
         }
 
@@ -1235,6 +1287,7 @@ namespace EclipseDataMiner.ViewModels
                 {
                     SelectedRule = null;
                 }
+                UpdateRuleCommandsCanExecute();
             }
         }
 
@@ -1245,13 +1298,17 @@ namespace EclipseDataMiner.ViewModels
             return index > 0;
         }
 
-        private void ExecuteMoveUpRule()
+        public void ExecuteMoveUpRule()
         {
             if (!CanMoveUpRule()) return;
             int index = MappingRules.IndexOf(SelectedRule);
+            if (index <= 0) return;
+
             var item = SelectedRule;
             MappingRules.Move(index, index - 1);
+            _selectedRule = null;
             SelectedRule = item;
+            UpdateRuleCommandsCanExecute();
             RefreshDiscoveredPreview();
         }
 
@@ -1262,14 +1319,58 @@ namespace EclipseDataMiner.ViewModels
             return index >= 0 && index < MappingRules.Count - 1;
         }
 
-        private void ExecuteMoveDownRule()
+        public void ExecuteMoveDownRule()
         {
             if (!CanMoveDownRule()) return;
             int index = MappingRules.IndexOf(SelectedRule);
+            if (index < 0 || index >= MappingRules.Count - 1) return;
+
             var item = SelectedRule;
             MappingRules.Move(index, index + 1);
+            _selectedRule = null;
             SelectedRule = item;
+            UpdateRuleCommandsCanExecute();
             RefreshDiscoveredPreview();
+        }
+
+        private bool CanMoveUpDqp()
+        {
+            if (SelectedDqp == null) return false;
+            int index = DQPList.IndexOf(SelectedDqp);
+            return index > 0;
+        }
+
+        public void ExecuteMoveUpDqp()
+        {
+            if (!CanMoveUpDqp()) return;
+            int index = DQPList.IndexOf(SelectedDqp);
+            if (index <= 0) return;
+
+            var item = SelectedDqp;
+            DQPList.Move(index, index - 1);
+            _selectedDqp = null;
+            SelectedDqp = item;
+            UpdateDqpCommandsCanExecute();
+        }
+
+        private bool CanMoveDownDqp()
+        {
+            if (SelectedDqp == null) return false;
+            int index = DQPList.IndexOf(SelectedDqp);
+            return index >= 0 && index < DQPList.Count - 1;
+        }
+
+        public void ExecuteMoveDownDqp()
+        {
+            if (!CanMoveDownDqp()) return;
+            int index = DQPList.IndexOf(SelectedDqp);
+            if (index < 0 || index >= DQPList.Count - 1) return;
+
+            var item = SelectedDqp;
+            DQPList.Move(index, index + 1);
+            _selectedDqp = null;
+            SelectedDqp = item;
+            UpdateDqpCommandsCanExecute();
         }
 
         public void ExecuteInsertRegexSnippet(string pattern)
@@ -1310,58 +1411,58 @@ namespace EclipseDataMiner.ViewModels
             RegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = "^PTV.*",
-                Title = "前方一致 (Prefix)",
-                Description = "「PTV」から始まる輪郭名に一致",
+                Title = "Prefix Match (Prefix)",
+                Description = "Matches structure names starting with 'PTV'",
                 Example = "PTV_High, PTV70, PTV_boost"
             });
             RegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = ".*_PTV$",
-                Title = "後方一致 (Suffix)",
-                Description = "「_PTV」で終わる輪郭名に一致",
+                Title = "Suffix Match (Suffix)",
+                Description = "Matches structure names ending with '_PTV'",
                 Example = "Boost_PTV, Total_PTV"
             });
             RegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = ".*[_-](Rt|Lt|R|L)$",
-                Title = "左右末尾指定 (Laterality Suffix)",
-                Description = "末尾が _Rt, _Lt, -R, -L などの左右識別子に一致",
+                Title = "Laterality Suffix",
+                Description = "Matches laterality indicators at the end (_Rt, _Lt, -R, -L)",
                 Example = "Parotid_Rt, Kidney-L, Lens_R"
             });
             RegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = "^(Lt|Rt|L|R)[_-].*",
-                Title = "左右接頭指定 (Laterality Prefix)",
-                Description = "接頭が Rt_, Lt_, R_, L_ などの左右識別子に一致",
+                Title = "Laterality Prefix",
+                Description = "Matches laterality indicators at the start (Rt_, Lt_, R_, L_)",
                 Example = "Rt_Lung, L_OpticNerve, R_Eye"
             });
             RegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = "(Bladder|Rectum)",
-                Title = "複数候補のOR結合 (Any of)",
-                Description = "パイプ記号 (|) で区切ったいずれかの名称に一致",
+                Title = "Any of Multiple Names",
+                Description = "Matches any of the pipe-delimited structure names",
                 Example = "Bladder, Rectum"
             });
             RegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = @".*_\d+(Gy)?$",
-                Title = "線量表記末尾 (Dose Pattern)",
-                Description = "アンダースコア＋数字（＋Gy）で終わる名称に一致",
+                Title = "Dose Pattern Suffix",
+                Description = "Matches underscore followed by numbers and optional Gy",
                 Example = "CTV_60Gy, PTV_50, GTV_70Gy"
             });
             RegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = "(?i)chiasm",
-                Title = "大文字小文字無視 (Case-Insensitive)",
-                Description = "(?i) を前置し、大小文字を区別せず一致",
+                Title = "Case-Insensitive Match",
+                Description = "Prefix with (?i) for case-insensitive matching",
                 Example = "chiasm, CHIASM, Chiasm"
             });
             RegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = ".*",
-                Title = "任意文字列 (Wildcard Any)",
-                Description = "0文字以上の任意の文字列（全輪郭に一致）",
-                Example = "すべての輪郭"
+                Title = "Wildcard Any",
+                Description = "Matches any characters (all structures)",
+                Example = "All structures"
             });
         }
 
@@ -1379,58 +1480,58 @@ namespace EclipseDataMiner.ViewModels
             SearchRegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = "(VMAT|IMRT)",
-                Title = "複数手法・名称のOR結合 (Any of)",
-                Description = "パイプ (|) で区切ったいずれかの文字列（例: VMAT または IMRT）に一致",
+                Title = "Any of Multiple Techniques",
+                Description = "Matches plans containing any pipe-delimited term (e.g., VMAT or IMRT)",
                 Example = "Prostate_VMAT, Pelvis_IMRT"
             });
             SearchRegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = @".*_(Boost|Main|Total)$",
-                Title = "計画種別の末尾指定 (Plan Suffix)",
-                Description = "末尾が _Boost, _Main, _Total などで終わる計画に一致",
+                Title = "Plan Suffix",
+                Description = "Matches plans ending with _Boost, _Main, or _Total",
                 Example = "Breast_Boost, Prostate_Main, Brain_Total"
             });
             SearchRegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = "^(Prostate|Lung|Brain|Head|Pelvis).*",
-                Title = "部位・疾患名の接頭指定 (Disease Prefix)",
-                Description = "指定した疾患部位名から始まる計画に一致",
+                Title = "Disease Site Prefix",
+                Description = "Matches plans starting with specified disease site",
                 Example = "Prostate_78Gy, Lung_SBRT, Brain_SRS"
             });
             SearchRegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = @".*_\d+$",
-                Title = "連番・枝番パターン (Numbered Plan)",
-                Description = "アンダースコア＋数字で終わる連番計画に一致",
+                Title = "Numbered Plan",
+                Description = "Matches plans ending with an underscore and numbers",
                 Example = "Plan_1, Prostate_02, QA_1"
             });
             SearchRegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = @"PTV.*(70|78)",
-                Title = "ターゲット輪郭と線量 (Target & Dose)",
-                Description = "PTVかつ70または78を含む輪郭名に一致",
+                Title = "Target & Dose",
+                Description = "Matches target volume containing PTV and 70 or 78",
                 Example = "PTV_78Gy, PTV70, PTV_boost78"
             });
             SearchRegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = @"^((?!QA|Verify|Test).)*$",
-                Title = "特定文字を含まない (Negative Lookahead)",
-                Description = "QA, Verify, Test を含まない臨床計画のみに一致（※通常は !QA 入力でも除外可能）",
-                Example = "臨床実治療計画のみ抽出"
+                Title = "Exclude Keywords (Negative Lookahead)",
+                Description = "Matches clinical plans excluding QA, Verify, or Test",
+                Example = "Extract clinical treatment plans only"
             });
             SearchRegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = "(?i)vmat",
-                Title = "大文字小文字無視 (Case-Insensitive)",
-                Description = "(?i) を前置し、大小文字を区別せず一致",
+                Title = "Case-Insensitive Match",
+                Description = "Prefix with (?i) for case-insensitive matching",
                 Example = "vmat, VMAT, Vmat"
             });
             SearchRegexSnippets.Add(new RegexSnippetItem
             {
                 Pattern = ".*",
-                Title = "任意文字列 (Wildcard Any)",
-                Description = "すべての文字列に一致",
-                Example = "全計画"
+                Title = "Wildcard Any",
+                Description = "Matches all plan identifiers",
+                Example = "All plans"
             });
         }
 
@@ -1442,7 +1543,7 @@ namespace EclipseDataMiner.ViewModels
             }
             else
             {
-                // 未マッピングの輪郭を一括追加
+                // Bulk add unmapped structures
                 int addedCount = 0;
                 foreach (var item in DiscoveredStructures.Where(d => d.MatchStatus.StartsWith("Unmapped")))
                 {
@@ -1458,13 +1559,15 @@ namespace EclipseDataMiner.ViewModels
                         addedCount++;
                     }
                 }
+                SelectedRule = MappingRules.LastOrDefault();
+                UpdateRuleCommandsCanExecute();
                 AppendLog($"Added {addedCount} unmapped structures to mapping rules.");
                 RefreshDiscoveredPreview();
             }
         }
 
         /// <summary>
-        /// プレビュー項目（またはダブルクリックされた項目）を左ペインのルール定義に追加
+        /// Adds a preview item (or double-clicked item) to rule definitions in the left pane.
         /// </summary>
         public void AddDiscoveredItemToRules(DiscoveredStructureItem item)
         {
@@ -1494,11 +1597,74 @@ namespace EclipseDataMiner.ViewModels
             RefreshDiscoveredPreview();
         }
 
+        private readonly HashSet<StructureMappingRule> _subscribedRules = new HashSet<StructureMappingRule>();
+        private bool _isRefreshingPreview = false;
+
+        private void MappingRules_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+            {
+                foreach (var rule in _subscribedRules)
+                {
+                    rule.PropertyChanged -= Rule_PropertyChanged;
+                }
+                _subscribedRules.Clear();
+                foreach (var rule in MappingRules)
+                {
+                    rule.PropertyChanged += Rule_PropertyChanged;
+                    _subscribedRules.Add(rule);
+                }
+            }
+            else
+            {
+                if (e.OldItems != null)
+                {
+                    foreach (StructureMappingRule rule in e.OldItems)
+                    {
+                        rule.PropertyChanged -= Rule_PropertyChanged;
+                        _subscribedRules.Remove(rule);
+                    }
+                }
+                if (e.NewItems != null)
+                {
+                    foreach (StructureMappingRule rule in e.NewItems)
+                    {
+                        if (_subscribedRules.Add(rule))
+                        {
+                            rule.PropertyChanged += Rule_PropertyChanged;
+                        }
+                    }
+                }
+            }
+            UpdateRuleCommandsCanExecute();
+            RefreshDiscoveredPreview();
+        }
+
+        private void Rule_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(StructureMappingRule.Pattern) ||
+                e.PropertyName == nameof(StructureMappingRule.MatchMode) ||
+                e.PropertyName == nameof(StructureMappingRule.TargetAlias) ||
+                e.PropertyName == nameof(StructureMappingRule.IsSelected))
+            {
+                RefreshDiscoveredPreview();
+            }
+        }
+
         public void RefreshDiscoveredPreview()
         {
-            StructureMappingService.RefreshPreview(DiscoveredStructures, MappingRules);
-            DiscoveredStructuresView?.Refresh();
-            OnPropertyChanged(nameof(FilteredDiscoveredCount));
+            if (_isRefreshingPreview) return;
+            try
+            {
+                _isRefreshingPreview = true;
+                StructureMappingService.RefreshPreview(DiscoveredStructures, MappingRules);
+                DiscoveredStructuresView?.Refresh();
+                OnPropertyChanged(nameof(FilteredDiscoveredCount));
+            }
+            finally
+            {
+                _isRefreshingPreview = false;
+            }
         }
 
         private void ExecuteSaveDqp()
@@ -1560,6 +1726,8 @@ namespace EclipseDataMiner.ViewModels
                         });
                     }
                 }
+                SelectedDqp = DQPList.FirstOrDefault();
+                UpdateDqpCommandsCanExecute();
                 AppendLog($"Loaded {DQPList.Count} DQP items from {ofd.FileName}");
             }
         }
@@ -1576,6 +1744,7 @@ namespace EclipseDataMiner.ViewModels
             };
             DQPList.Add(newDqp);
             SelectedDqp = newDqp;
+            UpdateDqpCommandsCanExecute();
         }
 
         private void ExecuteDeleteDqp()
@@ -1594,6 +1763,7 @@ namespace EclipseDataMiner.ViewModels
                 {
                     SelectedDqp = null;
                 }
+                UpdateDqpCommandsCanExecute();
             }
         }
 

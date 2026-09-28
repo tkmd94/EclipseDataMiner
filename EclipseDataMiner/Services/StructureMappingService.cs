@@ -11,7 +11,7 @@ using EclipseDataMiner.Models;
 namespace EclipseDataMiner.Services
 {
     /// <summary>
-    /// マッピング解決結果
+    /// Mapping resolution result.
     /// </summary>
     public class ResolvedStructureMapping
     {
@@ -26,7 +26,7 @@ namespace EclipseDataMiner.Services
     }
 
     /// <summary>
-    /// 輪郭エイリアスマッピングの評価および設定JSONの保存・読み込みサービス
+    /// Service for evaluating structure alias mappings and saving/loading mapping configuration JSON.
     /// </summary>
     public class StructureMappingService
     {
@@ -38,8 +38,8 @@ namespace EclipseDataMiner.Services
         };
 
         /// <summary>
-        /// 輪郭IDに対してルールリストを評価し、エイリアス名とオプトアウト判定を返却
-        /// 優先順位: 完全一致 (Exact) > 部分一致 (Contains) > 正規表現 (Regex)（各カテゴリ内は先頭優先）
+        /// Evaluates rule list against structure ID, returning alias name and opt-out flag.
+        /// Priority: Exact > Contains > Regex (first match wins within each category).
         /// </summary>
         public static ResolvedStructureMapping ResolveMapping(string structureId, IEnumerable<StructureMappingRule> rules)
         {
@@ -63,19 +63,19 @@ namespace EclipseDataMiner.Services
                 return new ResolvedStructureMapping(true, alias);
             }
 
-            // ルールに一致しない輪郭はデフォルトで有効、エイリアスは元のID
+            // Structures not matching any rule remain enabled by default, with alias equal to raw ID
             return new ResolvedStructureMapping(true, structureId);
         }
 
         /// <summary>
-        /// 特異度優先（Exact > Contains > Regex）で最適なルールを探索
+        /// Finds the best matching rule based on specificity priority (Exact > Contains > Regex).
         /// </summary>
         public static StructureMappingRule FindBestMatchingRule(string structureId, IEnumerable<StructureMappingRule> rules)
         {
             if (rules == null || string.IsNullOrEmpty(structureId)) return null;
             var ruleList = rules as IList<StructureMappingRule> ?? rules.ToList();
 
-            // 1. 完全一致 (Exact) を最優先
+            // 1. Exact match takes highest priority
             foreach (var r in ruleList)
             {
                 if (r.MatchMode == StructureMatchMode.Exact && r.IsMatch(structureId))
@@ -84,7 +84,7 @@ namespace EclipseDataMiner.Services
                 }
             }
 
-            // 2. 部分一致 (Contains) を次に優先
+            // 2. Partial match (Contains) takes second priority
             foreach (var r in ruleList)
             {
                 if (r.MatchMode == StructureMatchMode.Contains && r.IsMatch(structureId))
@@ -93,7 +93,7 @@ namespace EclipseDataMiner.Services
                 }
             }
 
-            // 3. 正規表現 (Regex) を最後に評価
+            // 3. Regular expression (Regex) evaluated last
             foreach (var r in ruleList)
             {
                 if (r.MatchMode == StructureMatchMode.Regex && r.IsMatch(structureId))
@@ -106,8 +106,8 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// スキャンされた輪郭一覧に対して、最新のルールリストを特異度優先で評価し、解決先Aliasおよびステータスを一括更新
-        /// 同一 Target Alias に複数輪郭が統合されている場合はステータスに注記
+        /// Evaluates latest rule list for scanned structures with specificity priority, updating resolved aliases and match statuses.
+        /// Appends note if multiple structures are merged into the same Target Alias.
         /// </summary>
         public static void RefreshPreview(IEnumerable<DiscoveredStructureItem> discoveredItems, IEnumerable<StructureMappingRule> rules)
         {
@@ -116,12 +116,19 @@ namespace EclipseDataMiner.Services
             var itemsList = discoveredItems as IList<DiscoveredStructureItem> ?? discoveredItems.ToList();
             var ruleList = rules?.ToList() ?? new List<StructureMappingRule>();
 
-            // 1. 各輪郭の解決先Aliasとルール適合状態を判定
+            // 0. Reset matched counts for all rules
+            foreach (var rule in ruleList)
+            {
+                rule.MatchedCount = 0;
+            }
+
+            // 1. Determine resolved alias and rule match status for each structure
             foreach (var item in itemsList)
             {
                 var bestRule = FindBestMatchingRule(item.RawStructureId, ruleList);
                 if (bestRule != null)
                 {
+                    bestRule.MatchedCount++;
                     item.IsExtracted = bestRule.IsSelected;
                     item.ResolvedAlias = !string.IsNullOrWhiteSpace(bestRule.TargetAlias)
                         ? bestRule.TargetAlias.Trim()
@@ -144,7 +151,7 @@ namespace EclipseDataMiner.Services
                 }
             }
 
-            // 2. Target Alias の重複（複数輪郭の集約）をカウントして注記
+            // 2. Count and annotate target alias duplicates (merged structures)
             var aliasCountMap = itemsList
                 .Where(d => d.IsExtracted)
                 .GroupBy(d => d.ResolvedAlias, StringComparer.OrdinalIgnoreCase)
@@ -154,13 +161,13 @@ namespace EclipseDataMiner.Services
             {
                 if (item.IsExtracted && aliasCountMap.TryGetValue(item.ResolvedAlias, out int count) && count > 1)
                 {
-                    item.MatchStatus += $" [統合: {count}件]";
+                    item.MatchStatus += $" [Merged: {count}]";
                 }
             }
         }
 
         /// <summary>
-        /// マッピングルールリストを JSON ファイルに保存
+        /// Saves mapping rule list to a JSON file.
         /// </summary>
         public static void SaveRulesToFile(string filePath, IEnumerable<StructureMappingRule> rules)
         {
@@ -174,7 +181,7 @@ namespace EclipseDataMiner.Services
         }
 
         /// <summary>
-        /// JSON ファイルからマッピングルールリストを読み込み
+        /// Loads mapping rule list from a JSON file.
         /// </summary>
         public static List<StructureMappingRule> LoadRulesFromFile(string filePath)
         {
