@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -329,6 +331,106 @@ namespace EclipseDataMiner.Tests
                 Assert.IsTrue(File.Exists(p2), $"Image {fn} should exist in docs/img/");
                 var fi = new FileInfo(p1);
                 Assert.IsTrue(fi.Length > 10000, $"Image {fn} should not be empty. Size: {fi.Length} bytes");
+            }
+        }
+
+        [TestMethod]
+        [Description("Verifies that DqpGrid mouse wheel scrolling smoothly and completely reaches the absolute bottom row")]
+        public void DqpGrid_MouseScroll_ShouldReachAbsoluteBottomRow()
+        {
+            Exception thrownException = null;
+
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    var window = new MainWindow();
+                    var vm = (MainViewModel)window.DataContext;
+
+                    // Populate 25 DQP items to induce vertical scrolling
+                    vm.DQPList.Clear();
+                    for (int i = 1; i <= 25; i++)
+                    {
+                        vm.DQPList.Add(new DQP
+                        {
+                            structureName = $"OAR_{i:D2}",
+                            DQPtype = (i % 2 == 0) ? DQPtype.Dose : DQPtype.Volume,
+                            DQPvalue = 10.0 + i,
+                            InputUnit = IOUnit.Absolute,
+                            OutputUnit = IOUnit.Relative
+                        });
+                    }
+
+                    // Select Tab 3 (DQP Configuration)
+                    vm.SelectedTabIndex = 2;
+                    window.Width = 1000;
+                    window.Height = 600;
+                    window.Show();
+
+                    window.Measure(new Size(1000, 600));
+                    window.Arrange(new Rect(0, 0, 1000, 600));
+                    window.UpdateLayout();
+
+                    var dqpGrid = window.FindName("DqpGrid") as DataGrid;
+                    Assert.IsNotNull(dqpGrid, "DqpGrid should exist in MainWindow");
+
+                    // Find internal ScrollViewer
+                    ScrollViewer scrollViewer = null;
+                    int childCount = VisualTreeHelper.GetChildrenCount(dqpGrid);
+                    for (int i = 0; i < childCount; i++)
+                    {
+                        var child = VisualTreeHelper.GetChild(dqpGrid, i);
+                        if (child is ScrollViewer sv) { scrollViewer = sv; break; }
+                        for (int j = 0; j < VisualTreeHelper.GetChildrenCount(child); j++)
+                        {
+                            var subChild = VisualTreeHelper.GetChild(child, j);
+                            if (subChild is ScrollViewer sv2) { scrollViewer = sv2; break; }
+                            for (int k = 0; k < VisualTreeHelper.GetChildrenCount(subChild); k++)
+                            {
+                                if (VisualTreeHelper.GetChild(subChild, k) is ScrollViewer sv3) { scrollViewer = sv3; break; }
+                            }
+                        }
+                    }
+
+                    Assert.IsNotNull(scrollViewer, "ScrollViewer inside DqpGrid must be found");
+                    Assert.IsTrue(scrollViewer.ScrollableHeight > 0, "DqpGrid must have scrollable vertical content");
+
+                    // Simulate multiple mouse wheel down events
+                    for (int step = 0; step < 20; step++)
+                    {
+                        var wheelArgs = new MouseWheelEventArgs(Mouse.PrimaryDevice, Environment.TickCount, -120)
+                        {
+                            RoutedEvent = UIElement.PreviewMouseWheelEvent,
+                            Source = dqpGrid
+                        };
+                        dqpGrid.RaiseEvent(wheelArgs);
+                    }
+
+                    // Pump dispatcher to execute pending layout pass for scrolling
+                    var frame = new DispatcherFrame();
+                    Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => frame.Continue = false));
+                    Dispatcher.PushFrame(frame);
+                    window.UpdateLayout();
+
+                    // Assert: VerticalOffset has reached the maximum ScrollableHeight
+                    Assert.AreEqual(scrollViewer.ScrollableHeight, scrollViewer.VerticalOffset, 0.001,
+                        $"DqpGrid should reach the very bottom. Expected offset {scrollViewer.ScrollableHeight}, got {scrollViewer.VerticalOffset}");
+
+                    window.Close();
+                }
+                catch (Exception ex)
+                {
+                    thrownException = ex;
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            if (thrownException != null)
+            {
+                Assert.Fail($"DqpGrid scrolling test failed: {thrownException}");
             }
         }
     }

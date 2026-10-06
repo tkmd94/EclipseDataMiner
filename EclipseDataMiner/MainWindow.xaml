@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:EclipseDataMiner"
         xmlns:models="clr-namespace:EclipseDataMiner.Models"
-        Title="{Binding WindowTitle, FallbackValue='EclipseDataMiner v3.0.1 - High-Throughput Clinical ESAPI Data Mining Platform'}" 
+        Title="{Binding WindowTitle, FallbackValue='EclipseDataMiner v3.0.2 - High-Throughput Clinical ESAPI Data Mining Platform'}" 
         Height="880" Width="1180" MinHeight="700" MinWidth="980"
         WindowStartupLocation="CenterScreen"
         PreviewKeyDown="Window_PreviewKeyDown"
@@ -356,6 +356,13 @@
                             CornerRadius="4" Padding="10,6" Margin="0,0,0,8">
                         <DockPanel LastChildFill="True">
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                                <Border Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,0,6,0"
+                                        ToolTip="Detected native dose unit in Eclipse TPS (cGy or Gy)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="⚡ System Unit: " Foreground="#475569" FontSize="11.5"/>
+                                        <TextBlock Text="{Binding SystemDoseUnitDisplay, FallbackValue='cGy'}" FontWeight="Bold" FontFamily="Consolas" Foreground="#0F172A" FontSize="11.5"/>
+                                    </StackPanel>
+                                </Border>
                                 <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="8,3">
                                     <TextBlock Text="{Binding MatchedPlansSummaryText}" FontWeight="Bold" Foreground="#1E40AF" FontSize="11.5"/>
                                 </Border>
@@ -434,8 +441,8 @@
                                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                                     <Button Content="+ Add Rule" Command="{Binding AddRuleCommand}" Style="{StaticResource ModernButton}" Margin="0,0,3,0"/>
                                     <Button Content="- Delete" Command="{Binding DeleteRuleCommand}" Click="DeleteRuleButton_Click" Style="{StaticResource ModernButton}" Margin="2,0"/>
-                                    <Button Content="▲ Up" Command="{Binding MoveUpRuleCommand}" PreviewMouseDown="MoveRuleButton_PreviewMouseDown" Click="MoveRuleButton_Click" Style="{StaticResource ModernButton}" Margin="4,0,2,0" ToolTip="Move selected rule up (higher priority)"/>
-                                    <Button Content="▼ Down" Command="{Binding MoveDownRuleCommand}" PreviewMouseDown="MoveRuleButton_PreviewMouseDown" Click="MoveRuleButton_Click" Style="{StaticResource ModernButton}" Margin="2,0" ToolTip="Move selected rule down (lower priority)"/>
+                                    <Button Content="▲ Up" Command="{Binding MoveUpRuleCommand}" PreviewMouseDown="MoveRuleButton_PreviewMouseDown" Click="MoveRuleButton_Click" Style="{StaticResource ModernButton}" Margin="4,0,2,0" ToolTip="Move selected rule up (higher priority) [Alt+Up / Ctrl+Up]"/>
+                                    <Button Content="▼ Down" Command="{Binding MoveDownRuleCommand}" PreviewMouseDown="MoveRuleButton_PreviewMouseDown" Click="MoveRuleButton_Click" Style="{StaticResource ModernButton}" Margin="2,0" ToolTip="Move selected rule down (lower priority) [Alt+Down / Ctrl+Down]"/>
 
                                     <!-- Clinical Regex Snippets Popup -->
                                     <ToggleButton x:Name="BtnRegexHints" Content="❓ Regex Hints ▾" Style="{StaticResource ModernToggleButton}" Margin="6,0,2,0" 
@@ -502,7 +509,12 @@
 
                             <DataGrid x:Name="MappingRulesGrid" Grid.Row="1" ItemsSource="{Binding MappingRules}" SelectedItem="{Binding SelectedRule}"
                                       AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
-                                      SelectionChanged="DataGrid_SelectionChanged">
+                                      ScrollViewer.CanContentScroll="False"
+                                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                      VirtualizingPanel.ScrollUnit="Pixel"
+                                      SelectionChanged="DataGrid_SelectionChanged"
+                                      PreviewMouseWheel="DataGrid_PreviewMouseWheel">
                                 <DataGrid.Columns>
                                     <DataGridCheckBoxColumn Header="Extract" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="55"/>
                                     <DataGridTextColumn Header="Structure ID / Pattern" Binding="{Binding Pattern, UpdateSourceTrigger=PropertyChanged}" Width="*">
@@ -681,11 +693,38 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
+                    <!-- System Dose Unit & DQP Dose Input Policy Banner -->
+                    <Border Grid.Row="0" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="10,7" Margin="0,0,0,6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Left: System Dose Unit Badge -->
+                            <StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock Text="⚡ Eclipse System Dose Unit:" FontWeight="Bold" Foreground="#1E40AF" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <Border Background="#DBEAFE" BorderBrush="#93C5FD" BorderThickness="1" CornerRadius="3" Padding="8,1" VerticalAlignment="Center"
+                                        ToolTip="Native dose unit detected from Eclipse TPS (cGy or Gy)">
+                                    <TextBlock Text="{Binding SystemDoseUnitDisplay, FallbackValue='cGy'}" FontWeight="Bold" FontFamily="Consolas" Foreground="#1D4ED8" FontSize="12.5"/>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Right: Mandatory Gy Input Notice -->
+                            <StackPanel Orientation="Horizontal" Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="ℹ️ DQP Dose Input Policy:" FontWeight="Bold" Foreground="#1E40AF" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding DqpDoseInputPolicyText}" 
+                                           Foreground="#1E3A8A" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
                     <!-- Alert Note: Auto Export of Basic Statistics -->
-                    <Border Grid.Row="0" Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="4" Padding="10,6" Margin="0,0,0,8">
+                    <Border Grid.Row="1" Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="4" Padding="10,6" Margin="0,0,0,8">
                         <DockPanel>
                             <TextBlock Text="💡 Auto Export of Basic Statistics:" FontWeight="Bold" Foreground="#15803D" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock Text="Volume[cc], Max dose[Gy], Mean dose[Gy], and Min dose[Gy] are automatically exported for all mapped structures, so individual registration is not required." 
@@ -693,7 +732,7 @@
                         </DockPanel>
                     </Border>
 
-                    <DockPanel Grid.Row="1" Margin="0,0,0,8" LastChildFill="True">
+                    <DockPanel Grid.Row="2" Margin="0,0,0,8" LastChildFill="True">
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
                             <Button Content="📂 Load CSV" Command="{Binding LoadDqpCommand}" Style="{StaticResource ModernButton}" Margin="2,0" ToolTip="Load DQP parameters from CSV"/>
                             <Button Content="💾 Save CSV" Command="{Binding SaveDqpCommand}" Style="{StaticResource ModernButton}" Margin="2,0,0,0" ToolTip="Save DQP parameters to CSV"/>
@@ -701,14 +740,19 @@
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                             <Button Content="+ Add DQP" Command="{Binding AddDqpCommand}" Style="{StaticResource ModernButton}" Margin="0,0,4,0"/>
                             <Button Content="- Delete" Command="{Binding DeleteDqpCommand}" Click="DeleteDqpButton_Click" Style="{StaticResource ModernButton}" Margin="2,0"/>
-                            <Button Content="▲ Up" Command="{Binding MoveUpDqpCommand}" PreviewMouseDown="MoveDqpButton_PreviewMouseDown" Click="MoveDqpButton_Click" Style="{StaticResource ModernButton}" Margin="6,0,2,0" ToolTip="Move selected DQP metric up"/>
-                            <Button Content="▼ Down" Command="{Binding MoveDownDqpCommand}" PreviewMouseDown="MoveDqpButton_PreviewMouseDown" Click="MoveDqpButton_Click" Style="{StaticResource ModernButton}" Margin="2,0" ToolTip="Move selected DQP metric down"/>
+                            <Button Content="▲ Up" Command="{Binding MoveUpDqpCommand}" PreviewMouseDown="MoveDqpButton_PreviewMouseDown" Click="MoveDqpButton_Click" Style="{StaticResource ModernButton}" Margin="6,0,2,0" ToolTip="Move selected DQP metric up [Alt+Up / Ctrl+Up]"/>
+                            <Button Content="▼ Down" Command="{Binding MoveDownDqpCommand}" PreviewMouseDown="MoveDqpButton_PreviewMouseDown" Click="MoveDqpButton_Click" Style="{StaticResource ModernButton}" Margin="2,0" ToolTip="Move selected DQP metric down [Alt+Down / Ctrl+Down]"/>
                         </StackPanel>
                     </DockPanel>
 
-                    <DataGrid x:Name="DqpGrid" Grid.Row="2" ItemsSource="{Binding DQPList}" SelectedItem="{Binding SelectedDqp}" 
+                    <DataGrid x:Name="DqpGrid" Grid.Row="3" ItemsSource="{Binding DQPList}" SelectedItem="{Binding SelectedDqp}" 
                               AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
-                              SelectionChanged="DataGrid_SelectionChanged">
+                              ScrollViewer.CanContentScroll="False"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              VirtualizingPanel.ScrollUnit="Pixel"
+                              SelectionChanged="DataGrid_SelectionChanged"
+                              PreviewMouseWheel="DataGrid_PreviewMouseWheel">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Structure Name / Target Alias" Binding="{Binding structureName}" Width="220"/>
                             <DataGridComboBoxColumn Header="DQP Type" SelectedValueBinding="{Binding DQPtype}" DisplayMemberPath="Label" SelectedValuePath="Value" Width="170">
@@ -721,7 +765,7 @@
                                     </x:Array>
                                 </DataGridComboBoxColumn.ItemsSource>
                             </DataGridComboBoxColumn>
-                            <DataGridTextColumn Header="Value" Binding="{Binding DQPvalue}" Width="90"/>
+                            <DataGridTextColumn Header="Value (Dose: Gy / Vol: cc or %)" Binding="{Binding DQPvalue}" Width="185"/>
                             <DataGridComboBoxColumn Header="Input Unit" SelectedValueBinding="{Binding InputUnit}" DisplayMemberPath="Label" SelectedValuePath="Value" Width="140">
                                 <DataGridComboBoxColumn.ItemsSource>
                                     <x:Array Type="{x:Type models:InputUnitComboBoxItem}">
@@ -846,6 +890,9 @@
                 <DockPanel Grid.Row="0" Margin="4,0,4,6" LastChildFill="False">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                         <TextBlock Text="💻 Console Output" FontFamily="Consolas" FontSize="11.5" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                        <TextBlock Text=" [TPS Dose Unit: " FontFamily="Consolas" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        <TextBlock Text="{Binding SystemDoseUnitDisplay, FallbackValue='cGy'}" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                        <TextBlock Text="]" FontFamily="Consolas" FontSize="11" Foreground="#64748B" VerticalAlignment="Center"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
                         <Button Content="Copy" Command="{Binding CopyLogCommand}" Style="{StaticResource ModernButton}" 

@@ -34,7 +34,7 @@ namespace EclipseDataMiner.ViewModels
                 string productVersion = GetProductVersion();
                 string verStr = !string.IsNullOrEmpty(productVersion)
                     ? (productVersion.StartsWith("v", StringComparison.OrdinalIgnoreCase) ? productVersion : $"v{productVersion}")
-                    : "v3.0.1";
+                    : "v3.0.2";
                 return $"EclipseDataMiner {verStr} - High-Throughput Clinical ESAPI Data Mining Platform";
             }
             set => SetProperty(ref _windowTitle, value);
@@ -76,7 +76,7 @@ namespace EclipseDataMiner.ViewModels
             }
             catch { }
 
-            return "3.0.1";
+            return "3.0.2";
         }
 
         // Search criteria
@@ -430,6 +430,27 @@ namespace EclipseDataMiner.ViewModels
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
+        // System dose unit (cGy vs Gy) detected from Eclipse TPS
+        private string _systemDoseUnit = "cGy";
+        public string SystemDoseUnit
+        {
+            get => _systemDoseUnit;
+            set
+            {
+                if (SetProperty(ref _systemDoseUnit, value))
+                {
+                    OnPropertyChanged(nameof(SystemDoseUnitDisplay));
+                    OnPropertyChanged(nameof(DqpDoseInputPolicyText));
+                }
+            }
+        }
+
+        public string SystemDoseUnitDisplay => !string.IsNullOrWhiteSpace(_systemDoseUnit) ? _systemDoseUnit : "cGy";
+
+        public string DqpDoseInputPolicyText =>
+            $"All absolute dose values MUST be entered in [Gy] (e.g., enter 20 for 20 Gy). If Eclipse is operating in {SystemDoseUnitDisplay}, automatic scaling is performed seamlessly.";
+
+
         // Output destination
         private string _outputFilePath = string.Empty;
         public string OutputFilePath
@@ -578,6 +599,18 @@ namespace EclipseDataMiner.ViewModels
         {
             _presetService = presetService ?? new SearchPresetService();
             _workerService = new StaEsapiWorkerService();
+            _workerService.DoseUnitDetected += (unit) =>
+            {
+                var app = System.Windows.Application.Current;
+                if (app?.Dispatcher != null && !app.Dispatcher.CheckAccess())
+                {
+                    app.Dispatcher.BeginInvoke(new Action(() => SystemDoseUnit = unit));
+                }
+                else
+                {
+                    SystemDoseUnit = unit;
+                }
+            };
 
             // Initial output path configuration
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;

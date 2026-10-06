@@ -32,6 +32,72 @@ namespace EclipseDataMiner.Services
         private const int GarbageCollectionInterval = 200;
 
         /// <summary>
+        /// Event fired when the native dose unit (cGy or Gy) is detected from an active plan or dose object.
+        /// </summary>
+        public event Action<string> DoseUnitDetected;
+
+        /// <summary>
+        /// Last detected native dose unit from Eclipse TPS (defaults to cGy).
+        /// </summary>
+        public string DetectedDoseUnit { get; private set; } = "cGy";
+
+        public void NotifyDoseUnitDetected(string unit)
+        {
+            if (string.IsNullOrWhiteSpace(unit)) return;
+            string cleanUnit = unit.Trim();
+            if (!string.Equals(DetectedDoseUnit, cleanUnit, StringComparison.OrdinalIgnoreCase))
+            {
+                DetectedDoseUnit = cleanUnit;
+            }
+            DoseUnitDetected?.Invoke(cleanUnit);
+        }
+
+        private void TryDetectAndNotifyDoseUnit(PlanSetup plan)
+        {
+            if (plan == null) return;
+            try
+            {
+                string unitStr = plan.TotalDose.UnitAsString;
+                if (!string.IsNullOrEmpty(unitStr))
+                {
+                    NotifyDoseUnitDetected(unitStr);
+                    return;
+                }
+            }
+            catch { }
+
+            try
+            {
+                if (plan.Dose != null)
+                {
+                    string maxDoseUnit = plan.Dose.DoseMax3D.UnitAsString;
+                    if (!string.IsNullOrEmpty(maxDoseUnit))
+                    {
+                        NotifyDoseUnitDetected(maxDoseUnit);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private void TryDetectAndNotifyDoseUnit(PlanSum sum)
+        {
+            if (sum == null) return;
+            try
+            {
+                if (sum.Dose != null)
+                {
+                    string maxDoseUnit = sum.Dose.DoseMax3D.UnitAsString;
+                    if (!string.IsNullOrEmpty(maxDoseUnit))
+                    {
+                        NotifyDoseUnitDetected(maxDoseUnit);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>
         /// Rapidly scans structure IDs from plans matching search criteria (for pre-mapping).
         /// </summary>
         public Task<List<DiscoveredStructureItem>> RunPreScanAsync(
@@ -414,6 +480,7 @@ namespace EclipseDataMiner.Services
                     double? dosePerFr = GetSafePlanDose(plan.DosePerFraction);
                     int? numFr = plan.NumberOfFractions;
                     double? totalDose = GetSafePlanDose(plan.TotalDose);
+                    TryDetectAndNotifyDoseUnit(plan);
                     string status = plan.ApprovalStatus.ToString();
 
                     var allDates = ResolveAllPlanDates(plan);
@@ -506,6 +573,7 @@ namespace EclipseDataMiner.Services
                     double? dosePerFr = GetSafePlanDose(plan.DosePerFraction);
                     int? numFr = plan.NumberOfFractions;
                     double? totalDose = GetSafePlanDose(plan.TotalDose);
+                    TryDetectAndNotifyDoseUnit(plan);
                     string status = plan.ApprovalStatus.ToString();
 
                     var allDates = ResolveAllPlanDates(plan);
@@ -566,6 +634,7 @@ namespace EclipseDataMiner.Services
                         try { sumCreation = sum.CreationDateTime; } catch { }
                         bool sumHasDose = false;
                         try { sumHasDose = sum.Dose != null; } catch { }
+                        TryDetectAndNotifyDoseUnit(sum);
                         double? sumDoseMarker = sumHasDose ? 1.0 : (double?)null;
 
                         if (SearchFilterService.IsPlanMatch(patient.Id, course.Id, sum.Id, null, null, null, sumDoseMarker, status, true, sumCreation, null, criteria))
@@ -630,6 +699,7 @@ namespace EclipseDataMiner.Services
                     double? dosePerFr = GetSafePlanDose(plan.DosePerFraction);
                     int? numFr = plan.NumberOfFractions;
                     double? totalDose = GetSafePlanDose(plan.TotalDose);
+                    TryDetectAndNotifyDoseUnit(plan);
                     string status = plan.ApprovalStatus.ToString();
 
                     DateTime? targetDate = ResolvePlanDate(plan, criteria.DateTarget);
@@ -1119,9 +1189,32 @@ namespace EclipseDataMiner.Services
                             ? prescriptionTotalDose
                             : dvh.MaxDose;
 
-                        DoseValue targetDose = dqp.InputUnit == IOUnit.Relative
-                            ? new DoseValue(refDose.Dose * (dqp.DQPvalue * 0.01), refDose.Unit)
-                            : new DoseValue(dqp.DQPvalue, DoseValue.DoseUnit.Gy);
+                        // Determine native dose unit from refDose or dvh.MaxDose (cGy vs Gy)
+                        DoseValue.DoseUnit nativeDoseUnit = refDose.Unit != DoseValue.DoseUnit.Unknown
+                            ? refDose.Unit
+                            : (dvh.MaxDose.Unit != DoseValue.DoseUnit.Unknown ? dvh.MaxDose.Unit : DoseValue.DoseUnit.Gy);
+                        if (nativeDoseUnit != DoseValue.DoseUnit.Unknown)
+                        {
+                            NotifyDoseUnitDetected(nativeDoseUnit.ToString());
+                        }
+
+                        // Build target dose respecting native plan dose unit and scaling (e.g. 20 Gy -> 2000 cGy in cGy plans)
+                        DoseValue targetDose;
+                        if (dqp.InputUnit == IOUnit.Relative)
+                        {
+                            targetDose = new DoseValue(refDose.Dose * (dqp.DQPvalue * 0.01), nativeDoseUnit);
+                        }
+                        else
+                        {
+                            if (nativeDoseUnit == DoseValue.DoseUnit.cGy)
+                            {
+                                targetDose = new DoseValue(dqp.DQPvalue * 100.0, DoseValue.DoseUnit.cGy);
+                            }
+                            else
+                            {
+                                targetDose = new DoseValue(dqp.DQPvalue, DoseValue.DoseUnit.Gy);
+                            }
+                        }
 
                         if (dqp.DQPtype == DQPtype.Dose)
                         {
@@ -1131,7 +1224,7 @@ namespace EclipseDataMiner.Services
                         }
                         else if (dqp.DQPtype == DQPtype.Volume)
                         {
-                            calculatedVal = planItem.GetVolumeAtDose(structure, targetDose, volPresOut);
+                            calculatedVal = CalculateVolumeAtDoseSafe(planItem, structure, targetDose, dvh, dqp.InputUnit, dqp.DQPvalue, refDose, dqp.OutputUnit);
                             unit = dqp.OutputUnit == IOUnit.Relative ? "%" : "cc";
                         }
                         else if (dqp.DQPtype == DQPtype.DoseComplement)
@@ -1149,13 +1242,16 @@ namespace EclipseDataMiner.Services
                         }
                         else if (dqp.DQPtype == DQPtype.ComplementVolume)
                         {
-                            double volCc = planItem.GetVolumeAtDose(structure, targetDose, VolumePresentation.AbsoluteCm3);
-                            double cvCc = structure.Volume - volCc;
-                            if (cvCc < 0) cvCc = 0;
+                            double? volCc = CalculateVolumeAtDoseSafe(planItem, structure, targetDose, dvh, dqp.InputUnit, dqp.DQPvalue, refDose, IOUnit.Absolute);
+                            if (volCc.HasValue)
+                            {
+                                double cvCc = structure.Volume - volCc.Value;
+                                if (cvCc < 0) cvCc = 0;
 
-                            calculatedVal = dqp.OutputUnit == IOUnit.Relative
-                                ? (cvCc / structure.Volume * 100.0)
-                                : cvCc;
+                                calculatedVal = dqp.OutputUnit == IOUnit.Relative
+                                    ? (cvCc / structure.Volume * 100.0)
+                                    : cvCc;
+                            }
 
                             unit = dqp.OutputUnit == IOUnit.Relative ? "%" : "cc";
                         }
@@ -1185,7 +1281,107 @@ namespace EclipseDataMiner.Services
             }
         }
 
-        private List<DqpColumnDefinition> BuildDqpColumns(IList<DQP> dqpDefinitions, IList<StructureMappingRule> mappingRules)
+        /// <summary>
+        /// Safely evaluates volume at dose using native ESAPI method with fallback to DVH curve interpolation.
+        /// Handles plan dose unit mismatch (cGy vs Gy) and presentation discrepancies seamlessly.
+        /// </summary>
+        public static double? CalculateVolumeAtDoseSafe(
+            PlanningItem planItem,
+            Structure structure,
+            DoseValue targetDose,
+            DVHData dvh,
+            IOUnit inputUnit,
+            double dqpValue,
+            DoseValue refDose,
+            IOUnit outputUnit)
+        {
+            var volPresOut = outputUnit == IOUnit.Relative ? VolumePresentation.Relative : VolumePresentation.AbsoluteCm3;
+
+            // 1. Attempt native ESAPI method first
+            if (planItem != null && structure != null)
+            {
+                try
+                {
+                    double nativeVol = planItem.GetVolumeAtDose(structure, targetDose, volPresOut);
+                    if (!double.IsNaN(nativeVol) && !double.IsInfinity(nativeVol) && nativeVol >= 0)
+                    {
+                        return nativeVol;
+                    }
+                }
+                catch
+                {
+                    // Fall back to DVH cumulative curve interpolation
+                }
+            }
+
+            // 2. High-precision fallback via cumulative DVH curve
+            if (dvh?.CurveData != null && dvh.CurveData.Length > 0 && structure != null && structure.Volume > 0)
+            {
+                double targetDoseGy = inputUnit == IOUnit.Relative
+                    ? refDose.ToGy() * (dqpValue * 0.01)
+                    : dqpValue;
+
+                double? volCc = InterpolateVolumeAtDoseFromDvh(dvh.CurveData, targetDoseGy);
+                if (volCc.HasValue)
+                {
+                    if (outputUnit == IOUnit.Relative)
+                    {
+                        return (volCc.Value / structure.Volume) * 100.0;
+                    }
+                    return volCc.Value;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Robustly interpolates the volume (cc) at a specified dose (Gy) from DVH cumulative curve points.
+        /// </summary>
+        public static double? InterpolateVolumeAtDoseFromDvh(DVHPoint[] curveData, double targetDoseGy)
+        {
+            if (curveData == null || curveData.Length == 0) return null;
+
+            // If target dose is less than or equal to first point dose, return maximum volume
+            double firstDose = curveData[0].DoseValue.ToGy();
+            if (targetDoseGy <= firstDose)
+            {
+                return curveData[0].Volume;
+            }
+
+            // If target dose is strictly greater than last point dose, return 0.0
+            double lastDose = curveData[curveData.Length - 1].DoseValue.ToGy();
+            if (targetDoseGy > lastDose)
+            {
+                return 0.0;
+            }
+
+            // Linear interpolation between the two adjacent dose points
+            for (int i = 0; i < curveData.Length - 1; i++)
+            {
+                double d1 = curveData[i].DoseValue.ToGy();
+                double d2 = curveData[i + 1].DoseValue.ToGy();
+
+                if (targetDoseGy >= d1 && targetDoseGy <= d2)
+                {
+                    double v1 = curveData[i].Volume;
+                    double v2 = curveData[i + 1].Volume;
+
+                    if (Math.Abs(d2 - d1) < 1e-6)
+                    {
+                        return v1;
+                    }
+
+                    double fraction = (targetDoseGy - d1) / (d2 - d1);
+                    double interpVol = v1 + (v2 - v1) * fraction;
+                    return interpVol >= 0 ? interpVol : 0.0;
+                }
+            }
+
+            return 0.0;
+        }
+
+        public static List<DqpColumnDefinition> BuildDqpColumns(IList<DQP> dqpDefinitions, IList<StructureMappingRule> mappingRules)
         {
             var list = new List<DqpColumnDefinition>();
 
@@ -1271,7 +1467,7 @@ namespace EclipseDataMiner.Services
         /// <summary>
         /// Aggregates distinct structure (or alias) names to extract from mapping rules and DQP definitions.
         /// </summary>
-        private static List<string> GetTargetStructureNames(IList<DQP> dqpDefinitions, IList<StructureMappingRule> mappingRules)
+        public static List<string> GetTargetStructureNames(IList<DQP> dqpDefinitions, IList<StructureMappingRule> mappingRules)
         {
             var targetStructNames = new List<string>();
 

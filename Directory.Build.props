@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <Version>3.0.2</Version>
+    <AssemblyVersion>3.0.2.0</AssemblyVersion>
+    <FileVersion>3.0.2.0</FileVersion>
+    <InformationalVersion>3.0.2</InformationalVersion>
+    <!-- Automatic local ESAPI mock/API resolution -->
+    <EsapiPath Condition="'$(EsapiPath)' == '' And Exists('G:\Source\Repos\tkmd94\API_16.1\VMS.TPS.Common.Model.API.dll')">G:\Source\Repos\tkmd94\API_16.1</EsapiPath>
+    <EsapiPath Condition="'$(EsapiPath)' == '' And Exists('..\API_16.1\VMS.TPS.Common.Model.API.dll')">..\API_16.1</EsapiPath>
+  </PropertyGroup>
+</Project>

@@ -351,6 +351,9 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="RowHeight" Value="28"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
             <Setter Property="ColumnHeaderStyle">
                 <Setter.Value>
                     <Style TargetType="DataGridColumnHeader">

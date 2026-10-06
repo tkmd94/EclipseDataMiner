@@ -685,6 +685,134 @@ namespace EclipseDataMiner.Tests
             Assert.AreEqual("Excluded (Exact)", vm.DiscoveredStructures[0].MatchStatus);
             Assert.IsFalse(vm.DiscoveredStructures[0].IsExtracted);
         }
+
+        [TestMethod]
+        [Description("Verifies that MoveUp and MoveDown commands are disabled when MappingRules has 0 or 1 item")]
+        public void MoveUpAndDown_SingleItem_OrEmpty_CommandsShouldBeDisabled()
+        {
+            var vm = new EclipseDataMiner.ViewModels.MainViewModel();
+            vm.MappingRules.Clear();
+
+            // 0 items
+            Assert.IsFalse(vm.MoveUpRuleCommand.CanExecute(null));
+            Assert.IsFalse(vm.MoveDownRuleCommand.CanExecute(null));
+
+            // 1 item
+            var rule = new StructureMappingRule { Pattern = "OnlyOne", MatchMode = StructureMatchMode.Exact };
+            vm.MappingRules.Add(rule);
+            vm.SelectedRule = rule;
+
+            Assert.IsFalse(vm.MoveUpRuleCommand.CanExecute(null), "Single item cannot move up");
+            Assert.IsFalse(vm.MoveDownRuleCommand.CanExecute(null), "Single item cannot move down");
+        }
+
+        [TestMethod]
+        [Description("Verifies that continuous MoveUp and MoveDown accurately shifts collection indices while strictly maintaining SelectedRule reference and updating CanExecute")]
+        public void MoveUpAndDown_ContinuousMovement_ShouldMaintainSelectionAndOrder()
+        {
+            var vm = new EclipseDataMiner.ViewModels.MainViewModel();
+            vm.MappingRules.Clear();
+
+            var r0 = new StructureMappingRule { Pattern = "Item0" };
+            var r1 = new StructureMappingRule { Pattern = "Item1" };
+            var r2 = new StructureMappingRule { Pattern = "Item2" };
+            var r3 = new StructureMappingRule { Pattern = "Item3" };
+
+            vm.MappingRules.Add(r0);
+            vm.MappingRules.Add(r1);
+            vm.MappingRules.Add(r2);
+            vm.MappingRules.Add(r3);
+
+            // Select last item (r3, index 3)
+            vm.SelectedRule = r3;
+            Assert.IsTrue(vm.MoveUpRuleCommand.CanExecute(null));
+            Assert.IsFalse(vm.MoveDownRuleCommand.CanExecute(null));
+
+            // Move Up -> index 2
+            vm.MoveUpRuleCommand.Execute(null);
+            Assert.AreEqual(r3, vm.SelectedRule);
+            Assert.AreEqual(r3, vm.MappingRules[2]);
+            Assert.AreEqual(r2, vm.MappingRules[3]);
+            Assert.IsTrue(vm.MoveUpRuleCommand.CanExecute(null));
+            Assert.IsTrue(vm.MoveDownRuleCommand.CanExecute(null));
+
+            // Move Up -> index 1
+            vm.MoveUpRuleCommand.Execute(null);
+            Assert.AreEqual(r3, vm.SelectedRule);
+            Assert.AreEqual(r3, vm.MappingRules[1]);
+            Assert.AreEqual(r1, vm.MappingRules[2]);
+            Assert.IsTrue(vm.MoveUpRuleCommand.CanExecute(null));
+            Assert.IsTrue(vm.MoveDownRuleCommand.CanExecute(null));
+
+            // Move Up -> index 0 (Top)
+            vm.MoveUpRuleCommand.Execute(null);
+            Assert.AreEqual(r3, vm.SelectedRule);
+            Assert.AreEqual(r3, vm.MappingRules[0]);
+            Assert.AreEqual(r0, vm.MappingRules[1]);
+            Assert.IsFalse(vm.MoveUpRuleCommand.CanExecute(null), "Top item cannot move up further");
+            Assert.IsTrue(vm.MoveDownRuleCommand.CanExecute(null));
+
+            // Move Down back all the way to index 3
+            vm.MoveDownRuleCommand.Execute(null); // to 1
+            Assert.AreEqual(r3, vm.SelectedRule);
+            Assert.AreEqual(r3, vm.MappingRules[1]);
+
+            vm.MoveDownRuleCommand.Execute(null); // to 2
+            Assert.AreEqual(r3, vm.SelectedRule);
+            Assert.AreEqual(r3, vm.MappingRules[2]);
+
+            vm.MoveDownRuleCommand.Execute(null); // to 3 (Bottom)
+            Assert.AreEqual(r3, vm.SelectedRule);
+            Assert.AreEqual(r3, vm.MappingRules[3]);
+            Assert.IsTrue(vm.MoveUpRuleCommand.CanExecute(null));
+            Assert.IsFalse(vm.MoveDownRuleCommand.CanExecute(null), "Bottom item cannot move down further");
+        }
+
+        [TestMethod]
+        [Description("Verifies that reordering rules via MoveUp instantly updates the preview matching priority")]
+        public void MoveUpAndDown_ReorderingRules_ShouldInstantlyUpdateMatchingPriorityInPreview()
+        {
+            var vm = new EclipseDataMiner.ViewModels.MainViewModel();
+            vm.MappingRules.Clear();
+
+            // Two overlapping rules
+            var ruleGeneric = new StructureMappingRule
+            {
+                Pattern = "CTV",
+                MatchMode = StructureMatchMode.Contains,
+                TargetAlias = "CTV_Generic",
+                IsSelected = true
+            };
+            var ruleSpecific = new StructureMappingRule
+            {
+                Pattern = "CTV_High",
+                MatchMode = StructureMatchMode.Contains,
+                TargetAlias = "CTV_HighRisk",
+                IsSelected = true
+            };
+
+            // Initially ruleGeneric is first
+            vm.MappingRules.Add(ruleGeneric);
+            vm.MappingRules.Add(ruleSpecific);
+
+            // Add discovered structure that matches both
+            vm.DiscoveredStructures.Add(new DiscoveredStructureItem { RawStructureId = "CTV_High_70Gy" });
+            vm.RefreshDiscoveredPreview();
+
+            // First rule wins -> CTV_Generic
+            Assert.AreEqual("CTV_Generic", vm.DiscoveredStructures[0].ResolvedAlias);
+
+            // Act: select ruleSpecific and Move Up
+            vm.SelectedRule = ruleSpecific;
+            vm.MoveUpRuleCommand.Execute(null);
+
+            // Assert: ruleSpecific is now first, so CTV_HighRisk wins in real-time preview!
+            Assert.AreEqual("CTV_HighRisk", vm.DiscoveredStructures[0].ResolvedAlias);
+
+            // Move Down: returns to ruleGeneric priority
+            vm.MoveDownRuleCommand.Execute(null);
+            Assert.AreEqual("CTV_Generic", vm.DiscoveredStructures[0].ResolvedAlias);
+        }
     }
 }
 

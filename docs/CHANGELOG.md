@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.2] - 2026-10-06
+
+### Fixed
+- **DQP「Volume at Dose (V)」における単位不整合と `NA` 出力の根本解消**:
+  - 施設運用単位が cGy のプランに対して Gy 単位で線量を指定した際（例: 20 Gy）、ESAPI の `GetVolumeAtDose` 呼び出しで発生していた `System.ArgumentException` を解消。
+  - プランのネイティブ線量単位（cGy / Gy）を判定し、cGy 運用施設では入力値（Gy）を自動的に 100 倍（2000 cGy）にスケールして ESAPI に伝達。
+  - ESAPI ネイティブ呼出例外発生時でも、抽出済みの高解像度 DVH 累積曲線データから高精度線形補間を行う安全フォールバック（`CalculateVolumeAtDoseSafe` / `InterpolateVolumeAtDoseFromDvh`）を配備し、データ欠落（`NA`）を根絶。
+- **DQP グリッドのマウススクロール不具合の解消**:
+  - WPF DataGrid のアイテム単位スクロール制約（`CanContentScroll="True"`）による最下行の見切れ・停止を解消するため、ピクセル単位の物理スクロール（`ScrollViewer.CanContentScroll="False"`）へ変更。
+  - `DataGrid_PreviewMouseWheel` を実装し、マウスカーソルがセルやドロップダウンの上にあってもイベントの遮断を防ぎ、連続スクロール時の目標オフセット累積制御により最下行まで 100% 確実にスムーズ移動できるよう改善。
+
+### Added
+- **Eclipse TPS システム線量単位の自動検出と UI 表示**:
+  - プラン検索・事前スキャン・データ抽出時に、プランの `TotalDose.UnitAsString` および `DoseMax3D.UnitAsString` からシステム線量単位（`cGy` または `Gy`）を動的に自動取得。
+  - Tab 3（DQP 設定）上部バナー、Tab 1（プラン検索）サマリーバー、およびコンソールヘッダーに現在のシステム線量単位バッジをリアルタイム表示。
+- **DQP 線量入力ポリシーの明示**:
+  - Tab 3 最上部に「DQP の絶対線量入力値は必ず [Gy] 単位で入力すること」を明記したインフォメーションバナーを常設。
+  - DQP 設定 DataGrid の列ヘッダーを `Value (Dose: Gy / Vol: cc or %)` に更新し、入力単位の視認性を向上。
+
 ## [3.0.1] - 2026-09-28
 
 ### Fixed

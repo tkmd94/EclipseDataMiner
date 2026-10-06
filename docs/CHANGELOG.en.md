@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.2] - 2026-10-06
+
+### Fixed
+- **Resolved Unit Mismatch and `NA` Outputs in DQP Volume at Dose (V)**:
+  - Fixed `System.ArgumentException` thrown during `GetVolumeAtDose` calls when entering dose in Gy (e.g., 20 Gy) on plans planned with native cGy units.
+  - Automatically detects the native plan dose unit (cGy or Gy) and scales Gy input values (e.g., 20 Gy -> 2000 cGy) before invoking ESAPI.
+  - Implemented high-precision linear interpolation fallback (`CalculateVolumeAtDoseSafe` / `InterpolateVolumeAtDoseFromDvh`) from cumulative DVH curves whenever native ESAPI call fails, eliminating `NA` outputs.
+- **Fixed DQP Grid Mouse Scrolling to Bottom**:
+  - Switched DataGrid from discrete item-based scrolling (`CanContentScroll="True"`) to physical pixel-based scrolling (`ScrollViewer.CanContentScroll="False"`), ensuring the last row and grid bottom border are 100% visible.
+  - Implemented `DataGrid_PreviewMouseWheel` to bypass event bubbling blocks on nested controls/cells and accumulate scroll target offsets across rapid wheel ticks.
+
+### Added
+- **Automatic Detection and UI Display of Eclipse TPS System Dose Unit**:
+  - Dynamically detects native system dose unit (`cGy` or `Gy`) from `TotalDose.UnitAsString` and `DoseMax3D.UnitAsString` during plan search, pre-scan, and extraction.
+  - Added real-time badge displays on Tab 3 (DQP) banner, Tab 1 (Plan Search) summary toolbar, and the dark terminal console header.
+- **Explicit DQP Dose Input Policy Banner**:
+  - Added permanent information banner on Tab 3 mandating that all absolute dose metrics must be entered in `[Gy]`.
+  - Updated DQP DataGrid header to `Value (Dose: Gy / Vol: cc or %)` for enhanced clarity during manual configuration.
+
 ## [3.0.1] - 2026-09-28
 
 ### Fixed

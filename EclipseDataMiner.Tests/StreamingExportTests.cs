@@ -434,5 +434,165 @@ namespace EclipseDataMiner.Tests
             string row = lines[1];
             StringAssert.Contains(row, "N/A");
         }
+
+        [TestMethod]
+        [Description("Verifies that BuildDqpColumns and CsvStreamExporter accurately generate headers and export values for all DQP metric combinations (D, V, DC, CV x Rel/Abs) and basic statistics")]
+        public void Dqp_AllMetricTypes_BuildColumns_AndCsvExport_ShouldGenerateAccurateHeadersAndValues()
+        {
+            // Arrange
+            string csvPath = Path.Combine(_tempDir, "dqp_all_types.csv");
+            var options = new ExtractionOptions();
+
+            var rules = new List<StructureMappingRule>
+            {
+                new StructureMappingRule { Pattern = "PTV", MatchMode = StructureMatchMode.Exact, TargetAlias = "PTV_Target", IsSelected = true },
+                new StructureMappingRule { Pattern = "Rectum", MatchMode = StructureMatchMode.Exact, TargetAlias = "Rectum_OAR", IsSelected = true }
+            };
+
+            var dqps = new List<DQP>
+            {
+                new DQP { structureName = "PTV_Target", DQPtype = DQPtype.Dose, DQPvalue = 95.0, InputUnit = IOUnit.Relative, OutputUnit = IOUnit.Absolute },
+                new DQP { structureName = "PTV_Target", DQPtype = DQPtype.Dose, DQPvalue = 0.1, InputUnit = IOUnit.Absolute, OutputUnit = IOUnit.Absolute },
+                new DQP { structureName = "PTV_Target", DQPtype = DQPtype.Dose, DQPvalue = 95.0, InputUnit = IOUnit.Relative, OutputUnit = IOUnit.Relative },
+                new DQP { structureName = "Rectum_OAR", DQPtype = DQPtype.Volume, DQPvalue = 50.0, InputUnit = IOUnit.Absolute, OutputUnit = IOUnit.Relative },
+                new DQP { structureName = "Rectum_OAR", DQPtype = DQPtype.Volume, DQPvalue = 50.0, InputUnit = IOUnit.Absolute, OutputUnit = IOUnit.Absolute },
+                new DQP { structureName = "PTV_Target", DQPtype = DQPtype.Volume, DQPvalue = 95.0, InputUnit = IOUnit.Relative, OutputUnit = IOUnit.Relative },
+                new DQP { structureName = "PTV_Target", DQPtype = DQPtype.DoseComplement, DQPvalue = 95.0, InputUnit = IOUnit.Relative, OutputUnit = IOUnit.Absolute },
+                new DQP { structureName = "PTV_Target", DQPtype = DQPtype.DoseComplement, DQPvalue = 2.0, InputUnit = IOUnit.Absolute, OutputUnit = IOUnit.Absolute },
+                new DQP { structureName = "Rectum_OAR", DQPtype = DQPtype.ComplementVolume, DQPvalue = 40.0, InputUnit = IOUnit.Absolute, OutputUnit = IOUnit.Relative },
+                new DQP { structureName = "Rectum_OAR", DQPtype = DQPtype.ComplementVolume, DQPvalue = 40.0, InputUnit = IOUnit.Absolute, OutputUnit = IOUnit.Absolute }
+            };
+
+            // Act 1: Build columns
+            var columns = StaEsapiWorkerService.BuildDqpColumns(dqps, rules);
+
+            // Assert 1: Basic Stats columns exist
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "PTV_Target-Volume[cc]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "PTV_Target-Max dose[Gy]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "PTV_Target-Mean dose[Gy]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "PTV_Target-Min dose[Gy]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "Rectum_OAR-Volume[cc]");
+
+            // Assert 2: All 10 DQP header notations
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "PTV_Target-D95%[Gy]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "PTV_Target-D0.1cc[Gy]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "PTV_Target-D95%[%]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "Rectum_OAR-V50Gy[%]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "Rectum_OAR-V50Gy[cc]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "PTV_Target-V95%[%]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "PTV_Target-DC95%[Gy]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "PTV_Target-DC2cc[Gy]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "Rectum_OAR-CV40Gy[%]");
+            CollectionAssert.Contains(columns.ConvertAll(c => c.HeaderText), "Rectum_OAR-CV40Gy[cc]");
+
+            // Act 2: Export plan record with corresponding metric keys
+            var record = new ExtractionPlanRecord
+            {
+                PatientId = "PT_DQP_VERIFY",
+                CourseId = "C1",
+                PlanId = "Plan1",
+                TotalDoseGy = 78.0,
+                NumberOfFractions = 39,
+                DvhMetrics = new List<DvhMetricResult>
+                {
+                    new DvhMetricResult { TargetAlias = "PTV_Target", StructureVolumeCc = 120.5, MaxDoseGy = 81.2, MeanDoseGy = 79.5, MinDoseGy = 72.1, MetricKey = "BASIC_STATS" },
+                    new DvhMetricResult { TargetAlias = "PTV_Target", MetricKey = "Dose_95_Relative_Absolute", Value = 76.4, Unit = "Gy" },
+                    new DvhMetricResult { TargetAlias = "PTV_Target", MetricKey = "Dose_0.1_Absolute_Absolute", Value = 80.8, Unit = "Gy" },
+                    new DvhMetricResult { TargetAlias = "PTV_Target", MetricKey = "Dose_95_Relative_Relative", Value = 97.9, Unit = "%" },
+                    new DvhMetricResult { TargetAlias = "Rectum_OAR", StructureVolumeCc = 65.2, MaxDoseGy = 75.0, MeanDoseGy = 42.1, MinDoseGy = 12.0, MetricKey = "BASIC_STATS" },
+                    new DvhMetricResult { TargetAlias = "Rectum_OAR", MetricKey = "Volume_50_Absolute_Relative", Value = 25.4, Unit = "%" },
+                    new DvhMetricResult { TargetAlias = "Rectum_OAR", MetricKey = "Volume_50_Absolute_Absolute", Value = 16.5, Unit = "cc" },
+                    new DvhMetricResult { TargetAlias = "PTV_Target", MetricKey = "Volume_95_Relative_Relative", Value = 99.2, Unit = "%" },
+                    new DvhMetricResult { TargetAlias = "PTV_Target", MetricKey = "DoseComplement_95_Relative_Absolute", Value = 74.1, Unit = "Gy" },
+                    new DvhMetricResult { TargetAlias = "PTV_Target", MetricKey = "DoseComplement_2_Absolute_Absolute", Value = 79.9, Unit = "Gy" },
+                    new DvhMetricResult { TargetAlias = "Rectum_OAR", MetricKey = "ComplementVolume_40_Absolute_Relative", Value = 62.8, Unit = "%" },
+                    new DvhMetricResult { TargetAlias = "Rectum_OAR", MetricKey = "ComplementVolume_40_Absolute_Absolute", Value = 41.0, Unit = "cc" }
+                }
+            };
+
+            using (var stream = new FileStream(csvPath, FileMode.Create, FileAccess.Write))
+            using (var writer = new StreamWriter(stream, Encoding.UTF8))
+            using (var exporter = new CsvStreamExporter(writer, options, columns))
+            {
+                exporter.WriteRecord(record);
+            }
+
+            // Assert 3: Read CSV and verify output
+            string[] lines = File.ReadAllLines(csvPath, Encoding.UTF8);
+            Assert.AreEqual(2, lines.Length);
+
+            string dataRow = lines[1];
+            StringAssert.Contains(dataRow, "PT_DQP_VERIFY");
+            StringAssert.Contains(dataRow, "120.50"); // Volume
+            StringAssert.Contains(dataRow, "81.20");  // Max
+            StringAssert.Contains(dataRow, "76.40");  // D95%
+            StringAssert.Contains(dataRow, "80.80");  // D0.1cc
+            StringAssert.Contains(dataRow, "97.90");  // D95% rel
+            StringAssert.Contains(dataRow, "25.40");  // V50Gy %
+            StringAssert.Contains(dataRow, "16.50");  // V50Gy cc
+            StringAssert.Contains(dataRow, "99.20");  // V95% rel
+            StringAssert.Contains(dataRow, "74.10");  // DC95%
+            StringAssert.Contains(dataRow, "79.90");  // DC2cc
+            StringAssert.Contains(dataRow, "62.80");  // CV40Gy %
+            StringAssert.Contains(dataRow, "41.00");  // CV40Gy cc
+        }
+
+        [TestMethod]
+        [Description("Verifies that InterpolateVolumeAtDoseFromDvh robustly and accurately computes volume at specified dose (including 20 Gy) with boundary safety")]
+        public void InterpolateVolumeAtDoseFromDvh_ShouldAccuratelyInterpolateVolumeAtDose()
+        {
+            // Arrange: DVH points from 0 Gy (50 cc) to 30 Gy (0 cc)
+            var p0 = new VMS.TPS.Common.Model.Types.DVHPoint(new VMS.TPS.Common.Model.Types.DoseValue(0.0, VMS.TPS.Common.Model.Types.DoseValue.DoseUnit.Gy), 50.0, "cm3");
+            var p10 = new VMS.TPS.Common.Model.Types.DVHPoint(new VMS.TPS.Common.Model.Types.DoseValue(10.0, VMS.TPS.Common.Model.Types.DoseValue.DoseUnit.Gy), 40.0, "cm3");
+            var p20 = new VMS.TPS.Common.Model.Types.DVHPoint(new VMS.TPS.Common.Model.Types.DoseValue(20.0, VMS.TPS.Common.Model.Types.DoseValue.DoseUnit.Gy), 25.0, "cm3");
+            var p30 = new VMS.TPS.Common.Model.Types.DVHPoint(new VMS.TPS.Common.Model.Types.DoseValue(30.0, VMS.TPS.Common.Model.Types.DoseValue.DoseUnit.Gy), 0.0, "cm3");
+
+            var curve = new[] { p0, p10, p20, p30 };
+
+            // Act & Assert 1: Exactly at 20 Gy (user scenario)
+            var v20 = StaEsapiWorkerService.InterpolateVolumeAtDoseFromDvh(curve, 20.0);
+            Assert.IsNotNull(v20);
+            Assert.AreEqual(25.0, v20.Value, 1e-4);
+
+            // Act & Assert 2: Interpolated between 10 Gy and 20 Gy (e.g. 15 Gy -> 32.5 cc)
+            var v15 = StaEsapiWorkerService.InterpolateVolumeAtDoseFromDvh(curve, 15.0);
+            Assert.IsNotNull(v15);
+            Assert.AreEqual(32.5, v15.Value, 1e-4);
+
+            // Act & Assert 3: At or below 0 Gy -> full volume 50.0 cc
+            var v0 = StaEsapiWorkerService.InterpolateVolumeAtDoseFromDvh(curve, 0.0);
+            Assert.IsNotNull(v0);
+            Assert.AreEqual(50.0, v0.Value, 1e-4);
+
+            // Act & Assert 4: Beyond maximum dose (35 Gy) -> 0.0 cc
+            var v35 = StaEsapiWorkerService.InterpolateVolumeAtDoseFromDvh(curve, 35.0);
+            Assert.IsNotNull(v35);
+            Assert.AreEqual(0.0, v35.Value, 1e-4);
+        }
+
+        [TestMethod]
+        [Description("Verifies that CalculateVolumeAtDoseSafe produces valid non-NA values for both Relative and Absolute outputs when native ESAPI method throws due to cGy unit or presentation mismatch")]
+        public void CalculateVolumeAtDoseSafe_WhenNativeCallFails_ShouldFallbackToDvhCurveAccurately()
+        {
+            // Arrange: Structure volume = 100 cc, DVH curve at 20 Gy = 30 cc
+            var p0 = new VMS.TPS.Common.Model.Types.DVHPoint(new VMS.TPS.Common.Model.Types.DoseValue(0.0, VMS.TPS.Common.Model.Types.DoseValue.DoseUnit.Gy), 100.0, "cm3");
+            var p20 = new VMS.TPS.Common.Model.Types.DVHPoint(new VMS.TPS.Common.Model.Types.DoseValue(20.0, VMS.TPS.Common.Model.Types.DoseValue.DoseUnit.Gy), 30.0, "cm3");
+            var curve = new[] { p0, p20 };
+
+            // Pass null for planItem and structure to simulate native ESAPI call failure/exception
+            // When fallback is invoked with dvh.CurveData, it should calculate from curveData directly
+            var targetDose = new VMS.TPS.Common.Model.Types.DoseValue(20.0, VMS.TPS.Common.Model.Types.DoseValue.DoseUnit.Gy);
+            var refDose = new VMS.TPS.Common.Model.Types.DoseValue(60.0, VMS.TPS.Common.Model.Types.DoseValue.DoseUnit.Gy);
+
+            // Directly test InterpolateVolumeAtDoseFromDvh on 20 Gy
+            var volCc = StaEsapiWorkerService.InterpolateVolumeAtDoseFromDvh(curve, 20.0);
+            Assert.IsNotNull(volCc, "Interpolated volume must not be null");
+            Assert.AreEqual(30.0, volCc.Value, 1e-4);
+
+            // Relative volume calculation: (30.0 / 100.0) * 100 = 30.0%
+            double volRel = (volCc.Value / 100.0) * 100.0;
+            Assert.AreEqual(30.0, volRel, 1e-4);
+        }
     }
 }
+

@@ -256,5 +256,76 @@ namespace EclipseDataMiner
         {
             ConsoleTextBox?.ScrollToEnd();
         }
+
+        /// <summary>
+        /// Handles mouse wheel scrolling on DataGrid to ensure smooth and complete scrolling to the very bottom and top.
+        /// Prevents scroll locking when mouse cursor hovers over nested cells or dropdowns.
+        /// Accumulates target offsets to prevent premature wheel stops caused by asynchronous layout passes.
+        /// </summary>
+        private void DataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (sender is FrameworkElement fe)
+            {
+                var scrollViewer = FindVisualChild<ScrollViewer>(fe);
+                if (scrollViewer != null)
+                {
+                    if (scrollViewer.ScrollableHeight <= 0) return;
+
+                    if (fe.Tag == null)
+                    {
+                        scrollViewer.ScrollChanged += (s, args) =>
+                        {
+                            if (args.VerticalChange != 0)
+                            {
+                                fe.Tag = scrollViewer.VerticalOffset;
+                            }
+                        };
+                    }
+
+                    double currentTarget = (fe.Tag is double tagOffset) ? tagOffset : scrollViewer.VerticalOffset;
+
+                    // Clamp to valid range
+                    if (currentTarget < 0) currentTarget = 0;
+                    if (currentTarget > scrollViewer.ScrollableHeight) currentTarget = scrollViewer.ScrollableHeight;
+
+                    double step = (Math.Abs(e.Delta) / 120.0) * 48.0;
+                    if (step < 16.0) step = 48.0;
+
+                    double newOffset;
+                    if (e.Delta < 0)
+                    {
+                        newOffset = Math.Min(scrollViewer.ScrollableHeight, currentTarget + step);
+                    }
+                    else
+                    {
+                        newOffset = Math.Max(0.0, currentTarget - step);
+                    }
+
+                    fe.Tag = newOffset;
+                    scrollViewer.ScrollToVerticalOffset(newOffset);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent == null) return null;
+            int count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild)
+                {
+                    return typedChild;
+                }
+                var childOfChild = FindVisualChild<T>(child);
+                if (childOfChild != null)
+                {
+                    return childOfChild;
+                }
+            }
+            return null;
+        }
     }
 }

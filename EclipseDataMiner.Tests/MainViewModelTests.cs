@@ -306,9 +306,9 @@ namespace EclipseDataMiner.Tests
             string productVer = MainViewModel.GetProductVersion();
             string title = vm.WindowTitle;
 
-            // Assert: ProductVersion is 3.0.1 and contained in the title
-            Assert.AreEqual("3.0.1", productVer);
-            Assert.IsTrue(title.Contains("v3.0.1"), $"Title '{title}' does not contain 'v3.0.1'");
+            // Assert: ProductVersion is 3.0.2 and contained in the title
+            Assert.AreEqual("3.0.2", productVer);
+            Assert.IsTrue(title.Contains("v3.0.2"), $"Title '{title}' does not contain 'v3.0.2'");
             Assert.IsTrue(title.StartsWith("EclipseDataMiner"));
             Assert.IsTrue(title.Contains("High-Throughput Clinical ESAPI Data Mining Platform"));
         }
@@ -347,6 +347,26 @@ namespace EclipseDataMiner.Tests
 
             // Assert 3: Display shows 0 / 3 selected
             Assert.AreEqual("🎯 Target: 0 / 3 Selected Plans", vm.PreScanScopeBadgeText);
+        }
+
+        [TestMethod]
+        [Description("Verifies that SystemDoseUnit defaults to cGy and updates appropriately")]
+        public void SystemDoseUnit_DefaultAndPropertyChange_ShouldUpdateDisplay()
+        {
+            // Arrange
+            var vm = new MainViewModel();
+
+            // Assert default
+            Assert.AreEqual("cGy", vm.SystemDoseUnit);
+            Assert.AreEqual("cGy", vm.SystemDoseUnitDisplay);
+            Assert.IsTrue(vm.DqpDoseInputPolicyText.Contains("[Gy]"));
+
+            // Act: Change unit to Gy
+            vm.SystemDoseUnit = "Gy";
+
+            // Assert
+            Assert.AreEqual("Gy", vm.SystemDoseUnit);
+            Assert.AreEqual("Gy", vm.SystemDoseUnitDisplay);
         }
     }
 }
